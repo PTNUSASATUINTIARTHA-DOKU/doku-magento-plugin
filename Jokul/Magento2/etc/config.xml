@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <doku_general_config>
+            <js_merchant_hosted>
+                <development_url>https://staging.doku.com/doku-js/assets/js/doku.uncompress-1.4-SNAPSHOOT.js</development_url>
+            </js_merchant_hosted>
+        </doku_general_config>
+        <doku_merchanthosted_config>
+            <mandiri_va_merchanthosted>
+                <title>Mandiri VA (merchant hosted)</title>
+                <description>Mandiri VA Doku merchant hosted payment method</description>
+                <payment_code_prefix>88899</payment_code_prefix>
+            </mandiri_va_merchanthosted>
+        </doku_merchanthosted_config>
+        <payment>
+            <mandiri_va_merchanthosted>
+                <title>Mandiri VA (merchant hosted)</title>
+                <description>Mandiri VA Gateway product</description>
+                <payment_code_prefix>88899</payment_code_prefix>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <group>offline</group>
+                <model>Jokul\Magento2\Model\Payment\MandiriVaMerchanthosted</model>
+            </mandiri_va_merchanthosted>
+        </payment>
+        <!-- <doku_bca_payment_config>
+            <bca_klikpay_core>
+                <title>BCA Klikpay (dokuhosted)</title>
+                <description>BCA Klikpay Doku hosted payment method</description>
+            </bca_klikpay_core>
+            <klik_bca_core>
+                <title>Klik BCA (dokuhosted)</title>
+                <description>Klik BCA Doku hosted payment method</description>
+            </klik_bca_core>
+        </doku_bca_payment_config> -->
+    </default>
+</config>

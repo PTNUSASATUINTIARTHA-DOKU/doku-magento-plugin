@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<payment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="../../../Magento/Payment/etc/payment.xsd">
+    <groups>
+        <group id="offline">
+            <label>Offline Payment Methods</label>
+        </group>
+    </groups>
+    <methods>
+        <!-- <method name="bca_klikpay_core">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="klik_bca_core">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method> -->
+        <method name="mandiri_va_merchanthosted">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="mandiri_syariah_va_merchanthosted">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+    </methods>
+</payment>

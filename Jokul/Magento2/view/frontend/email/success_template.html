@@ -1,0 +1,85 @@
+<!--
+/**
+ * Copyright © 2013-2017 Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<!--@subject {{trans "%subject" subject=$data.subject}} @-->
+{{template config_path="design/email/header_template"}}
+<table class="top-section">
+    <tr>
+        <td class="column-left">
+            <h2>{{trans 'Thank You'}}</h2>
+        </td>
+    </tr>
+    <tr>
+        <td class="column-left">
+            <p>{{trans 'Dear, '}} <b>{{trans '%customerName' customerName=$data.customerName}}</b></p>
+        </td>
+    </tr>
+</table>
+<table class="mid-section">
+    <tr>
+        <td>
+            <h2>{{trans 'Your order <span class="no-link">#%orderId</span>' orderId=$data.orderId | raw}}</h2>
+        </td>
+    </tr>
+</table>
+<table>
+    <tr>
+        <td>
+            <p>{{trans "Payment Channel"}} </p>
+        </td>
+        <td>
+            <p>{{trans ":"}} </p>
+        </td>
+        <td>
+            <p>{{trans "<b>%paymentChannel</b>" paymentChannel=$data.paymentChannel | raw}} </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <p>{{trans "Total"}} </p>
+        </td>
+        <td>
+            <p>{{trans ":"}} </p>
+        </td>
+        <td>
+            <p>{{trans "<b>Rp %amount</b>" amount=$data.amount | raw}} </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <p>{{trans "Discount Amount"}} </p>
+        </td>
+        <td>
+            <p>{{trans ":"}} </p>
+        </td>
+        <td>
+            <p>{{trans "Rp %discountValue" discountValue=$data.discountValue | raw}} </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <p>{{trans "Admin Fee"}} </p>
+        </td>
+        <td>
+            <p>{{trans ":"}} </p>
+        </td>
+        <td>
+            <p>{{trans "Rp %adminFeeValue" adminFeeValue=$data.adminFeeValue | raw}} </p>
+        </td>
+    </tr>   
+    <tr>
+        <td>
+            <p>{{trans "Transaction Status"}} </p>
+        </td>
+        <td>
+            <p>{{trans ":"}} </p>
+        </td>
+        <td>
+            <p><b>{{trans "SUCCESS"}} </b></p>
+        </td>
+    </tr>
+</table>
+{{template config_path="design/email/footer_template"}}

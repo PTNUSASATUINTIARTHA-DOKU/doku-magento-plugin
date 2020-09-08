@@ -1,0 +1,130 @@
+<!--
+/**
+ * Copyright © 2013-2017 Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<!--@subject {{trans "%subject" subject=$data.subject}} @-->
+{{template config_path="design/email/header_template"}}
+<table class="top-section">
+    <tr>
+        <td class="column-left">
+            <h2>{{trans 'Thank You'}}</h2>
+        </td>
+    </tr>
+    <tr>
+        <td class="column-left">
+            <p>{{trans 'Dear, '}} <b>{{trans '%customerName' customerName=$data.customerName}}</b></p>
+        </td>
+    </tr>
+</table>
+<table class="mid-section">
+    <tr>
+        <td>
+            <h2>{{trans 'Your order <span class="no-link">#%orderId</span>' orderId=$data.orderId | raw}}</h2>
+        </td>
+    </tr>
+</table>
+<table>
+    <tr>
+        <td>
+            <p>{{trans "Payment Channel"}} </p>
+        </td>
+        <td>
+            <p>{{trans ":"}} </p>
+        </td>
+        <td>
+            <p>{{trans "<b>%paymentChannel</b>" paymentChannel=$data.paymentChannel | raw}} </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <p>{{trans "Total"}} </p>
+        </td>
+        <td>
+            <p>{{trans ":"}} </p>
+        </td>
+        <td>
+            <p>{{trans "<b>Rp %amount</b>" amount=$data.amount | raw}} </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <p>{{trans "Discount Amount"}} </p>
+        </td>
+        <td>
+            <p>{{trans ":"}} </p>
+        </td>
+        <td>
+            <p>{{trans "Rp %discountValue" discountValue=$data.discountValue | raw}} </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <p>{{trans "Admin Fee"}} </p>
+        </td>
+        <td>
+            <p>{{trans ":"}} </p>
+        </td>
+        <td>
+            <p>{{trans "Rp %adminFeeValue" adminFeeValue=$data.adminFeeValue | raw}} </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <p>{{trans "Virtual Account Number"}} </p>
+        </td>
+        <td>
+            <p>{{trans ":"}} </p>
+        </td>
+        <td>
+            <p>{{trans "%vaNumber" vaNumber=$data.vaNumber | raw}} </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <p>{{trans "Please transfer before"}} </p>
+        </td>
+        <td>
+            <p>{{trans ":"}} </p>
+        </td>
+        <td>
+            <p>{{trans "%expiry" expiry=$data.expiry | raw}} </p>
+        </td>
+    </tr>
+</table>
+<table>
+    <tr>
+        <td>
+            <p><b>{{trans "Cara pembayaran via ATM CIMB Niaga"}}</b></p>
+            <ol>
+                <li>{{trans "Datang ke ATM CIMB Niaga terdekat"}}</li>
+                <li>{{trans 'Pilih menu "Transfer", kemudian pilih "Rekening CIMB Niaga"'}}</li>
+                <li>{{trans 'Masukkan Nomor Rekening Tujuan 16 Digit Nomor Virtual Account "%vaNumber"' vaNumber=$data.vaNumber}}</li>
+                <li>{{trans "Masukkan nominal transfer dengan nominal pembayaran sesuai dengan yang ditagihkan"}}</li>
+                <li>{{trans 'Halaman konfirmasi, cek kembali untuk “Nama dan Nominal Tagihan” apakah sudah sesuai, lalu tekan Benar/Ok'}}</li>
+                <li>{{trans "Simpan struk transaksi ATM Anda"}}</li>
+            </ol>
+            <br />
+            <p><b>{{trans "Cara pembayaran via Go Mobile"}}</b></p>
+            <ol>
+                <li>{{trans "Login ke aplikasi Go Mobile Anda"}}</li>
+                <li>{{trans 'Pilih menu "Transfer", kemudian pilih "CIMB Niaga"'}}</li>
+                <li>{{trans 'Masukkan nomor rekening tujuan 16 Digit Nomor Virtual Account "%vaNumber"' vaNumber=$data.vaNumber}}</li>
+                <li>{{trans "Masukkan nominal transfer dengan nominal pembayaran sesuai dengan yang ditagihkan"}}</li>
+                <li>{{trans 'Halaman konfirmasi, cek kembali untuk "Nama dan Nominal Tagihan" apakah sudah sesuai, lalu masukan otentikasi transaksi / PIN mobile banking Anda'}}</li>
+                <li>{{trans 'Simpan/cetak bukti transaksi elektronik Anda'}}</li>
+            </ol>
+            <br />
+            <p><b>{{trans "Cara pembayaran via CIMB Clicks"}}</b></p>
+            <ol>
+                <li>{{trans "Login ke aplikasi CIMB Clicks Anda"}}</li>
+                <li>{{trans 'Pilih menu "Transfer", kemudian pilih rekening sumber dana pada bagian "Transfer From", masukkan "Jumlah", sesuai dengan yang ditagihkan, lalu pada bagian "Transfer to" pilih "Other Account (CIMB Niaga/Rekening Ponsel)", kemudian pilih "Next"'}}</li>
+                <li>{{trans 'Pilih "Bank CIMB Niaga" lalu masukkan Nomor Virtual Account di kolom "Rekening Penerima", "%vaNumber" kemudian pilih "Next"' vaNumber=$data.vaNumber}}</li>
+                <li>{{trans 'Halaman konfirmasi, cek kembali untuk "Nama dan Nominal Tagihan" apakah sudah sesuai, lalu masukan otentikasi transaksi / mPIN mobile banking Anda'}}</li>
+                <li>{{trans 'Simpan/cetak bukti transaksi elektronik Anda'}}</li>
+            </ol>
+        </td>
+    </tr>
+</table>
+{{template config_path="design/email/footer_template"}}

@@ -1,0 +1,28 @@
+<?php $dokuOrderParams = $block->getDokuTransactionDetailParams(); ?>
+
+<p><b><?php echo __('Doku transaction detail:'); ?></b></p>
+<p>
+    <ul>
+        <li>
+            <?php echo __('Payment Channel: %1', $dokuOrderParams['paymentChannel']); ?>
+        </li> 
+        <li>
+            <?php echo __('Total: Rp. %1', $dokuOrderParams['amount']); ?>
+        </li>  
+        <li>
+            <?php echo __('Discount Amount: Rp. %1',  $dokuOrderParams['discountValue']); ?>
+        </li> 
+        <li>
+            <?php echo __('Admin Fee: Rp. %1', $dokuOrderParams['adminFeeValue']); ?>
+        </li> 
+        <?php if(!empty($dokuOrderParams['vaNumber'])):?>
+            <li>
+                <?php echo __('Payment Code / Virtual Account Number: %1', $dokuOrderParams['vaNumber']); ?>
+            </li> 
+            <li>
+                <?php echo __('Please pay or transfer before: %1', $dokuOrderParams['expiry']); ?>
+            </li> 
+        <?php endif; ?>
+    </ul>
+</p>
+<br>
