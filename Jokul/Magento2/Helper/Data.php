@@ -26,9 +26,6 @@ class Data extends AbstractHelper
     const PREFIX_ENV_DEVELOPMENT ='http://api-sit.doku.com';
     const PREFIX_ENV_PRODUCTION ='http://jokul.doku.com';
 
-    const CHECKSTATUS_URL_DEVELOPMENT = "https://staging.doku.com/Suite/CheckStatus";
-    const CHECKSTATUS_URL_PRODUCTION = "https://gts.doku.com/Suite/CheckStatus";
-
     const PAYMENT_URL_DEVELOPMENT = 'https://staging.doku.com/api/payment/paymentMip';
     const PAYMENT_URL_PRODUCTION = 'https://pay.doku.com/api/payment/paymentMip';
 
@@ -308,36 +305,6 @@ class Data extends AbstractHelper
         $total = array('total_admin_fee' => $totalAdminFee, 'total_discount' => $totalDisc);
 
         return $total;
-    }
-
-    public function checkStatusOrder($dataParam)
-    {
-
-        $url = SELF::CHECKSTATUS_URL_PRODUCTION;
-
-        if ($this->config->getEnvironment() == 'development') {
-            $url = SELF::CHECKSTATUS_URL_DEVELOPMENT;
-        }
-
-        $ch = curl_init($url);
-
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($dataParam));
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-        $data = curl_exec($ch);
-        curl_close($ch);
-
-        try {
-            $xml = new \SimpleXMLElement($data);
-            $response = json_decode(json_encode((array) $xml), TRUE);
-            $response["request_status"] = true;
-            return $response;
-        } catch (\Exception $e) {
-            return array("request_status" => false, "response" => $data);
-        }
     }
 
     public function doPrePayment($data)

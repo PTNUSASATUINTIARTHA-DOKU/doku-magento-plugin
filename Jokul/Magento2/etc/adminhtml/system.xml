@@ -104,7 +104,7 @@
                     <config_path>payment/mandiri_va_merchanthosted/admin_fee_type</config_path>                  
                 </field>
             </group>
-            <!-- <group id="mandiri_syariah_va_merchanthosted" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="mandiri_syariah_va_merchanthosted" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Mandiri Syariah VA (merchant hosted)</label>
                 <field id="active" translate="label" type="select" sortOrder="201" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Enabled</label>
@@ -137,7 +137,7 @@
                     <source_model>Jokul\Magento2\Model\Config\Source\PercentageSelect</source_model> 
                     <config_path>payment/mandiri_syariah_va_merchanthosted/admin_fee_type</config_path>                  
                 </field>
-            </group> -->
+            </group>
         </section>
 
 <section id="payment">

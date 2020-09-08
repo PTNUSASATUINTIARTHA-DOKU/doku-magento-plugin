@@ -21,26 +21,18 @@
                                                     <item name="children" xsi:type="array">
                                                         <item name="renders" xsi:type="array">
                                                             <item name="children" xsi:type="array">
-                                                            <item name="merchanthosted-mandiri-va" xsi:type="array">
+                                                                <item name="merchanthosted-mandiri-va" xsi:type="array">
                                                                     <item name="component" xsi:type="string">Jokul_Magento2/js/view/payment/core-va-merchanthosted</item>
                                                                     <item name="methods" xsi:type="array">
-									<item name="mandiri_va_merchanthosted" xsi:type="array">
+                                                                        <item name="mandiri_va_merchanthosted" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
                                                                     </item>
                                                                 </item>
-                                                                <item name="Magento2-bca-klikpay" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">Jokul_Magento2/js/view/payment/Magento2-doku</item>
+                                                                <item name="merchanthosted-mandiri_syariah-va" xsi:type="array">
+                                                                    <item name="component" xsi:type="string">Jokul_Magento2/js/view/payment/core-va-merchanthosted</item>
                                                                     <item name="methods" xsi:type="array">
-									<item name="bca_klikpay_core" xsi:type="array">
-                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
-                                                                        </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="Magento2-klik-bca" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">Jokul_Magento2/js/view/payment/Magento2-doku</item>
-                                                                    <item name="methods" xsi:type="array">
-									<item name="klik_bca_core" xsi:type="array">
+                                                                        <item name="mandiri_syariah_va_merchanthosted" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
                                                                     </item>
