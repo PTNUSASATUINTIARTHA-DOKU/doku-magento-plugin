@@ -75,7 +75,7 @@ class Capture extends \Magento\Backend\App\Action
         $order = $this->order->load($id);
         $_dokuTrans = $this->transactionRepository->getByOrderId($id);
 
-        $mallId = $this->_generalConfiguration->getMallId();
+        $clientId = $this->_generalConfiguration->getClientId();
         $chainId = $this->_generalConfiguration->getChainId();
         $sharedKey = $this->_generalConfiguration->getSharedKey();
 
@@ -83,9 +83,9 @@ class Capture extends \Magento\Backend\App\Action
         $requestData = json_decode($json, TRUE);
 
         $param = array(
-            'MALLID' => $mallId,
+            'CLIENTID' => $clientId,
             'CHAINMERCHANT' => $chainId,
-            'TRANSIDMERCHANT' => $_dokuTrans->getTransIdMerchant(),
+            'INVOICE_NUMBER' => $_dokuTrans->getInvoiceNumber(),
             'APPROVALCODE' => $_dokuTrans->getApprovalCode(),
             'AMOUNT' => $_dokuTrans->getDokuGrandTotal(),
             'PURCHASEAMOUNT' => $_dokuTrans->getDokuGrandTotal(),
@@ -95,7 +95,7 @@ class Capture extends \Magento\Backend\App\Action
             'PAYMENTCHANNEL' => '15', //only for CC
         );
 
-        $param['WORDS'] = sha1($mallId . $sharedKey . $_dokuTrans->getTransIdMerchant() . $param['SESSIONID']);
+        $param['WORDS'] = sha1($clientId . $sharedKey . $_dokuTrans->getInvoiceNumber() . $param['SESSIONID']);
 
         $capture = $this->_helper->doCapture($param);
 
@@ -128,15 +128,15 @@ class Capture extends \Magento\Backend\App\Action
                         $transactionSave->save();
 
                         $payment = $order->getPayment();
-                        $payment->setLastTransactionId($_dokuTrans->getTransIdMerchant());
-                        $payment->setTransactionId($_dokuTrans->getTransIdMerchant());
+                        $payment->setLastTransactionId($_dokuTrans->getInvoiceNumber());
+                        $payment->setTransactionId($_dokuTrans->getInvoiceNumber());
                         $payment->setAdditionalInformation([\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS => (array) $capture]);
                         $message = __(json_encode($_POST, JSON_PRETTY_PRINT));
                         $trans = $this->builderInterface;
                         $transactionType = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE;
                         $transaction = $trans->setPayment($payment)
                             ->setOrder($order)
-                            ->setTransactionId($_dokuTrans->getTransIdMerchant(). $transactionType)
+                            ->setTransactionId($_dokuTrans->getInvoiceNumber(). $transactionType)
                             ->setAdditionalInformation([\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS => (array) $capture])
                             ->setFailSafe(true)
                             ->build(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE);
@@ -148,7 +148,7 @@ class Capture extends \Magento\Backend\App\Action
                             $invoiceSender = $objectManager->get('Magento\Sales\Model\Order\Email\Sender\InvoiceSender');
                             $invoiceSender->send($invoice);
                             $order->addRelatedObject($invoice);
-                            $order->addStatusHistoryComment(__('Your Invoice for Order ID #%1.', $_dokuTrans->getTransIdMerchant()))
+                            $order->addStatusHistoryComment(__('Your Invoice for Order ID #%1.', $_dokuTrans->getInvoiceNumber()))
                                 ->setIsCustomerNotified(true);
                         }
                     }
@@ -176,7 +176,7 @@ class Capture extends \Magento\Backend\App\Action
         $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
 
         // Your code
-        $mallId = $this->_generalConfiguration->getMallId();
+        $clientId = $this->_generalConfiguration->getClientId();
         $chainId = $this->_generalConfiguration->getChainId();
         $sharedKey = $this->_generalConfiguration->getSharedKey();
 

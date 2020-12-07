@@ -73,7 +73,7 @@ class Voidpayment extends \Magento\Backend\App\Action
         $order = $this->order->load($id);
         $_dokuTrans = $this->transactionRepository->getByOrderId($id);
 
-        $mallId = $this->_generalConfiguration->getMallId();
+        $clientId = $this->_generalConfiguration->getClientId();
         $chainId = $this->_generalConfiguration->getChainId();
         $sharedKey = $this->_generalConfiguration->getSharedKey();
 
@@ -81,14 +81,14 @@ class Voidpayment extends \Magento\Backend\App\Action
         $requestData = json_decode($json, TRUE);
 
         $param = array(
-            'MALLID' => $mallId,
+            'CLIENTID' => $clientId,
             'CHAINMERCHANT' => $chainId,
-            'TRANSIDMERCHANT' => $_dokuTrans->getTransIdMerchant(),
+            'INVOICENUMBER' => $_dokuTrans->getInvoiceNumber(),
             'SESSIONID' => $requestData['SESSIONID'],
             'PAYMENTCHANNEL' => '15', //only for CC
         );
 
-        $param['WORDS'] = sha1($mallId . $sharedKey . $_dokuTrans->getTransIdMerchant() . $param['SESSIONID']);
+        $param['WORDS'] = sha1($clientId . $sharedKey . $_dokuTrans->getInvoiceNumber() . $param['SESSIONID']);
 
         $void = $this->_helper->doVoid($param);
 
@@ -112,15 +112,15 @@ class Voidpayment extends \Magento\Backend\App\Action
                 $this->transactionRepository->save($_dokuTrans);
 
                 $payment = $order->getPayment();
-                $payment->setLastTransactionId($_dokuTrans->getTransIdMerchant());
-                $payment->setTransactionId($_dokuTrans->getTransIdMerchant());
+                $payment->setLastTransactionId($_dokuTrans->getInvoiceNumber());
+                $payment->setTransactionId($_dokuTrans->getInvoiceNumber());
                 $payment->setAdditionalInformation([\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS => (array) $void]);
                 $message = __(json_encode($_POST, JSON_PRETTY_PRINT));
                 $trans = $this->builderInterface;
                 $transactionType = \Magento\Sales\Model\Order\Payment\Transaction::TYPE_VOID;
                 $transaction = $trans->setPayment($payment)
                     ->setOrder($order)
-                    ->setTransactionId($_dokuTrans->getTransIdMerchant() . $transactionType)
+                    ->setTransactionId($_dokuTrans->getInvoiceNumber() . $transactionType)
                     ->setAdditionalInformation([\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS => (array) $void])
                     ->setFailSafe(true)
                     ->build(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_VOID);

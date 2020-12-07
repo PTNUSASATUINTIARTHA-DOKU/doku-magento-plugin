@@ -117,14 +117,14 @@ class Request extends \Magento\Framework\App\Action\Action {
             
             $grandTotal = $buffGrandTotal < 10000 ? 10000.00 : number_format($buffGrandTotal, 2, ".", ""); 
             
-            $mallId = $config['payment']['Magento2']['mall_id'];
+            $clientId = $config['payment']['core']['client_id'];
             $sharedId = $this->config->getSharedKey();
 
             $words = $this->helper->doCreateWords(
                     array(
                         'amount' => $grandTotal,
                         'invoice' => $order->getIncrementId(),
-                        'mallid' => $mallId,
+                        'clientid' => $clientId,
                         'sharedid' => $sharedId
                     )
             );
@@ -135,14 +135,14 @@ class Request extends \Magento\Framework\App\Action\Action {
                         number_format(($item->getPrice() * $item->getQtyOrdered()), 2, ".", "") . ';';
             }
 
-            $url = $config['payment']['Magento2']['mip_request_url'];
+            $url = $config['payment']['core']['mip_request_url'];
             
             $requestArr = array(
-                'MALLID' => $mallId,
-                'CHAINMERCHANT' => $config['payment']['Magento2']['chain_id'] ? $config['payment']['Magento2']['chain_id'] : 'NA',
+                'CLIENTID' => $clientId,
+                'CHAINMERCHANT' => $config['payment']['core']['chain_id'] ? $config['payment']['core']['chain_id'] : 'NA',
                 'AMOUNT' => $grandTotal,
                 'PURCHASEAMOUNT' => $grandTotal,
-                'TRANSIDMERCHANT' => $order->getIncrementId(),
+                'INVOICENUMBER' => $order->getIncrementId(),
                 'WORDS' => $words,
                 'REQUESTDATETIME' => $this->_timezoneInterface->date()->format('YmdHis'),
                 'CURRENCY' => '360',
@@ -155,10 +155,6 @@ class Request extends \Magento\Framework\App\Action\Action {
                 'PAYMENTCHANNEL' => $configCode
             );
 
-            if($configCode == "03"){
-                $requestArr['USERIDKLIKBCA'] = $this->httpRequest->getParam('klikbcauserid');
-            }
-            
             $this->logger->info('parameter : ' . json_encode($requestArr, JSON_PRETTY_PRINT));
             
             $response = $this->helper->sendRequest($requestArr, $url);
@@ -168,7 +164,7 @@ class Request extends \Magento\Framework\App\Action\Action {
             $result = array();
             
             if($configCode == "18"){
-                if (!isset($response['TRANSIDMERCHANT']) || $response['RESULTMSG'] == 'FAILED') {
+                if (!isset($response['INVOICENUMBER']) || $response['RESULTMSG'] == 'FAILED') {
                     echo json_encode(array('err' => true, 'response_msg' => 'Generate request failed',
                         'result' => array()));
                     exit;
@@ -196,7 +192,7 @@ class Request extends \Magento\Framework\App\Action\Action {
                 $result['URL'] = $base_url."jokulbackend/service/redirect";
                 $result['RESPONSECODE'] = $response['RESPONSECODE'];
                 $result['RESPONSEMSG'] = $response['RESPONSEMSG'];
-                $result['TRANSIDMERCHANT'] = $order->getIncrementId();
+                $result['INVOICENUMBER'] = $order->getIncrementId();
                 
                 $wordsParams = array(
                     'amount' => $grandTotal,
@@ -218,11 +214,11 @@ class Request extends \Magento\Framework\App\Action\Action {
             
             $jsonRequest = json_encode($requestArr, JSON_PRETTY_PRINT);
             
-            $this->resourceConnection->getConnection()->insert('doku_transaction', [
+            $this->resourceConnection->getConnection()->insert('jokul_transaction', [
                     'quote_id' => $order->getQuoteId(),
                     'store_id' => $order->getStoreId(),
                     'order_id' => $order->getId(),
-                    'trans_id_merchant' => $order->getIncrementId(),
+                    'invoice_number' => $order->getIncrementId(),
                     'payment_channel_id' => $configCode,
                     'order_status' => 'REQUEST',
                     'request_params' => $jsonRequest,

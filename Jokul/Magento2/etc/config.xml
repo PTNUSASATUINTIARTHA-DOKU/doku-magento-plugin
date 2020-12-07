@@ -9,14 +9,19 @@
         <doku_merchanthosted_config>
             <mandiri_va_merchanthosted>
                 <title>Mandiri VA (merchant hosted)</title>
-                <description>Mandiri VA Doku merchant hosted payment method</description>
+                <description>Mandiri VA DOKU merchant hosted payment method</description>
                 <payment_code_prefix>88899</payment_code_prefix>
             </mandiri_va_merchanthosted>
             <mandiri_syariah_va_merchanthosted>
                 <title>Mandiri Syariah VA (merchant hosted)</title>
-                <description>Mandiri Syariah VA Doku merchant hosted payment method</description>
+                <description>Mandiri Syariah VA DOKU merchant hosted payment method</description>
                 <payment_code_prefix>88899</payment_code_prefix>
             </mandiri_syariah_va_merchanthosted>
+            <doku_va_merchanthosted>
+                <title>DOKU VA (merchant hosted)</title>
+                <description>DOKU VA merchant hosted payment method</description>
+                <payment_code_prefix>88899</payment_code_prefix>
+            </doku_va_merchanthosted>
         </doku_merchanthosted_config>
         <payment>
             <mandiri_va_merchanthosted>
@@ -37,16 +42,15 @@
                 <group>offline</group>
                 <model>Jokul\Magento2\Model\Payment\MandiriSyariahVaMerchanthosted</model>
             </mandiri_syariah_va_merchanthosted>
+            <doku_va_merchanthosted>
+                <title>DOKU VA (merchant hosted)</title>
+                <description>DOKU VA Gateway product</description>
+                <payment_code_prefix>88899</payment_code_prefix>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <group>offline</group>
+                <model>Jokul\Magento2\Model\Payment\DokuVaMerchanthosted</model>
+            </doku_va_merchanthosted>
         </payment>
-        <!-- <doku_bca_payment_config>
-            <bca_klikpay_core>
-                <title>BCA Klikpay (dokuhosted)</title>
-                <description>BCA Klikpay Doku hosted payment method</description>
-            </bca_klikpay_core>
-            <klik_bca_core>
-                <title>Klik BCA (dokuhosted)</title>
-                <description>Klik BCA Doku hosted payment method</description>
-            </klik_bca_core>
-        </doku_bca_payment_config> -->
     </default>
 </config>

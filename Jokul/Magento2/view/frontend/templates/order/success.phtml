@@ -1,28 +1,36 @@
 <?php $dokuOrderParams = $block->getDokuTransactionDetailParams(); ?>
 
-<p><b><?php echo __('Doku transaction detail:'); ?></b></p>
-<p>
-    <ul>
-        <li>
-            <?php echo __('Payment Channel: %1', $dokuOrderParams['paymentChannel']); ?>
-        </li> 
-        <li>
-            <?php echo __('Total: Rp. %1', $dokuOrderParams['amount']); ?>
-        </li>  
-        <li>
-            <?php echo __('Discount Amount: Rp. %1',  $dokuOrderParams['discountValue']); ?>
-        </li> 
-        <li>
-            <?php echo __('Admin Fee: Rp. %1', $dokuOrderParams['adminFeeValue']); ?>
-        </li> 
-        <?php if(!empty($dokuOrderParams['vaNumber'])):?>
-            <li>
-                <?php echo __('Payment Code / Virtual Account Number: %1', $dokuOrderParams['vaNumber']); ?>
-            </li> 
-            <li>
-                <?php echo __('Please pay or transfer before: %1', $dokuOrderParams['expiry']); ?>
-            </li> 
-        <?php endif; ?>
-    </ul>
-</p>
-<br>
+<div role="alert" class="messages">
+    <div class="message-warning message warning">
+        <div>
+            <h3 style="margin-top: 0px !important;">
+                <?php echo __('Please transfer your payment to this payment code / VA number:'); ?></b></p>
+            </h3>
+            <h2>
+                <?php echo $dokuOrderParams['vaNumber'] ?>
+            </h2>
+            <h4>
+                <strong>
+                    <?php echo __('Payment Amount: Rp.  %1', $dokuOrderParams['amount']); ?>
+                </strong>
+            </h4>
+            <p>
+                <?php echo __('Payment Channel: %1', $dokuOrderParams['paymentChannel']); ?>
+                <br />
+                <?php echo __('Make your payment before: %1', $dokuOrderParams['expiry']); ?>
+            </p>
+        </div>
+    </div>
+</div>
+
+<p><strong>Here is your order details:</strong></p>
+<ul>
+    <li><?php echo __('Total Amount: Rp. %1', $dokuOrderParams['amount']); ?></li>
+    <li><?php echo __('Discount Amount: Rp. %1',  $dokuOrderParams['discountValue']); ?></li>
+    <li><?php echo __('Admin Fee: Rp. %1', $dokuOrderParams['adminFeeValue']); ?></li>
+</ul>
+<a href="<?php echo $dokuOrderParams['howToPayUrl'] ?>">
+    <?php echo __('Click here to see payment instructions'); ?>
+</a>
+
+<br><br>

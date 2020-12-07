@@ -23,8 +23,8 @@ class Data extends AbstractHelper
     const REQUEST_URL_MIP_DEVELOPMENT = 'https://staging.doku.com/Suite/ReceiveMIP';
     const REQUEST_URL_MIP_PRODUCTION = 'https://pay.doku.com/Suite/ReceiveMIP';
 
-    const PREFIX_ENV_DEVELOPMENT ='http://api-sit.doku.com';
-    const PREFIX_ENV_PRODUCTION ='http://jokul.doku.com';
+    const PREFIX_ENV_DEVELOPMENT = 'http://api-sit.doku.com';
+    const PREFIX_ENV_PRODUCTION = 'http://jokul.doku.com';
 
     const PAYMENT_URL_DEVELOPMENT = 'https://staging.doku.com/api/payment/paymentMip';
     const PAYMENT_URL_PRODUCTION = 'https://pay.doku.com/api/payment/paymentMip';
@@ -48,21 +48,21 @@ class Data extends AbstractHelper
     {
         if (!empty($data['device_id']))
             if (!empty($data['pairing_code']))
-                return sha1($data['amount'] . $data['mallid'] . $data['sharedid'] . $data['invoice'] . $data['currency'] . $data['token'] . $data['pairing_code'] . $data['device_id']);
+                return sha1($data['amount'] . $data['clientid'] . $data['sharedid'] . $data['invoice'] . $data['currency'] . $data['token'] . $data['pairing_code'] . $data['device_id']);
             else
-                return sha1($data['amount'] . $data['mallid'] . $data['sharedid'] . $data['invoice'] . $data['currency'] . $data['device_id']);
+                return sha1($data['amount'] . $data['clientid'] . $data['sharedid'] . $data['invoice'] . $data['currency'] . $data['device_id']);
         else if (!empty($data['pairing_code']))
-            return sha1($data['amount'] . $data['mallid'] . $data['sharedid'] . $data['invoice'] . $data['currency'] . $data['token'] . $data['pairing_code']);
+            return sha1($data['amount'] . $data['clientid'] . $data['sharedid'] . $data['invoice'] . $data['currency'] . $data['token'] . $data['pairing_code']);
         else if (!empty($data['currency']))
-            return sha1($data['amount'] . $data['mallid'] . $data['sharedid'] . $data['invoice'] . $data['currency']);
+            return sha1($data['amount'] . $data['clientid'] . $data['sharedid'] . $data['invoice'] . $data['currency']);
         else if (!empty($data['statuscode']))
             return sha1($data['amount'] . $data['sharedid'] . $data['invoice'] . $data['statuscode']);
         else if (!empty($data['resultmsg']) && !empty($data['verifystatus']))
-            return sha1($data['amount'] . $data['mallid'] . $data['sharedid'] . $data['invoice'] . $data['resultmsg'] . $data['verifystatus']);
+            return sha1($data['amount'] . $data['clientid'] . $data['sharedid'] . $data['invoice'] . $data['resultmsg'] . $data['verifystatus']);
         else if (!empty($data['check_status']))
-            return sha1($data['mallid'] . $data['sharedid'] . $data['invoice']);
+            return sha1($data['clientid'] . $data['sharedid'] . $data['invoice']);
         else
-            return sha1($data['amount'] . $data['mallid'] . $data['sharedid'] . $data['invoice']);
+            return sha1($data['amount'] . $data['clientid'] . $data['sharedid'] . $data['invoice']);
     }
 
     public function sendRequest($dataParam, $url)
@@ -116,7 +116,7 @@ class Data extends AbstractHelper
             }
 
             $emailParams = [
-                'subject' => "Doku Transaction (" . $order->getIncrementId() . " - " . $paymentChannelLabel . ")",
+                'subject' => "Awaiting for Your Payment (" . $order->getIncrementId() . " - " . $paymentChannelLabel . ")",
                 'customerName' => $order->getCustomerName(),
                 'customerEmail' => $order->getCustomerEmail(),
                 'storeName' => $order->getStoreName(),
@@ -138,28 +138,12 @@ class Data extends AbstractHelper
 
             $template = "success_template";
             if ($isSuccessOrder) {
-                if ($dokusTransactionOrder['payment_channel_id'] == '41') {
+                if ($dokusTransactionOrder['payment_channel_id'] == '01') {
                     $template = 'mandiri_va_template';
-                } else if ($dokusTransactionOrder['payment_channel_id'] == '42') {
+                } else if ($dokusTransactionOrder['payment_channel_id'] == '02') {
                     $template = 'mandiri_syariah_va_template';
-                }  else if ($dokusTransactionOrder['payment_channel_id'] == '32') {
-                    $template = 'cimb_va_template';
-                } else if ($dokusTransactionOrder['payment_channel_id'] == '33') {
-                    $template = 'danamon_va_template';
-                } else if ($dokusTransactionOrder['payment_channel_id'] == '36') {
-                    $template = 'permata_va_template';
-                } else if ($dokusTransactionOrder['payment_channel_id'] == '29') {
-                    $template = 'default_va_template';
-                } else if ($dokusTransactionOrder['payment_channel_id'] == '34') {
-                    $template = 'default_va_template';
-                } else if ($dokusTransactionOrder['payment_channel_id'] == '35') {
-                    $template = 'default_va_template';
-                } else if ($dokusTransactionOrder['payment_channel_id'] == '31') {
-                    $template = 'default_va_template';
-                } else if ($dokusTransactionOrder['payment_channel_id'] == "22") {
-                    $template = 'default_va_template';
-                } else if ($dokusTransactionOrder['payment_channel_id'] == "03") {
-                    $template = 'klik_bca_template';
+                } else if ($dokusTransactionOrder['payment_channel_id'] == '03') {
+                    $template = 'doku_va_template';
                 }
             } else {
                 $template = "failed_template";
@@ -182,7 +166,7 @@ class Data extends AbstractHelper
                 $bccEmailAddress = explode(",", str_replace(" ", "", $this->config->getBccEmailAddress()));
                 $this->transportBuilder->addBcc($bccEmailAddress[0]);
                 $this->logger(get_class($this) . " ====== Email Sender ====== Bcc Listing: ", 'DOKU_send_email');
-                $this->logger(get_class($this) . print_r($bccEmailAddress,TRUE), 'DOKU_send_email');
+                $this->logger(get_class($this) . print_r($bccEmailAddress, TRUE), 'DOKU_send_email');
             }
             $transport = $this->transportBuilder->getTransport();
             $transport->sendMessage();
@@ -210,31 +194,33 @@ class Data extends AbstractHelper
         }
     }
 
-    public function doGeneratePaycode($data,$paymentchannel)
+    public function doGeneratePaycode($params, $data, $signature)
     {
-
         $prefixdev      = SELF::PREFIX_ENV_DEVELOPMENT;
         $prefixprod     = SELF::PREFIX_ENV_PRODUCTION;
-        $path           = '';
-
-        if($paymentchannel == 41 ){
-            $path = "/mandiri-virtual-account/v1/payment-code";
-        }elseif ($paymentchannel == 42 ){
-            $path = "/bsm-virtual-account/v1/payment-code";
-        }
+        $path           = $params['requestTarget'];
 
         if ($this->config->getEnvironment() == 'development') {
-            $url = $prefixdev.$path;
-        }else{
-            $url = $prefixprod.$path;
+            $url = $prefixdev . $path;
+        } else {
+            $url = $prefixprod . $path;
         }
-        $this->logger->info('===== Request controller VA GATEWAY ===== URL : '.$url);
+        $this->logger->info('===== Request controller VA GATEWAY ===== URL : ' . $url);
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'Signature:' . $signature,
+            'Request-Id:' . $params['requestId'],
+            'Client-Id:' . $params['clientId'],
+            'Request-Timestamp:' . $params['requestTimestamp'],
+            'Request-Target:' . $params['requestTarget']
+        ));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $responseJson = curl_exec($ch);
+
+        $this->logger->info('===== Request controller VA GATEWAY ===== Response : ' . print_r($responseJson, true));
 
         curl_close($ch);
 
@@ -243,6 +229,30 @@ class Data extends AbstractHelper
         } else {
             return $responseJson;
         }
+    }
+
+    public function doCreateRequestSignature($params, $body)
+    {
+        $body = str_replace(array("\r", "\n"), array("\\r", "\\n"), json_encode($body));
+        return $this->doEncrypt($params, $body);
+    }
+
+    public function doCreateNotifySignature($params, $body)
+    {
+        return $this->doEncrypt($params, $body);
+    }
+
+    private function doEncrypt($params, $body)
+    {
+        $digest = base64_encode(hash("sha256", $body, True));
+        $signatureComponent = "Client-Id:" . $params['clientId'] . "\n" .
+            "Request-Id:" . $params['requestId'] . "\n" .
+            "Request-Timestamp:" . $params['requestTimestamp'] . "\n" .
+            "Request-Target:" . $params['requestTarget'] . "\n" .
+            "Digest:" . htmlspecialchars_decode($digest);
+
+        $signature = base64_encode(hash_hmac('SHA256', htmlspecialchars_decode($signatureComponent), htmlspecialchars_decode($params['key']), True));
+        return "HMACSHA256=" . $signature;
     }
 
     public function doPayment($data)

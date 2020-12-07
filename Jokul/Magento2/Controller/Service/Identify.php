@@ -69,9 +69,9 @@ class Identify extends \Magento\Framework\App\Action\Action {
         $this->logger->info('post : '. $postjson);
         
         $connection = $this->resourceConnection->getConnection();
-        $tableName = $this->resourceConnection->getTableName('doku_transaction');
+        $tableName = $this->resourceConnection->getTableName('jokul_transaction');
 
-        $sql = "SELECT * FROM " . $tableName . " where trans_id_merchant = '" . $postData['TRANSIDMERCHANT'] . "'";
+        $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $postData['INVOICENUMBER'] . "'";
         $dokuOrder = $connection->fetchRow($sql);
         
         $additionalParams = "";
@@ -83,7 +83,7 @@ class Identify extends \Magento\Framework\App\Action\Action {
             $additionalParams .= " `va_number` = '" . $postData['PAYMENTCODE'] . "', ";
         }
 
-        $sql = "Update " . $tableName . " SET ".$additionalParams." `updated_at` = 'now()', `identify_params` = '" . $postjson . "' where trans_id_merchant = '" . $postData['TRANSIDMERCHANT'] . "'";
+        $sql = "Update " . $tableName . " SET ".$additionalParams." `updated_at` = 'now()', `identify_params` = '" . $postjson . "' where invoice_number = '" . $postData['INVOICENUMBER'] . "'";
         $connection->query($sql);
         
         $this->logger->info('===== Identify Controller ===== End');

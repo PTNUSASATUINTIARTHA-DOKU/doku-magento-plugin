@@ -44,11 +44,11 @@ class TransactionRepository implements TransactionRepositoryInterface
         }
     }
 
-    public function getByTransIdMerchant($transIdMerchant) {
+    public function getByInvoiceNumber($invoiceNumber) {
         $transaction = $this->transactionFactory->create();
-        $this->resource->load($transaction, $transIdMerchant, Transaction::TRANS_ID_MERCHANT);
+        $this->resource->load($transaction, $invoiceNumber, Transaction::INVOICE_NUMBER);
         if (!$transaction->getId()) {
-            throw new NoSuchEntityException(__('DOKU Transaction with the "%1" TRANSIDMERCHANT doesn\'t exist.', $transIdMerchant));
+            throw new NoSuchEntityException(__('DOKU Transaction with the "%1" INVOICENUMBER doesn\'t exist.', $invoiceNumber));
         }
         return $transaction;
     }

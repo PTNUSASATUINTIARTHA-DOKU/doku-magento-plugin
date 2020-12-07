@@ -19,7 +19,7 @@ class Transaction extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 
     public function _construct()
     {
-        $this->_init('doku_transaction','id');
+        $this->_init('jokul_transaction','id');
     }
 
 

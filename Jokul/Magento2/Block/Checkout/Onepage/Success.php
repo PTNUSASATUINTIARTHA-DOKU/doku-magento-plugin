@@ -42,9 +42,9 @@ class Success extends \Magento\Sales\Block\Order\Totals
 
         if ($this->_dokuTransaction === null) {
             $connection = $this->resourceConnection->getConnection();
-            $tableName = $this->resourceConnection->getTableName('doku_transaction');
+            $tableName = $this->resourceConnection->getTableName('jokul_transaction');
 
-            $sql = "SELECT * FROM " . $tableName . " where trans_id_merchant = '" . $this->checkoutSession->getLastRealOrderId() . "'";
+            $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $this->checkoutSession->getLastRealOrderId() . "'";
             $this->_dokuTransaction = $connection->fetchRow($sql);
         }
         
@@ -55,6 +55,8 @@ class Success extends \Magento\Sales\Block\Order\Totals
 
         $order = $this->getOrder();
         $dokusTransactionOrder = $this->getDokuTransaction();
+        $requestParam = json_decode($dokusTransactionOrder['request_params'],true);
+        $howToPayUrl = $requestParam['RESPONSE']['virtual_account_info']['how_to_pay_page'];
 
         $paymentChannelLabel = $order->getPayment()->getMethodInstance()->getTitle();
 
@@ -86,6 +88,7 @@ class Success extends \Magento\Sales\Block\Order\Totals
             'discountValue' => $discountValue,
             'adminFeeValue' => $adminFeeValue,
             'paymentChannel' => $paymentChannelLabel,
+            'howToPayUrl' => $howToPayUrl,
             'expiry' => date('d F Y, H:i', strtotime($dokusTransactionOrder['expired_at_storetimezone']))
         ];
        

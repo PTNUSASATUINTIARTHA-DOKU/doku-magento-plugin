@@ -29,7 +29,6 @@ define(
                         showLoader: true,
                         success: function (response) {
                             var dataResponse = $.parseJSON(response);
-                            console.log("RESPONSE DI JS " + dataResponse +": response "+response)
 
                             if (dataResponse.err == false) {
                                 jQuery.each(dataResponse.result, function (i, val) {
@@ -66,7 +65,6 @@ define(
 //                window.location = url.build('dokuhosted/payment/request');
                 },
                 getDescription: function(){
-                    console.log(window.checkoutConfig);
                      return window.checkoutConfig.payment.mandiri_va_merchanthosted.description
                 }
             });

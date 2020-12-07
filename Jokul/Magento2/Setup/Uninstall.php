@@ -14,7 +14,7 @@ class Uninstall implements UninstallInterface{
 
 		$installer = $setup;
 		$installer->startSetup();
-		$installer->getConnection()->dropTable($installer->getTable('doku_transaction'));
+		$installer->getConnection()->dropTable($installer->getTable('jokul_transaction'));
 		$installer->endSetup();
 
 	}

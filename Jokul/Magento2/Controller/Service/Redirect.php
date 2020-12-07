@@ -60,9 +60,9 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
         $this->logger->info('===== Redirect Controller  ===== Finding order...');
 
         $connection = $this->resourceConnection->getConnection();
-        $tableName = $this->resourceConnection->getTableName('doku_transaction');
+        $tableName = $this->resourceConnection->getTableName('jokul_transaction');
 
-        if(!isset($post['TRANSIDMERCHANT'])) {
+        if(!isset($post['INVOICENUMBER'])) {
 
             $path = "checkout/onepage/failure";
             $resultRedirect = $this->resultRedirectFactory->create();
@@ -70,12 +70,12 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
         }
 
 
-        $sql = "SELECT * FROM " . $tableName . " where trans_id_merchant = '" . $post['TRANSIDMERCHANT'] . "'";
+        $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $post['INVOICENUMBER'] . "'";
 
         $dokuOrder = $connection->fetchRow($sql);
 
-        if (!isset($dokuOrder['trans_id_merchant'])) {
-            $this->logger->info('===== Notify Controller ===== Trans ID Merchant not found! in doku_transaction table');
+        if (!isset($dokuOrder['invoice_number'])) {
+            $this->logger->info('===== Notify Controller ===== Trans ID Merchant not found! in jokul_transaction table');
 
             $path = "";
             $this->messageManager->addError(__('Cannot found your order ID!'));
@@ -112,7 +112,7 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
             $additionalParams = " `va_number` = '" . $vaNumber . "', ";
         }
 
-        $order = $this->order->loadByIncrementId($post['TRANSIDMERCHANT']);
+        $order = $this->order->loadByIncrementId($post['INVOICENUMBER']);
 
         if ($order->getEntityId()) {
 
@@ -130,11 +130,7 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
                 'statuscode' => $post['STATUSCODE']
             );
 
-            $this->logger->info('===== Redirect Controller  ===== words params: '.json_encode($wordsParams, JSON_PRETTY_PRINT));
-
             $words = $this->helper->doCreateWords($wordsParams);
-
-            $this->logger->info('===== Redirect Controller  ===== words : ' . $words);
 
             if ($words == $post['WORDS']) {
                 $this->logger->info('===== Redirect Controller  ===== Checking done');
@@ -169,7 +165,7 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
             $this->logger->info('===== Redirect Controller  ===== Order not found');
         }
 
-        $sql = "Update " . $tableName . " SET ".$additionalParams." `updated_at` = 'now()', `expired_at_gmt` = '".$expiryGmtDate."', `expired_at_storetimezone` = '".$expiryStoreDate."', `redirect_params` = '" . $postJson . "' where trans_id_merchant = '" . $post['TRANSIDMERCHANT'] . "'";
+        $sql = "Update " . $tableName . " SET ".$additionalParams." `updated_at` = 'now()', `expired_at_gmt` = '".$expiryGmtDate."', `expired_at_storetimezone` = '".$expiryStoreDate."', `redirect_params` = '" . $postJson . "' where invoice_number = '" . $post['INVOICENUMBER'] . "'";
         $connection->query($sql);
 
         $this->logger->info('===== Redirect Controller  ===== End');

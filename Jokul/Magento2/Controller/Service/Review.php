@@ -74,14 +74,14 @@ class Review extends \Magento\Framework\App\Action\Action {
             $this->logger->info('===== Review Controller ===== Finding order...');
 
             $connection = $this->resourceConnection->getConnection();
-            $tableName = $this->resourceConnection->getTableName('doku_transaction');
+            $tableName = $this->resourceConnection->getTableName('jokul_transaction');
 
-            $sql = "SELECT * FROM " . $tableName . " where trans_id_merchant = '" . $postData['TRANSIDMERCHANT'] . "'";
+            $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $postData['INVOICENUMBER'] . "'";
 
             $dokuOrder = $connection->fetchRow($sql);
 
-            if (!isset($dokuOrder['trans_id_merchant'])) {
-                $this->logger->info('===== Review Controller ===== Trans ID Merchant not found! in doku_transaction table');
+            if (!isset($dokuOrder['invoice_number'])) {
+                $this->logger->info('===== Review Controller ===== Trans ID Merchant not found! in jokul_transaction table');
                 echo 'STOP';
                 return;
             }
@@ -89,7 +89,7 @@ class Review extends \Magento\Framework\App\Action\Action {
             $this->logger->info('===== Review Controller ===== Order found');
             $this->logger->info('===== Review Controller ===== Updating order...');
 
-            $order = $this->order->loadByIncrementId($postData['TRANSIDMERCHANT']);
+            $order = $this->order->loadByIncrementId($postData['INVOICENUMBER']);
 
             if (!$order->getId()) {
                 $this->logger->info('===== Review Controller ===== Order not found!');
@@ -98,15 +98,12 @@ class Review extends \Magento\Framework\App\Action\Action {
             }
 
             $requestParams = json_decode($dokuOrder['request_params'], true);
-            $mallId = isset($requestParams['MALLID']) ? $requestParams['MALLID'] : $requestParams['req_mall_id'];
+            $clientId = isset($requestParams['CLIENTID']) ? $requestParams['CLIENTID'] : $requestParams['req_client_id'];
             $sharedKey = $requestParams['SHAREDID'];
 
-            $words = sha1($postData['AMOUNT'] . $mallId . $sharedKey
-                    . $postData['TRANSIDMERCHANT'] . $postData['RESULTMSG'] . $postData['VERIFYSTATUS']);
+            $words = sha1($postData['AMOUNT'] . $clientId . $sharedKey
+                    . $postData['INVOICENUMBER'] . $postData['RESULTMSG'] . $postData['VERIFYSTATUS']);
 
-            $this->logger->info('words raw : ' . $postData['AMOUNT'] . $mallId . $sharedKey
-                    . $postData['TRANSIDMERCHANT'] . $postData['RESULTMSG'] . $postData['VERIFYSTATUS']);
-            $this->logger->info('words : ' . $words);
             $this->logger->info('===== Review Controller ===== Checking words...');
 
             if ($postData['WORDS'] != $words) {
@@ -118,7 +115,7 @@ class Review extends \Magento\Framework\App\Action\Action {
             if ($postData['RESPONSECODE'] != '0000' || $postData['EDUSTATUS'] != 'APPROVE') {
                 $this->logger->info('===== Review Controller ===== RESULTMSG is not success!');
                 
-                $sql = "Update " . $tableName . " SET `updated_at` = 'now()', `order_status` = '".$postData['RESULTMSG']."', `review_params` = '" . $postjson . "' where trans_id_merchant = '" . $postData['TRANSIDMERCHANT'] . "'";
+                $sql = "Update " . $tableName . " SET `updated_at` = 'now()', `order_status` = '".$postData['RESULTMSG']."', `review_params` = '" . $postjson . "' where invoice_number = '" . $postData['INVOICENUMBER'] . "'";
                 $connection->query($sql);
                 
                 echo 'CONTINUE';
@@ -141,14 +138,14 @@ class Review extends \Magento\Framework\App\Action\Action {
                 $transactionSave->save();
 
                 $payment = $order->getPayment();
-                $payment->setLastTransactionId($postData['TRANSIDMERCHANT']);
-                $payment->setTransactionId($postData['TRANSIDMERCHANT']);
+                $payment->setLastTransactionId($postData['INVOICENUMBER']);
+                $payment->setTransactionId($postData['INVOICENUMBER']);
                 $payment->setAdditionalInformation([\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS => (array) $_POST]);
                 $message = __(json_encode($_POST, JSON_PRETTY_PRINT));
                 $trans = $this->builderInterface;
                 $transaction = $trans->setPayment($payment)
                         ->setOrder($order)
-                        ->setTransactionId($postData['TRANSIDMERCHANT'])
+                        ->setTransactionId($postData['INVOICENUMBER'])
                         ->setAdditionalInformation([\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS => (array) $_POST])
                         ->setFailSafe(true)
                         ->build(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE);
@@ -160,7 +157,7 @@ class Review extends \Magento\Framework\App\Action\Action {
                     $invoiceSender = $objectManager->get('Magento\Sales\Model\Order\Email\Sender\InvoiceSender');
                     $invoiceSender->send($invoice);
                     $order->addRelatedObject($invoice);
-                    $order->addStatusHistoryComment(__('Your Invoice for Order ID #%1.', $postData['TRANSIDMERCHANT']))
+                    $order->addStatusHistoryComment(__('Your Invoice for Order ID #%1.', $postData['INVOICENUMBER']))
                             ->setIsCustomerNotified(true);
                 }
             }
@@ -170,7 +167,7 @@ class Review extends \Magento\Framework\App\Action\Action {
 
             $order->save();
 
-            $sql = "Update " . $tableName . " SET `updated_at` = 'now()', `order_status` = 'SUCCESS', `review_params` = '" . $postjson . "' where trans_id_merchant = '" . $postData['TRANSIDMERCHANT'] . "'";
+            $sql = "Update " . $tableName . " SET `updated_at` = 'now()', `order_status` = 'SUCCESS', `review_params` = '" . $postjson . "' where invoice_number = '" . $postData['INVOICENUMBER'] . "'";
             $connection->query($sql);
 
             $this->logger->info('=====  Review Controller ===== Updating success...');

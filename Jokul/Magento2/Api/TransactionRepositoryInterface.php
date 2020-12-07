@@ -14,7 +14,7 @@ interface TransactionRepositoryInterface
 
     public function save(Data\TransactionInterface $transaction);
 
-    public function getByTransIdMerchant($transIdMerchant);
+    public function getByInvoiceNumber($invoiceNumber);
 
     public function getByOrderId($orderId);
 

@@ -39,7 +39,7 @@ class PaymentTypeColumn
             ) {
                 $select = $this->collection->getSelect();
                 $select->joinLeft(
-                    ["dokutrans" => $this->collection->getTable("doku_transaction")],
+                    ["dokutrans" => $this->collection->getTable("jokul_transaction")],
                     'main_table.entity_id = dokutrans.order_id',
                     array('payment_type')
                 );

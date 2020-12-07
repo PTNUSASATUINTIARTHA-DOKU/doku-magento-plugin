@@ -16,7 +16,8 @@ use Jokul\Magento2\Model\GeneralConfiguration;
 use \Magento\Store\Model\StoreManagerInterface;
 use \Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 
-class RequestVa extends \Magento\Framework\App\Action\Action {
+class RequestVa extends \Magento\Framework\App\Action\Action
+{
 
     protected $_pageFactory;
     protected $session;
@@ -61,21 +62,22 @@ class RequestVa extends \Magento\Framework\App\Action\Action {
         return parent::__construct($context);
     }
 
-    protected function getOrder() {
+    protected function getOrder()
+    {
 
         if (!$this->session->getLastRealOrder()->getIncrementId()) {
 
             $order = $this->order->getCollection()
-                    ->addFieldToFilter('quote_id', $this->session->getQuote()->getId())
-                    ->getFirstItem();
+                ->addFieldToFilter('quote_id', $this->session->getQuote()->getId())
+                ->getFirstItem();
 
             if (!$order->getEntityId()) {
                 $customerSession = $this->sessionFactory->create();
                 $customerData = $customerSession->getCustomer();
                 $order = $this->order->getCollection()
-                        ->addFieldToFilter('customer_id', $customerData->getEntityId())
-                        ->setOrder('created_at', 'DESC')
-                        ->getFirstItem();
+                    ->addFieldToFilter('customer_id', $customerData->getEntityId())
+                    ->setOrder('created_at', 'DESC')
+                    ->getFirstItem();
             }
 
             return $order;
@@ -84,14 +86,15 @@ class RequestVa extends \Magento\Framework\App\Action\Action {
         }
     }
 
-    public function execute() {
+    public function execute()
+    {
 
         $this->logger->info('===== Request controller VA MANDIRI GATEWAY ===== Start');
 
         $this->logger->info('===== Request controller VA MANDIRI GATEWAY ===== Find Order');
 
         $result = array();
-        $redrectData = array();
+        $redirectData = array();
 
         $order = $this->getOrder();
 
@@ -110,11 +113,12 @@ class RequestVa extends \Magento\Framework\App\Action\Action {
             $realGrandTotal = $order->getGrandTotal();
 
             $totalAdminFeeDisc = $this->helper->getTotalAdminFeeAndDisc(
-                    $config['payment'][$order->getPayment()->getMethod()]['admin_fee'],
-                    $config['payment'][$order->getPayment()->getMethod()]['admin_fee_type'],
-                    $config['payment'][$order->getPayment()->getMethod()]['disc_amount'],
-                    $config['payment'][$order->getPayment()->getMethod()]['disc_type'],
-                    $realGrandTotal);
+                $config['payment'][$order->getPayment()->getMethod()]['admin_fee'],
+                $config['payment'][$order->getPayment()->getMethod()]['admin_fee_type'],
+                $config['payment'][$order->getPayment()->getMethod()]['disc_amount'],
+                $config['payment'][$order->getPayment()->getMethod()]['disc_type'],
+                $realGrandTotal
+            );
 
             $grandTotal = $realGrandTotal + $totalAdminFeeDisc['total_admin_fee'];
 
@@ -122,69 +126,79 @@ class RequestVa extends \Magento\Framework\App\Action\Action {
 
             $grandTotal = $buffGrandTotal < 10000 ? 10000 : $buffGrandTotal;
 
-            $mallId = $config['payment']['core']['mall_id'];
+            $clientId = $config['payment']['core']['client_id'];
             $sharedId = $this->config->getSharedKey();
-            $expiryTime = isset($config['payment']['core']['expiry']) && (int) $config['payment']['core']['expiry'] != 0 ?  $config['payment']['core']['expiry']:360;
+            $expiryTime = isset($config['payment']['core']['expiry']) && (int) $config['payment']['core']['expiry'] != 0 ?  $config['payment']['core']['expiry'] : 0;
 
-//            $words =  reusableStatus customerEmail invoiceNumber  clientId amount chUnKr1nkZ  customerName
             $customerName = trim($billingData->getFirstname() . " " . $billingData->getLastname());
 
-            $dataWords =
-                $mallId . //client->id
-                $billingData->getEmail() . //customer->email
-                $customerName . //customer->name
-                $grandTotal . //order->amount
-                $order->getIncrementId() . // order->invoice_number
-                $expiryTime . // virtual_account_info->expired_time
-                "false" . //virtual_account_info->reusable_status
-                $sharedId; //shared key
+            $requestTarget = "";
+            if ($configCode == 01) {
+                $requestTarget = "/mandiri-virtual-account/v2/payment-code";
+            } elseif ($configCode == 02) {
+                $requestTarget = "/bsm-virtual-account/v2/payment-code";
+            } elseif ($configCode == 03) {
+                $requestTarget = "/doku-virtual-account/v2/payment-code";
+            }
 
-            $words = hash('sha256', $dataWords);
+            $requestTimestamp = date("Y-m-d H:i:s");
+            $requestTimestamp = date(DATE_ISO8601, strtotime($requestTimestamp));
+
+            $signatureParams = array(
+                "clientId" => $clientId,
+                "key" => $sharedId,
+                "requestTarget" => $requestTarget,
+                "requestId" => rand(1, 100000),
+                "requestTimestamp" => substr($requestTimestamp, 0, 19) . "Z"
+            );
 
             $params = array(
-                "client" => array(
-                    "id" => $mallId
-                ),
                 "order" => array(
                     "invoice_number" => $order->getIncrementId(),
                     "amount" => $grandTotal
                 ),
                 "virtual_account_info" => array(
-                    "expired_time" => isset($config['payment']['core']['expiry']) && (int) $config['payment']['core']['expiry'] != 0 ?  $config['payment']['core']['expiry']:360,
-                    "reusable_status" => 'false',
+                    "expired_time" => $expiryTime,
+                    "reusable_status" => false,
+                    "info1" => '',
+                    "info2" => '',
+                    "info3" => '',
                 ),
                 "customer" => array(
-                    "name" => trim($billingData->getFirstname() . " " . $billingData->getLastname()),
+                    "name" => $customerName,
                     "email" => $billingData->getEmail()
                 ),
-                "security" => array(
-                    "check_sum" => $words
+                "additional_info" => array(
+                    "integration" => array(
+                        "name" => "magento-plugin",
+                        "version" => "2.0.0"
+                    )
                 )
             );
 
-            $this->logger->info('===== Request controller VA GATEWAY ===== request param = '. json_encode($params, JSON_PRETTY_PRINT));
+            $this->logger->info('===== Request controller VA GATEWAY ===== request param = ' . json_encode($params, JSON_PRETTY_PRINT));
             $this->logger->info('===== Request controller VA GATEWAY ===== send request');
 
-            $this->logger->info('NILAI PAYMENT CHANNEL '. $configCode);
+            $this->logger->info('NILAI PAYMENT CHANNEL ' . $configCode);
 
             $orderStatus = 'FAILED';
             try {
-                $result = $this->helper->doGeneratePaycode($params,$configCode);
-
-            } catch(\Exception $e) {
-                $this->logger->info('Eception '.$e);
+                $signature = $this->helper->doCreateRequestSignature($signatureParams, $params);
+                $result = $this->helper->doGeneratePaycode($signatureParams, $params, $signature);
+            } catch (\Exception $e) {
+                $this->logger->info('Eception ' . $e);
                 $result['res_response_code'] = "500";
                 $result['res_response_msg'] = "Can't connect to server";
             }
 
-            $this->logger->info('===== Request controller VA GATEWAY ===== response payment = '. json_encode($result, JSON_PRETTY_PRINT));
+            $this->logger->info('===== Request controller VA GATEWAY ===== response payment = ' . json_encode($result, JSON_PRETTY_PRINT));
 
-            if(isset($result['virtual_account_info'])){
+            if (isset($result['virtual_account_info'])) {
                 $orderStatus = 'PENDING';
                 $result['result'] = 'success';
-            }else{
-
+            } else {
                 $result['result'] = 'FAILED';
+                $result['errorMessage'] = $result['error']['message'];
             }
 
             $params['SHAREDID'] = $sharedId;
@@ -193,38 +207,38 @@ class RequestVa extends \Magento\Framework\App\Action\Action {
             $jsonResult = json_encode(array_merge($params), JSON_PRETTY_PRINT);
 
             $vaNumber = '';
-            if(isset($result['virtual_account_info'])){
+            if (isset($result['virtual_account_info'])) {
                 $vaNumber = $result['virtual_account_info']['virtual_account_number'];
             }
 
-            $this->resourceConnection->getConnection()->insert('doku_transaction', [
-                    'quote_id' => $order->getQuoteId(),
-                    'store_id' => $order->getStoreId(),
-                    'order_id' => $order->getId(),
-                    'trans_id_merchant' => $order->getIncrementId(),
-                    'payment_channel_id' => $configCode,
-                    'order_status' => $orderStatus,
-                    'request_params' => $jsonResult,
-                    'va_number' => $vaNumber,
-                    'created_at' => 'now()',
-                    'updated_at' => 'now()',
-                    'doku_grand_total' => $grandTotal,
-                    'admin_fee_type' => $config['payment'][$order->getPayment()->getMethod()]['admin_fee_type'],
-                    'admin_fee_amount' => $config['payment'][$order->getPayment()->getMethod()]['admin_fee'],
-                    'admin_fee_trx_amount' => $totalAdminFeeDisc['total_admin_fee'],
-                    'discount_type' => $config['payment'][$order->getPayment()->getMethod()]['disc_type'],
-                    'discount_amount' => $config['payment'][$order->getPayment()->getMethod()]['disc_amount'],
-                    'discount_trx_amount' => $totalAdminFeeDisc['total_discount']
-                ]);
+            $this->resourceConnection->getConnection()->insert('jokul_transaction', [
+                'quote_id' => $order->getQuoteId(),
+                'store_id' => $order->getStoreId(),
+                'order_id' => $order->getId(),
+                'invoice_number' => $order->getIncrementId(),
+                'payment_channel_id' => $configCode,
+                'order_status' => $orderStatus,
+                'request_params' => $jsonResult,
+                'va_number' => $vaNumber,
+                'created_at' => 'now()',
+                'updated_at' => 'now()',
+                'doku_grand_total' => $grandTotal,
+                'admin_fee_type' => $config['payment'][$order->getPayment()->getMethod()]['admin_fee_type'],
+                'admin_fee_amount' => $config['payment'][$order->getPayment()->getMethod()]['admin_fee'],
+                'admin_fee_trx_amount' => $totalAdminFeeDisc['total_admin_fee'],
+                'discount_type' => $config['payment'][$order->getPayment()->getMethod()]['disc_type'],
+                'discount_amount' => $config['payment'][$order->getPayment()->getMethod()]['disc_amount'],
+                'discount_trx_amount' => $totalAdminFeeDisc['total_discount']
+            ]);
 
             $base_url = $this->storeManagerInterface
                 ->getStore($order->getStore()->getId())
                 ->getBaseUrl();
 
-            $redrectData['URL'] = $base_url . "jokulbackend/service/redirect";
-            $redrectData['RESPONSECODE'] = $result['result'];
-            $redrectData['RESPONSEMSG'] = $result['result'];
-            $redrectData['TRANSIDMERCHANT'] = $order->getIncrementId();
+            $redirectData['URL'] = $base_url . "jokulbackend/service/redirect";
+            $redirectData['RESPONSECODE'] = $result['result'];
+            $redirectData['RESPONSEMSG'] = $result['result'];
+            $redirectData['INVOICENUMBER'] = $order->getIncrementId();
 
             $wordsParams = array(
                 'amount' => $grandTotal,
@@ -234,10 +248,8 @@ class RequestVa extends \Magento\Framework\App\Action\Action {
             );
 
             $redirectWords = $this->helper->doCreateWords($wordsParams);
-
-            $redrectData['WORDS'] = $redirectWords;
-            $redrectData['STATUSCODE'] = $result['result'];
-
+            $redirectData['WORDS'] = $redirectWords;
+            $redirectData['STATUSCODE'] = $result['result'];
         } else {
             $this->logger->info('===== Request controller VA GATEWAY ===== Order not found');
         }
@@ -245,14 +257,16 @@ class RequestVa extends \Magento\Framework\App\Action\Action {
         $this->logger->info('===== Request controller VA GATEWAY ===== end');
 
         if ($result['result'] == 'success') {
-            echo json_encode(array('err' => false, 'response_msg' => 'Generate paycode Success',
-                'result' => $redrectData));
+            echo json_encode(array(
+                'err' => false, 'response_msg' => 'Generate paycode Success',
+                'result' => $redirectData
+            ));
         } else {
-            $this->logger->info('===== Request controller VA GATEWAY Response ===== ' . print_r($result,true));
-              echo json_encode(array('err' => true, 'response_msg' => 'Generate paycode failed ('.$result['errorMessage'].')',
-                'result' => $redrectData));
+            $this->logger->info('===== Request controller VA GATEWAY Response ===== ' . print_r($result, true));
+            echo json_encode(array(
+                'err' => true, 'response_msg' => 'Generate paycode failed (' . $result['errorMessage'] . ')',
+                'result' => $redirectData
+            ));
         }
-
     }
-
 }

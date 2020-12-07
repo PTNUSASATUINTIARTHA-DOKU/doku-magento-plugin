@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
-    <menu>
-        <add id="Jokul_Magento2::doku" sortOrder="80" title="Doku Payment" resource="Jokul_Magento2::Doku_payment" module="Jokul_Magento2" />
-        <add id="Jokul_Magento2::config" title="General Configuration" module="Jokul_Magento2" sortOrder="10" resource="Jokul_Magento2::Doku_payment" parent="Jokul_Magento2::doku" action="adminhtml/system_config/edit/section/doku_general_config/"/>
-        <add id="Jokul_Magento2::merchantHostedConfig" title="Merchant Hosted Configuration" module="Jokul_Magento2" sortOrder="13" resource="Jokul_Magento2::Doku_payment" parent="Jokul_Magento2::doku" action="adminhtml/system_config/edit/section/doku_merchanthosted_config/"/>
-    </menu>
-</config>

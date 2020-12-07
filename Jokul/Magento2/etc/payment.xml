@@ -7,16 +7,13 @@
         </group>
     </groups>
     <methods>
-        <!-- <method name="bca_klikpay_core">
-            <allow_multiple_address>1</allow_multiple_address>
-        </method>
-        <method name="klik_bca_core">
-            <allow_multiple_address>1</allow_multiple_address>
-        </method> -->
         <method name="mandiri_va_merchanthosted">
             <allow_multiple_address>1</allow_multiple_address>
         </method>
         <method name="mandiri_syariah_va_merchanthosted">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_va_merchanthosted">
             <allow_multiple_address>1</allow_multiple_address>
         </method>
     </methods>

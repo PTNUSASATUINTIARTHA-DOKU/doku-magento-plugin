@@ -19,7 +19,7 @@ interface TransactionInterface
     const STORE_ID = 'store_id';
     const QUOTE_ID = 'quote_id';
     const ORDER_ID = 'order_id';
-    const TRANS_ID_MERCHANT = 'trans_id_merchant';
+    const INVOICE_NUMBER = 'invoice_number';
     const PAYMENT_CHANNEL_ID = 'payment_channel_id';
     const VA_NUMBER = 'va_number';
     const ORDER_STATUS = 'order_status';

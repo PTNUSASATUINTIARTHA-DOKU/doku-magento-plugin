@@ -22,6 +22,10 @@ define(
             {
                 type: 'mandiri_syariah_va_merchanthosted',
                 component: 'Jokul_Magento2/js/view/payment/method-renderer/mandiri-syariah-va-merchanthosted-method'
+            },
+            {
+                type: 'doku_va_merchanthosted',
+                component: 'Jokul_Magento2/js/view/payment/method-renderer/doku-va-merchanthosted-method'
             }
         );
 

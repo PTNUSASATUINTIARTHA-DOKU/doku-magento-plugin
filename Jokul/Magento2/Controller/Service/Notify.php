@@ -31,6 +31,7 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
     protected $Magento2Helper;
     protected $timezoneInterface;
     protected $transactionRepository;
+    private $sharedKey;
 
     public function __construct(
         LoggerInterface $loggerInterface,
@@ -73,26 +74,10 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
             $postjson = json_encode($rawbody, JSON_PRETTY_PRINT);
             $postData = json_decode($rawbody, true);
 
-            $this->logger->info('===== Notify Controller ===== Checking whitelist IP');
-
-            if (!empty($this->generalConfiguration->getIpWhitelist())) {
-                $ipWhitelist = explode(",", $this->generalConfiguration->getIpWhitelist());
-
-                $clientIp = $this->Magento2Helper->getClientIp();
-                $this->logger->info('===== Notify Controller ===== Client IP is :' . $clientIp);
-
-                if (!in_array($clientIp, $ipWhitelist)) {
-                    $this->logger->info('===== Notify Controller ===== IP not found');
-                    $this->sendResponse($postData, true);
-                    die;
-                }
-            }
-            $this->logger->info('===== Notify Controller ===== Checking done');
-
             $this->logger->info('===== Notify Controller ===== Finding order...');
 
             $connection = $this->resourceConnection->getConnection();
-            $tableName = $this->resourceConnection->getTableName('doku_transaction');
+            $tableName = $this->resourceConnection->getTableName('jokul_transaction');
             // End - Build Data Process End
 
             $invoiceNumber = $postData['order']['invoice_number'];
@@ -105,12 +90,12 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
                 die;
             }
 
-            $sql = "SELECT * FROM " . $tableName . " where trans_id_merchant = '" . $invoiceNumber . "'";
+            $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $invoiceNumber . "'";
 
             $dokuOrder = $connection->fetchRow($sql);
 
-            if (!isset($dokuOrder['trans_id_merchant'])) {
-                $this->logger->info('===== Notify Controller ===== Trans ID Merchant not found! in doku_transaction table');
+            if (!isset($dokuOrder['invoice_number'])) {
+                $this->logger->info('===== Notify Controller ===== Invoice Number not found! in jokul_transaction table');
                 $this->sendResponse($postData, true);
                 die;
             }
@@ -118,38 +103,78 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
             $this->logger->info('===== Notify Controller ===== Order found');
             $this->logger->info('===== Notify Controller ===== Updating order...');
 
-            $paymentMethod = $order->getPayment()->getMethod();
-
             $requestParams = json_decode($dokuOrder['request_params'], true);
             $sharedKey = $requestParams['SHAREDID'];
-            $reference_number = isset($postData["virtual_account_payment"]["reference_number"]) ? $postData["virtual_account_payment"]["reference_number"] : "";
-            $systrace_number = isset($postData["virtual_account_payment"]["systrace_number"]) ? $postData["virtual_account_payment"]["systrace_number"] : "";
+            $this->sharedKey = $sharedKey;
 
-            $rawCheckSum = $postData["acquirer"]["id"] .
-                $postData["channel"]["id"] .
-                $postData["client"]["id"] .
-                $postData["order"]["amount"] .
-                $postData["order"]["invoice_number"] .
-                $postData["service"]["id"] .
-                $postData["virtual_account_info"]["virtual_account_number"] .
-                $postData["virtual_account_payment"]["channel_code"] .
-                $postData["virtual_account_payment"]["date"] .
-                $reference_number .
-                $systrace_number.
-                $sharedKey;
-            $checkSum = hash('sha256', $rawCheckSum);
+            $headers = getallheaders();
+            $signatureParams = array(
+                "clientId" => $headers["Client-Id"],
+                "key" => $sharedKey,
+                "requestTarget" => $headers['Request-Target'],
+                "requestId" => $headers['Request-Id'],
+                "requestTimestamp" => $headers['Request-Timestamp']
+            );
 
-            $this->logger->info('===== Notify Controller ===== Checking checkSum...');
+            $signature = $this->Magento2Helper->doCreateNotifySignature($signatureParams, $rawbody);
 
-            if ($postData['security']['check_sum'] != $checkSum) {
-                $this->logger->info('===== Notify Controller ===== checkSum not match!');
+            $this->logger->info('===== Notify Controller ===== Checking signature...');
+
+            if ($headers['Signature'] != $signature) {
+                $this->logger->info('===== Notify Controller ===== signature not match!' . $signature);
                 $this->sendResponse($postData, true);
                 die;
             }
 
+            $paymentMethod = $order->getPayment()->getMethod();
+            if ($order->canInvoice() && !$order->hasInvoices() && $paymentMethod != \Jokul\Magento2\Model\Payment\CreditCardAuthorizationHosted::CODE) {
+                $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+                $invoice = $this->invoiceService->prepareInvoice($order);
+                $invoice->register();
+                $invoice->pay();
+                $invoice->save();
+                $transactionSave = $objectManager->create(
+                    'Magento\Framework\DB\Transaction'
+                )->addObject(
+                    $invoice
+                )->addObject(
+                    $invoice->getOrder()
+                );
+                $transactionSave->save();
+
+                $payment = $order->getPayment();
+                $payment->setLastTransactionId($postData["order"]["invoice_number"]);
+                $payment->setTransactionId($postData["order"]["invoice_number"]);
+                $payment->setAdditionalInformation([\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS => (array) $_POST]);
+                $message = __(json_encode($_POST, JSON_PRETTY_PRINT));
+                $trans = $this->builderInterface;
+
+
+                $transactionType = $paymentMethod == \Jokul\Magento2\Model\Payment\CreditCardHosted::CODE ? \Magento\Sales\Model\Order\Payment\Transaction::TYPE_ORDER : \Magento\Sales\Model\Order\Payment\Transaction::TYPE_PAYMENT;
+                $transaction = $trans->setPayment($payment)
+                    ->setOrder($order)
+                    ->setTransactionId($postData["order"]["invoice_number"])
+                    ->setAdditionalInformation([\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS => (array) $_POST])
+                    ->setFailSafe(true)
+                    ->build($transactionType);
+                $payment->addTransactionCommentsToOrder($transaction, $message);
+                $payment->save();
+                $transaction->save();
+
+                if ($invoice && !$invoice->getEmailSent()) {
+                    $invoiceSender = $objectManager->get('Magento\Sales\Model\Order\Email\Sender\InvoiceSender');
+                    $invoiceSender->send($invoice);
+                    $order->addRelatedObject($invoice);
+                    $order->addStatusHistoryComment(__('Your Invoice for Order ID #%1.', $postData["order"]["invoice_number"]))
+                        ->setIsCustomerNotified(true);
+                }
+                $order->setData('state', 'processing');
+                $order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
+            }
+
             $order->save();
 
-            $sql = "Update " . $tableName . " SET `updated_at` = 'now()', `order_status` = 'SUCCESS' , `notify_params` = '" . $postjson . "' where trans_id_merchant = '" . $invoiceNumber . "'";
+            $sql = "Update " . $tableName . " SET `updated_at` = 'now()', `order_status` = 'SUCCESS' , `notify_params` = '" . $postjson . "' where invoice_number = '" . $invoiceNumber . "'";
             $connection->query($sql);
 
             $this->logger->info('===== Notify Controller ===== Updating success...');
@@ -173,18 +198,12 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
         }
 
         $json_data_output = array(
-            "client" => array(
-                "id" => $postData['client']['id']
-            ),
             "order" => array(
                 "invoice_number" => $postData['order']['invoice_number'],
                 "amount" => $postData['order']['amount']
             ),
             "virtual_account_info" => array(
                 "virtual_account_number" => $postData['virtual_account_info']['virtual_account_number']
-            ),
-            "security" => array(
-                "check_sum" => $postData['security']['check_sum']
             )
         );
 
