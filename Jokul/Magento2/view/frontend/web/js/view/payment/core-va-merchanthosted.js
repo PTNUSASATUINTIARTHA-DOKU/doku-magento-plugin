@@ -26,6 +26,14 @@ define(
             {
                 type: 'doku_va_merchanthosted',
                 component: 'Jokul_Magento2/js/view/payment/method-renderer/doku-va-merchanthosted-method'
+            },
+            {
+                type: 'bca_va_merchanthosted',
+                component: 'Jokul_Magento2/js/view/payment/method-renderer/bca-va-merchanthosted-method'
+            },
+            {
+                type: 'permata_va_merchanthosted',
+                component: 'Jokul_Magento2/js/view/payment/method-renderer/permata-va-merchanthosted-method'
             }
         );
 

@@ -43,13 +43,9 @@
                     <label>Notify URL</label>
                     <frontend_model>Jokul\Magento2\Block\System\Config\Form\Field\Attribute</frontend_model>
                 </field>
-                <field id="redirect_url" translate="label" type="text" sortOrder="113" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Redirect URL</label>
-                    <frontend_model>Jokul\Magento2\Block\System\Config\Form\Field\Attribute</frontend_model>
-                </field>
-
+                
                 <group id="mandiri_va_merchanthosted" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Mandiri VA (merchant hosted)</label>
+                    <label>Mandiri VA</label>
                     <field id="active" translate="label" type="select" sortOrder="201" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Enabled</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -84,7 +80,7 @@
                 </group>
 
                 <group id="mandiri_syariah_va_merchanthosted" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Mandiri Syariah VA (merchant hosted)</label>
+                    <label>Bank Syariah Indonesia VA</label>
                     <field id="active" translate="label" type="select" sortOrder="201" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Enabled</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -119,7 +115,7 @@
                 </group>
 
                 <group id="doku_va_merchanthosted" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>DOKU VA (merchant hosted)</label>
+                    <label>DOKU VA</label>
                     <field id="active" translate="label" type="select" sortOrder="201" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Enabled</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -150,6 +146,76 @@
                         <label>Admin Fee Type</label>
                         <source_model>Jokul\Magento2\Model\Config\Source\PercentageSelect</source_model>
                         <config_path>payment/doku_va_merchanthosted/admin_fee_type</config_path>
+                    </field>
+                </group>
+
+                <group id="bca_va_merchanthosted" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>BCA VA</label>
+                    <field id="active" translate="label" type="select" sortOrder="201" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Enabled</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/bca_va_merchanthosted/active</config_path>
+                    </field>
+                    <field id="title" translate="label" type="text" sortOrder="202" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Title</label>
+                        <config_path>payment/bca_va_merchanthosted/title</config_path>
+                    </field>
+                    <field id="description" translate="label" type="text" sortOrder="217" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Description</label>
+                        <config_path>payment/bca_va_merchanthosted/description</config_path>
+                    </field>
+                    <field id="disc_amount" translate="label" type="text" sortOrder="220" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Discount Amount</label>
+                        <config_path>payment/bca_va_merchanthosted/disc_amount</config_path>
+                    </field>
+                    <field id="disc_type" translate="label" type="select" sortOrder="221" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Discount Type</label>
+                        <source_model>Jokul\Magento2\Model\Config\Source\PercentageSelect</source_model>
+                        <config_path>payment/bca_va_merchanthosted/disc_type</config_path>
+                    </field>
+                    <field id="admin_fee" translate="label" type="text" sortOrder="222" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Admin Fee</label>
+                        <config_path>payment/bca_va_merchanthosted/admin_fee</config_path>
+                    </field>
+                    <field id="admin_fee_type" translate="label" type="select" sortOrder="223" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Admin Fee Type</label>
+                        <source_model>Jokul\Magento2\Model\Config\Source\PercentageSelect</source_model>
+                        <config_path>payment/bca_va_merchanthosted/admin_fee_type</config_path>
+                    </field>
+                </group>
+
+                <group id="permata_va_merchanthosted" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Permata VA</label>
+                    <field id="active" translate="label" type="select" sortOrder="201" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Enabled</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/permata_va_merchanthosted/active</config_path>
+                    </field>
+                    <field id="title" translate="label" type="text" sortOrder="202" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Title</label>
+                        <config_path>payment/permata_va_merchanthosted/title</config_path>
+                    </field>
+                    <field id="description" translate="label" type="text" sortOrder="217" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Description</label>
+                        <config_path>payment/permata_va_merchanthosted/description</config_path>
+                    </field>
+                    <field id="disc_amount" translate="label" type="text" sortOrder="220" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Discount Amount</label>
+                        <config_path>payment/permata_va_merchanthosted/disc_amount</config_path>
+                    </field>
+                    <field id="disc_type" translate="label" type="select" sortOrder="221" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Discount Type</label>
+                        <source_model>Jokul\Magento2\Model\Config\Source\PercentageSelect</source_model>
+                        <config_path>payment/permata_va_merchanthosted/disc_type</config_path>
+                    </field>
+                    <field id="admin_fee" translate="label" type="text" sortOrder="222" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Admin Fee</label>
+                        <config_path>payment/permata_va_merchanthosted/admin_fee</config_path>
+                    </field>
+                    <field id="admin_fee_type" translate="label" type="select" sortOrder="223" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Admin Fee Type</label>
+                        <source_model>Jokul\Magento2\Model\Config\Source\PercentageSelect</source_model>
+                        <config_path>payment/permata_va_merchanthosted/admin_fee_type</config_path>
                     </field>
                 </group>
             </group>

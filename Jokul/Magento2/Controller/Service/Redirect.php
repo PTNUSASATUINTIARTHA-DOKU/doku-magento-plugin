@@ -142,7 +142,8 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
                     $this->logger->info('===== Redirect Controller  ===== STATUSCODE Success');
                     $path = "checkout/onepage/success";
                 } else {
-                    $path = "checkout/onepage/failure";
+                    $path ="checkout/cart";
+                    $this->messageManager->addWarningMessage('Payment Failed. Please Try Again or Call Customer Service.');
                     $order->cancel()->save();
                     $this->logger->info('===== Redirect Controller  ===== STATUSCODE Failed!');
                 }

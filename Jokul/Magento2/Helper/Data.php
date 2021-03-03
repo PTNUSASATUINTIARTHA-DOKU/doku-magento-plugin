@@ -23,7 +23,7 @@ class Data extends AbstractHelper
     const REQUEST_URL_MIP_DEVELOPMENT = 'https://staging.doku.com/Suite/ReceiveMIP';
     const REQUEST_URL_MIP_PRODUCTION = 'https://pay.doku.com/Suite/ReceiveMIP';
 
-    const PREFIX_ENV_DEVELOPMENT = 'http://api-sit.doku.com';
+    const PREFIX_ENV_DEVELOPMENT = 'https://api-sandbox.doku.com';
     const PREFIX_ENV_PRODUCTION = 'http://jokul.doku.com';
 
     const PAYMENT_URL_DEVELOPMENT = 'https://staging.doku.com/api/payment/paymentMip';
@@ -115,6 +115,11 @@ class Data extends AbstractHelper
                 }
             }
 
+            $requestParams = json_decode($dokusTransactionOrder['request_params'], true);
+            $howToPayUrl = $requestParams['RESPONSE']['virtual_account_info']['how_to_pay_api'];
+            $howToPayUrl = str_replace("\\", "", $howToPayUrl);
+
+
             $emailParams = [
                 'subject' => "Awaiting for Your Payment (" . $order->getIncrementId() . " - " . $paymentChannelLabel . ")",
                 'customerName' => $order->getCustomerName(),
@@ -126,7 +131,8 @@ class Data extends AbstractHelper
                 'discountValue' => $discountValue,
                 'adminFeeValue' => $adminFeeValue,
                 'paymentChannel' => $paymentChannelLabel,
-                'expiry' => date('d F Y, H:i', strtotime($expiryStoreDate))
+                'expiry' => date('d F Y, H:i', strtotime($expiryStoreDate)),
+                'paymentInstructions' => $this->getHowToPay($howToPayUrl)
             ];
 
             $this->dataObject->setData($emailParams);
@@ -137,13 +143,10 @@ class Data extends AbstractHelper
             ];
 
             $template = "success_template";
+            $vaChannels = array("01", "02", "03", "04", "05");
             if ($isSuccessOrder) {
-                if ($dokusTransactionOrder['payment_channel_id'] == '01') {
-                    $template = 'mandiri_va_template';
-                } else if ($dokusTransactionOrder['payment_channel_id'] == '02') {
-                    $template = 'mandiri_syariah_va_template';
-                } else if ($dokusTransactionOrder['payment_channel_id'] == '03') {
-                    $template = 'doku_va_template';
+                if (in_array($dokusTransactionOrder['payment_channel_id'], $vaChannels)) {
+                    $template = 'default_va_template';
                 }
             } else {
                 $template = "failed_template";
@@ -429,6 +432,32 @@ class Data extends AbstractHelper
             $this->logger(get_class($this) . " ====== VOID RESPONSE: " . $e->getMessage(), 'DOKU_void');
             return false;
         }
+    }
+
+    public function getHowToPay($url)
+    {
+        $ch = curl_init();
+        $headers = array(
+            'Accept: application/json',
+            'Content-Type: application/json',
+
+        );
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        // Timeout in seconds
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+        $response = curl_exec($ch);
+        $responseJson = json_decode($response, true);
+
+        $this->logger(get_class($this) . " Response from: " . $url . " => " . $response, 'DOKU_send_email');
+
+        return $responseJson['payment_instruction'];
     }
 
     public function logger($var, $file)

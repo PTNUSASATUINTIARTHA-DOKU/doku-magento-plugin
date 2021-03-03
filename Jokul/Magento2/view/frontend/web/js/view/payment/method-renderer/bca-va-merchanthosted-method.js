@@ -15,7 +15,7 @@ define(
 
             return Component.extend({
                 defaults: {
-                    template: 'Jokul_Magento2/payment/doku-va-merchanthosted',
+                    template: 'Jokul_Magento2/payment/bca-va-merchanthosted',
                     setWindow: false,
                     dokuObj: {},
                     dokuDiv: ''
@@ -34,11 +34,11 @@ define(
                             if (dataResponse.err == false) {
                                 jQuery.each(dataResponse.result, function (i, val) {
                                     if (i != 'URL') {
-                                        $("#doku-va-merchanthosted").append('<input type="hidden" name="' + i + '" value="' + val + '">');
+                                        $("#bca-va-merchanthosted").append('<input type="hidden" name="' + i + '" value="' + val + '">');
                                     } else {
-                                        $("#doku-va-merchanthosted").attr("action", val);
+                                        $("#bca-va-merchanthosted").attr("action", val);
                                     }
-                                    $("#doku-va-merchanthosted").submit();
+                                    $("#bca-va-merchanthosted").submit();
                                 });
                             } else {
                                 alert({
@@ -66,7 +66,7 @@ define(
 //                window.location = url.build('dokuhosted/payment/request');
                 },
                 getDescription: function(){
-                     return window.checkoutConfig.payment.doku_va_merchanthosted.description
+                     return window.checkoutConfig.payment.bca_va_merchanthosted.description
                 }
             });
         }

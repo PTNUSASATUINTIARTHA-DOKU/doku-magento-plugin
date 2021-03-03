@@ -139,6 +139,10 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 $requestTarget = "/bsm-virtual-account/v2/payment-code";
             } elseif ($configCode == 03) {
                 $requestTarget = "/doku-virtual-account/v2/payment-code";
+            } elseif ($configCode == 04) {
+                $requestTarget = "/bca-virtual-account/v2/payment-code";
+            } elseif($configCode == 05){
+                $requestTarget = "/permata-virtual-account/v2/payment-code";
             }
 
             $requestTimestamp = date("Y-m-d H:i:s");
@@ -171,7 +175,7 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 "additional_info" => array(
                     "integration" => array(
                         "name" => "magento-plugin",
-                        "version" => "2.0.0"
+                        "version" => "1.1.0"
                     )
                 )
             );
@@ -263,10 +267,21 @@ class RequestVa extends \Magento\Framework\App\Action\Action
             ));
         } else {
             $this->logger->info('===== Request controller VA GATEWAY Response ===== ' . print_r($result, true));
-            echo json_encode(array(
-                'err' => true, 'response_msg' => 'Generate paycode failed (' . $result['errorMessage'] . ')',
-                'result' => $redirectData
-            ));
+
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $_checkoutSession = $objectManager->create('\Magento\Checkout\Model\Session');
+            $_quoteFactory = $objectManager->create('\Magento\Quote\Model\QuoteFactory');
+
+            $order = $_checkoutSession->getLastRealOrder();
+            $quote = $_quoteFactory->create()->loadByIdWithoutStore($order->getQuoteId());
+            if ($quote->getId()) {
+                $quote->setIsActive(1)->setReservedOrderId(null)->save();
+                $_checkoutSession->replaceQuote($quote);
+                echo json_encode(array(
+                    'err' => false, 'response_msg' => 'Generate paycode failed (' . $result['errorMessage'] . ')',
+                    'result' => $redirectData
+                ));
+            }
         }
     }
 }

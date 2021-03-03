@@ -1,0 +1,24 @@
+<?php $items = $block->getItems() ?>
+
+<table>
+    <tr>
+        <td>
+            <p><b>Payment Instructions : </b></p>
+            <ol>
+                <?php foreach ($items as $paymentInstruction) : ?>
+                    <li>
+                        <p><b>Cara pembayaran via <?= $paymentInstruction['channel'] ?></b></p>
+                        <ol>
+                            <?php foreach ($paymentInstruction['step'] as $step) : ?>
+                                <li>
+                                    <?= $step ?>
+                                </li>
+                            <?php endforeach; ?>
+                        </ol>
+                        <br />
+                    </li>
+                <?php endforeach; ?>
+            </ol>
+        </td>
+    </tr>
+</table>

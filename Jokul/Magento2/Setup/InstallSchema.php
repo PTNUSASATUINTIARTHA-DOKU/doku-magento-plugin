@@ -124,13 +124,13 @@ class InstallSchema implements InstallSchemaInterface
 			)->addColumn(
 				'admin_fee_amount',
 				Table::TYPE_DECIMAL,
-				'12,4',
+				'12,2',
 				['nullable' => false, 'default' => 0.00],
 				'Admin Fee Amount'
 			)->addColumn(
 				'admin_fee_trx_amount',
 				Table::TYPE_DECIMAL,
-				'12,4',
+				'12,2',
 				['nullable' => false, 'default' => 0.00],
 				'Admin Fee Trx Amount'
 			)->addColumn(
@@ -142,13 +142,13 @@ class InstallSchema implements InstallSchemaInterface
 			)->addColumn(
 				'discount_amount',
 				Table::TYPE_DECIMAL,
-				'12,4',
+				'12,2',
 				['nullable' => false, 'default' => 0.00],
 				'Discount Fee Amount'
 			)->addColumn(
 				'discount_trx_amount',
 				Table::TYPE_DECIMAL,
-				'12,4',
+				'12,2',
 				['nullable' => false, 'default' => 0.00],
 				'Discount Fee Trx Amount'
 			)->addColumn(
@@ -166,7 +166,7 @@ class InstallSchema implements InstallSchemaInterface
 			)->addColumn(
 				'doku_grand_total',
 				Table::TYPE_DECIMAL,
-				'12,4',
+				'12,2',
 				['nullable' => false, 'default' => 0.00],
 				'Doku Grand Total'
 			)->addColumn(

@@ -31,7 +31,6 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
     protected $Magento2Helper;
     protected $timezoneInterface;
     protected $transactionRepository;
-    private $sharedKey;
 
     public function __construct(
         LoggerInterface $loggerInterface,
@@ -103,6 +102,11 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
             $this->logger->info('===== Notify Controller ===== Order found');
             $this->logger->info('===== Notify Controller ===== Updating order...');
 
+            if("SUCCESS" == $dokuOrder['order_status']){
+                $this->logger->info('===== Notify Controller ===== Transaction already success...');
+                $this->sendResponse($postData, true);
+                die;
+            }
             $requestParams = json_decode($dokuOrder['request_params'], true);
             $sharedKey = $requestParams['SHAREDID'];
             $this->sharedKey = $sharedKey;
@@ -111,7 +115,7 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
             $signatureParams = array(
                 "clientId" => $headers["Client-Id"],
                 "key" => $sharedKey,
-                "requestTarget" => $headers['Request-Target'],
+                "requestTarget" => $_SERVER['REQUEST_URI'],
                 "requestId" => $headers['Request-Id'],
                 "requestTimestamp" => $headers['Request-Timestamp']
             );
@@ -121,7 +125,7 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
             $this->logger->info('===== Notify Controller ===== Checking signature...');
 
             if ($headers['Signature'] != $signature) {
-                $this->logger->info('===== Notify Controller ===== signature not match!' . $signature);
+                $this->logger->info('===== Notify Controller ===== signature not match!');
                 $this->sendResponse($postData, true);
                 die;
             }

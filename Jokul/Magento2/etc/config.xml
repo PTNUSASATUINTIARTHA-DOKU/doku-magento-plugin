@@ -8,24 +8,34 @@
         </doku_general_config>
         <doku_merchanthosted_config>
             <mandiri_va_merchanthosted>
-                <title>Mandiri VA (merchant hosted)</title>
-                <description>Mandiri VA DOKU merchant hosted payment method</description>
+                <title>Mandiri VA</title>
+                <description>Mandiri VA DOKU payment method</description>
                 <payment_code_prefix>88899</payment_code_prefix>
             </mandiri_va_merchanthosted>
             <mandiri_syariah_va_merchanthosted>
-                <title>Mandiri Syariah VA (merchant hosted)</title>
-                <description>Mandiri Syariah VA DOKU merchant hosted payment method</description>
+                <title>Bank Syariah Indonesia VA</title>
+                <description>Bank Syariah Indonesia VA DOKU payment method</description>
                 <payment_code_prefix>88899</payment_code_prefix>
             </mandiri_syariah_va_merchanthosted>
             <doku_va_merchanthosted>
-                <title>DOKU VA (merchant hosted)</title>
-                <description>DOKU VA merchant hosted payment method</description>
+                <title>DOKU VA</title>
+                <description>DOKU VA payment method</description>
                 <payment_code_prefix>88899</payment_code_prefix>
             </doku_va_merchanthosted>
+            <bca_va_merchanthosted>
+                <title>BCA VA</title>
+                <description>BCA VA DOKU payment method</description>
+                <payment_code_prefix>88899</payment_code_prefix>
+            </bca_va_merchanthosted>
+            <permata_va_merchanthosted>
+                <title>Permata VA</title>
+                <description>Permata VA DOKU payment method</description>
+                <payment_code_prefix>88899</payment_code_prefix>
+            </permata_va_merchanthosted>
         </doku_merchanthosted_config>
         <payment>
             <mandiri_va_merchanthosted>
-                <title>Mandiri VA (merchant hosted)</title>
+                <title>Mandiri VA</title>
                 <description>Mandiri VA Gateway product</description>
                 <payment_code_prefix>88899</payment_code_prefix>
                 <order_status>pending</order_status>
@@ -34,8 +44,8 @@
                 <model>Jokul\Magento2\Model\Payment\MandiriVaMerchanthosted</model>
             </mandiri_va_merchanthosted>
             <mandiri_syariah_va_merchanthosted>
-                <title>Mandiri Syariah VA (merchant hosted)</title>
-                <description>Mandiri Syariah VA Gateway product</description>
+                <title>Bank Syariah Indonesia VA</title>
+                <description>Bank Syariah Indonesia VA Gateway product</description>
                 <payment_code_prefix>88899</payment_code_prefix>
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
@@ -43,7 +53,7 @@
                 <model>Jokul\Magento2\Model\Payment\MandiriSyariahVaMerchanthosted</model>
             </mandiri_syariah_va_merchanthosted>
             <doku_va_merchanthosted>
-                <title>DOKU VA (merchant hosted)</title>
+                <title>DOKU VA</title>
                 <description>DOKU VA Gateway product</description>
                 <payment_code_prefix>88899</payment_code_prefix>
                 <order_status>pending</order_status>
@@ -51,6 +61,24 @@
                 <group>offline</group>
                 <model>Jokul\Magento2\Model\Payment\DokuVaMerchanthosted</model>
             </doku_va_merchanthosted>
+            <bca_va_merchanthosted>
+                <title>BCA VA</title>
+                <description>BCA VA Gateway product</description>
+                <payment_code_prefix>88899</payment_code_prefix>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <group>offline</group>
+                <model>Jokul\Magento2\Model\Payment\BcaVaMerchanthosted</model>
+            </bca_va_merchanthosted>
+            <permata_va_merchanthosted>
+                <title>Permata VA</title>
+                <description>Permata VA Gateway product</description>
+                <payment_code_prefix>88899</payment_code_prefix>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <group>offline</group>
+                <model>Jokul\Magento2\Model\Payment\PermataVaMerchanthosted</model>
+            </permata_va_merchanthosted>
         </payment>
     </default>
 </config>

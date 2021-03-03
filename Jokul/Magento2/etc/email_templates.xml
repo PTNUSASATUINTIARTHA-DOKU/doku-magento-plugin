@@ -2,11 +2,5 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../Email/etc/email_templates.xsd">
     <template id="success_template" label="Success Order Email" file="success_template.html" type="html" module="Jokul_Magento2" area="frontend"/>
     <template id="failed_template" label="Failed Order Email" file="failed_template.html" type="html" module="Jokul_Magento2" area="frontend"/>
-    <template id="mandiri_va_template" label="Mandiri VA Order Email" file="mandiri_va_template.html" type="html" module="Jokul_Magento2" area="frontend"/>
-    <template id="mandiri_syariah_va_template" label="Mandiri Syariah VA Order Email" file="mandiri_syariah_va_template.html" type="html" module="Jokul_Magento2" area="frontend"/>
-    <template id="doku_va_template" label="DOKU VA Order Email" file="doku_va_template.html" type="html" module="Jokul_Magento2" area="frontend"/>
-    <template id="cimb_va_template" label="Cimb VA Order Email" file="cimb_va_template_template.html" type="html" module="Jokul_Magento2" area="frontend"/>
-    <template id="danamon_va_template" label="Danamon VA Order Email" file="danamon_va_template.html" type="html" module="Jokul_Magento2" area="frontend"/>
-    <template id="permata_va_template" label="Permata VA Order Email" file="permata_va_template.html" type="html" module="Jokul_Magento2" area="frontend"/>
     <template id="default_va_template" label="Default VA Order Email" file="default_va_template.html" type="html" module="Jokul_Magento2" area="frontend"/>
 </config>

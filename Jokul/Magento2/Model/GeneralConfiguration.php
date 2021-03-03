@@ -31,6 +31,8 @@ class GeneralConfiguration implements ConfigProviderInterface
         'mandiri_va_merchanthosted' => "01",
         'mandiri_syariah_va_merchanthosted' => "02",
         'doku_va_merchanthosted' => "03",
+        'bca_va_merchanthosted' => "04",
+        'permata_va_merchanthosted' => "05"
     ];
 
     public function __construct(
