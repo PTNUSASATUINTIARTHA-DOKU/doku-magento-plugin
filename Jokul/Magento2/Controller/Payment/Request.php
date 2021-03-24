@@ -226,10 +226,10 @@ class Request extends \Magento\Framework\App\Action\Action {
                     'updated_at' => 'now()',
                     'doku_grand_total' => $grandTotal,
                     'admin_fee_type' => $config['payment'][$order->getPayment()->getMethod()]['admin_fee_type'],
-                    'admin_fee_amount' => $config['payment'][$order->getPayment()->getMethod()]['admin_fee'],
+                    'admin_fee_amount' => !empty($config['payment'][$order->getPayment()->getMethod()]['admin_fee']) ? $config['payment'][$order->getPayment()->getMethod()]['admin_fee'] : 0,
                     'admin_fee_trx_amount' => $totalAdminFeeDisc['total_admin_fee'],
                     'discount_type' => $config['payment'][$order->getPayment()->getMethod()]['disc_type'],
-                    'discount_amount' => $config['payment'][$order->getPayment()->getMethod()]['disc_amount'],
+                    'discount_amount' => !empty($config['payment'][$order->getPayment()->getMethod()]['disc_amount']) ? $config['payment'][$order->getPayment()->getMethod()]['disc_amount'] : 0,
                     'discount_trx_amount' => $totalAdminFeeDisc['total_discount']
                 ]);
             

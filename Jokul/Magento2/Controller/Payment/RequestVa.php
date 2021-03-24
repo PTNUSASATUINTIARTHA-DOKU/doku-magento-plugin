@@ -128,7 +128,7 @@ class RequestVa extends \Magento\Framework\App\Action\Action
 
             $clientId = $config['payment']['core']['client_id'];
             $sharedId = $this->config->getSharedKey();
-            $expiryTime = isset($config['payment']['core']['expiry']) && (int) $config['payment']['core']['expiry'] != 0 ?  $config['payment']['core']['expiry'] : 0;
+            $expiryTime = isset($config['payment']['core']['expiry']) && (int) $config['payment']['core']['expiry'] != 0 ? $config['payment']['core']['expiry'] : 60;
 
             $customerName = trim($billingData->getFirstname() . " " . $billingData->getLastname());
 
@@ -175,7 +175,7 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 "additional_info" => array(
                     "integration" => array(
                         "name" => "magento-plugin",
-                        "version" => "1.1.0"
+                        "version" => "1.1.1"
                     )
                 )
             );
@@ -228,10 +228,10 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 'updated_at' => 'now()',
                 'doku_grand_total' => $grandTotal,
                 'admin_fee_type' => $config['payment'][$order->getPayment()->getMethod()]['admin_fee_type'],
-                'admin_fee_amount' => $config['payment'][$order->getPayment()->getMethod()]['admin_fee'],
+                'admin_fee_amount' => !empty($config['payment'][$order->getPayment()->getMethod()]['admin_fee']) ? $config['payment'][$order->getPayment()->getMethod()]['admin_fee'] : 0,
                 'admin_fee_trx_amount' => $totalAdminFeeDisc['total_admin_fee'],
                 'discount_type' => $config['payment'][$order->getPayment()->getMethod()]['disc_type'],
-                'discount_amount' => $config['payment'][$order->getPayment()->getMethod()]['disc_amount'],
+                'discount_amount' => !empty($config['payment'][$order->getPayment()->getMethod()]['disc_amount']) ? $config['payment'][$order->getPayment()->getMethod()]['disc_amount'] : 0,
                 'discount_trx_amount' => $totalAdminFeeDisc['total_discount']
             ]);
 

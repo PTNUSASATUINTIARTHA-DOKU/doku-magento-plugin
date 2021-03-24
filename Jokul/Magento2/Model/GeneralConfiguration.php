@@ -169,28 +169,28 @@ class GeneralConfiguration implements ConfigProviderInterface
     public function getLabelAdminFeeAndDiscount($adminFee, $adminFeeType, $discount, $discountType)
     {
 
-        $lable = "";
+        $label = "";
 
         if (!empty($discount)) {
             if ($discountType == "percentage") {
                 if ($discount < 100) {
-                    $lable = "<b>Discount: </b>" . $discount . "%<br>";
+                    $label = "<b>Discount: </b>" . $discount . "%<br>";
                 }
             } else {
-                $lable = "<b>Discount: </b>Rp. " . number_format($discount, 2, ",", ".") . "<br>";
+                $label = "<b>Discount: </b>Rp. " . $discount . "<br>";
             }
         }
 
         if (!empty($adminFee)) {
             if ($adminFeeType == "percentage") {
                 if ($adminFee < 100) {
-                    $lable .= "<b>Admin Fee: </b>" . $adminFee . "%<br><br>";
+                    $label .= "<b>Admin Fee: </b>" . $adminFee . "%<br><br>";
                 }
             } else {
-                $lable .= "<b>Admin Fee:  </b>Rp." . number_format($adminFee, 2, ",", ".") . "<br><br>";
+                $label .= "<b>Admin Fee:  </b>Rp." . $adminFee . "<br><br>";
             }
         }
 
-        return $lable;
+        return $label;
     }
 }

@@ -9,15 +9,15 @@
                     <comment>*Required Field</comment>
                 </field>
                 <field id="client_id_development" translate="label" type="text" sortOrder="101" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Client ID (Development)</label>
+                    <label>Client ID (Sandbox)</label>
                     <comment>*Required Field</comment>
                 </field>
                 <field id="shared_key_production" translate="label" type="text" sortOrder="104" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Shared Key (Production)</label>
+                    <label>Secret Key (Production)</label>
                     <comment>*Required Field</comment>
                 </field>
                 <field id="shared_key_development" translate="label" type="text" sortOrder="105" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Shared Key (Development)</label>
+                    <label>Secret Key (Sandbox)</label>
                     <comment>*Required Field</comment>
                 </field>
                 <field id="environment" translate="label" type="select" sortOrder="106" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -25,8 +25,8 @@
                     <source_model>Jokul\Magento2\Model\Config\Source\Environment</source_model>
                 </field>
                 <field id="expiry" translate="label" type="text" sortOrder="106" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Expiry</label>
-                    <comment>Expiry time in minute, if you set this field with empty value, the expiry time will be set with default value 360</comment>
+                    <label>Expiry Time</label>
+                    <comment>Expiry time in minute for Virtual Account and Convenience Store payment. The default is 60 minutes</comment>
                 </field>
                 <field id="sender_mail" translate="label" type="text" sortOrder="107" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Email Sender Address</label>
@@ -40,12 +40,48 @@
                     <label>BCC Email Address</label>
                 </field>
                 <field id="notify_url" translate="label" type="text" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Notify URL</label>
+                    <label>Notification URL</label>
                     <frontend_model>Jokul\Magento2\Block\System\Config\Form\Field\Attribute</frontend_model>
+                    <comment>Set this URL to Jokul Back Office</comment>
                 </field>
                 
+                <group id="bca_va_merchanthosted" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>BCA VA</label>
+                    <field id="active" translate="label" type="select" sortOrder="201" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Enabled</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/bca_va_merchanthosted/active</config_path>
+                    </field>
+                    <field id="title" translate="label" type="text" sortOrder="202" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Title</label>
+                        <config_path>payment/bca_va_merchanthosted/title</config_path>
+                    </field>
+                    <field id="description" translate="label" type="text" sortOrder="217" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Description</label>
+                        <config_path>payment/bca_va_merchanthosted/description</config_path>
+                    </field>
+                    <field id="disc_amount" translate="label" type="text" sortOrder="220" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Discount Amount</label>
+                        <config_path>payment/bca_va_merchanthosted/disc_amount</config_path>
+                    </field>
+                    <field id="disc_type" translate="label" type="select" sortOrder="221" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Discount Type</label>
+                        <source_model>Jokul\Magento2\Model\Config\Source\PercentageSelect</source_model>
+                        <config_path>payment/bca_va_merchanthosted/disc_type</config_path>
+                    </field>
+                    <field id="admin_fee" translate="label" type="text" sortOrder="222" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Admin Fee</label>
+                        <config_path>payment/bca_va_merchanthosted/admin_fee</config_path>
+                    </field>
+                    <field id="admin_fee_type" translate="label" type="select" sortOrder="223" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Admin Fee Type</label>
+                        <source_model>Jokul\Magento2\Model\Config\Source\PercentageSelect</source_model>
+                        <config_path>payment/bca_va_merchanthosted/admin_fee_type</config_path>
+                    </field>
+                </group>
+
                 <group id="mandiri_va_merchanthosted" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Mandiri VA</label>
+                    <label>Bank Mandiri VA</label>
                     <field id="active" translate="label" type="select" sortOrder="201" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Enabled</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -115,7 +151,7 @@
                 </group>
 
                 <group id="doku_va_merchanthosted" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>DOKU VA</label>
+                    <label>Other Banks (VA by DOKU)</label>
                     <field id="active" translate="label" type="select" sortOrder="201" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Enabled</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -149,43 +185,8 @@
                     </field>
                 </group>
 
-                <group id="bca_va_merchanthosted" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>BCA VA</label>
-                    <field id="active" translate="label" type="select" sortOrder="201" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>Enabled</label>
-                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                        <config_path>payment/bca_va_merchanthosted/active</config_path>
-                    </field>
-                    <field id="title" translate="label" type="text" sortOrder="202" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Title</label>
-                        <config_path>payment/bca_va_merchanthosted/title</config_path>
-                    </field>
-                    <field id="description" translate="label" type="text" sortOrder="217" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Description</label>
-                        <config_path>payment/bca_va_merchanthosted/description</config_path>
-                    </field>
-                    <field id="disc_amount" translate="label" type="text" sortOrder="220" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Discount Amount</label>
-                        <config_path>payment/bca_va_merchanthosted/disc_amount</config_path>
-                    </field>
-                    <field id="disc_type" translate="label" type="select" sortOrder="221" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Discount Type</label>
-                        <source_model>Jokul\Magento2\Model\Config\Source\PercentageSelect</source_model>
-                        <config_path>payment/bca_va_merchanthosted/disc_type</config_path>
-                    </field>
-                    <field id="admin_fee" translate="label" type="text" sortOrder="222" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Admin Fee</label>
-                        <config_path>payment/bca_va_merchanthosted/admin_fee</config_path>
-                    </field>
-                    <field id="admin_fee_type" translate="label" type="select" sortOrder="223" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Admin Fee Type</label>
-                        <source_model>Jokul\Magento2\Model\Config\Source\PercentageSelect</source_model>
-                        <config_path>payment/bca_va_merchanthosted/admin_fee_type</config_path>
-                    </field>
-                </group>
-
                 <group id="permata_va_merchanthosted" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Permata VA</label>
+                    <label>Bank Permata VA</label>
                     <field id="active" translate="label" type="select" sortOrder="201" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Enabled</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
