@@ -89,9 +89,9 @@ class RequestVa extends \Magento\Framework\App\Action\Action
     public function execute()
     {
 
-        $this->logger->info('===== Request controller VA MANDIRI GATEWAY ===== Start');
+        $this->logger->info('===== Request controller VA GATEWAY ===== Start');
 
-        $this->logger->info('===== Request controller VA MANDIRI GATEWAY ===== Find Order');
+        $this->logger->info('===== Request controller VA GATEWAY ===== Find Order');
 
         $result = array();
         $redirectData = array();
@@ -103,7 +103,7 @@ class RequestVa extends \Magento\Framework\App\Action\Action
             $this->session->getLastRealOrder()->setState(Order::STATE_NEW);
             $order->save();
 
-            $this->logger->info('===== Request controller VA MANDIRI GATEWAY ===== Order Found!');
+            $this->logger->info('===== Request controller VA GATEWAY ===== Order Found!');
 
             $configCode = $this->config->getRelationPaymentChannel($order->getPayment()->getMethod());
 
@@ -124,7 +124,7 @@ class RequestVa extends \Magento\Framework\App\Action\Action
 
             $buffGrandTotal = $grandTotal - $totalAdminFeeDisc['total_discount'];
 
-            $grandTotal = $buffGrandTotal < 10000 ? 10000 : $buffGrandTotal;
+            $grandTotal = $buffGrandTotal;
 
             $clientId = $config['payment']['core']['client_id'];
             $sharedId = $this->config->getSharedKey();
