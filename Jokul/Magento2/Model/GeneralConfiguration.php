@@ -14,18 +14,13 @@ class GeneralConfiguration implements ConfigProviderInterface
 
     const CLIENT_ID_PRODUCTION_CONFIG_PATH = 'payment/doku_general_config/client_id_production';
     const CLIENT_ID_DEVELOPMENT_CONFIG_PATH = 'payment/doku_general_config/client_id_development';
-    const CHAIN_ID_PRODUCTION_CONFIG_PATH = 'payment/doku_general_config/chain_id_production';
-    const CAIN_ID_DEVELOPMENT_CONFIG_PATH = 'payment/doku_general_config/chain_id_development';
     const SHARED_KEY_PRODUCTION_CONFIG_PATH = 'payment/doku_general_config/shared_key_production';
     const SHARED_KEY_DEVELOPMENT_CONFIG_PATH = 'payment/doku_general_config/shared_key_development';
     const EXPIRY_CONFIG_PATH = 'payment/doku_general_config/expiry';
     const ENVIRONMENT_CONFIG_PATH = 'payment/doku_general_config/environment';
-    const SNEDER_EMAIL_CONFIG_PATH = 'payment/doku_general_config/sender_mail';
-    const SEMDER_NAME_CONFIG_PATH = 'payment/doku_general_config/sender_name';
+    const SENDER_EMAIL_CONFIG_PATH = 'payment/doku_general_config/sender_mail';
+    const SENDER_NAME_CONFIG_PATH = 'payment/doku_general_config/sender_name';
     const BCC_EMAIL_CONFIG_PATH = 'payment/doku_general_config/sender_mail_bcc';
-    const INSTALLMENT_AMOUNT_ABOVE = 'payment/doku_general_config/installment/amount_above';
-    const URL_CAPTURE = 'payment/cc_authorization_hosted/url_capture';
-    const URL_VOID = 'payment/cc_authorization_hosted/url_void';
 
     const REL_PAYMENT_CHANNEL = [
         'mandiri_va_merchanthosted' => "01",
@@ -52,9 +47,7 @@ class GeneralConfiguration implements ConfigProviderInterface
                 'core' => [
                     'client_id' => $this->getClientId(),
                     'environment' => $this->getEnvironment(),
-                    'expiry' => $this->getExpiry(),
-                    'request_url' => $this->getRequestUrl(),
-                    'chain_id' => $this->getChainId()
+                    'expiry' => $this->getExpiry()
                 ]
             ]
         ];
@@ -85,27 +78,6 @@ class GeneralConfiguration implements ConfigProviderInterface
         }
     }
 
-    public function getChainId()
-    {
-        $chainId = '';
-        if ($this->getEnvironment() == 'development') {
-            $chainId = $this->scopeConfig->getValue(SELF::CAIN_ID_DEVELOPMENT_CONFIG_PATH, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-            return !empty($chainId) ? $chainId : 'NA';
-        } else {
-            $chainId = $this->scopeConfig->getValue(SELF::CHAIN_ID_PRODUCTION_CONFIG_PATH, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-            return !empty($chainId) ? $chainId : 'NA';
-        }
-    }
-
-    public function getRequestUrl()
-    {
-        if ($this->getEnvironment() == 'development') {
-            return \Jokul\Magento2\Helper\Data::REQUEST_URL_HOSTED_DEVELOPMENT;
-        } else {
-            return \Jokul\Magento2\Helper\Data::REQUEST_URL_HOSTED_PRODUCTION;
-        }
-    }
-
     public function getExpiry()
     {
         return $this->scopeConfig->getValue(SELF::EXPIRY_CONFIG_PATH, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
@@ -113,12 +85,12 @@ class GeneralConfiguration implements ConfigProviderInterface
 
     public function getSenderMail()
     {
-        return $this->scopeConfig->getValue(SELF::SNEDER_EMAIL_CONFIG_PATH, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        return $this->scopeConfig->getValue(SELF::SENDER_EMAIL_CONFIG_PATH, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
     }
 
     public function getSenderName()
     {
-        return $this->scopeConfig->getValue(SELF::SEMDER_NAME_CONFIG_PATH, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        return $this->scopeConfig->getValue(SELF::SENDER_NAME_CONFIG_PATH, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
     }
 
     public function getRelationPaymentChannel($code){
@@ -155,15 +127,6 @@ class GeneralConfiguration implements ConfigProviderInterface
     public function getPaymentDiscountType($paymentMethod)
     {
         return $this->scopeConfig->getValue('payment/' . $paymentMethod . '/disc_type', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-    }
-
-    public function getJsMechantHosted()
-    {
-        if ($this->getEnvironment() == 'development') {
-            return $this->scopeConfig->getValue('doku_general_config/js_merchant_hosted/development_url', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-        } else {
-            return $this->scopeConfig->getValue('doku_general_config/js_merchant_hosted/production_url', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-        }
     }
 
     public function getLabelAdminFeeAndDiscount($adminFee, $adminFeeType, $discount, $discountType)

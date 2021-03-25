@@ -16,21 +16,8 @@ class Data extends AbstractHelper
     protected $config;
     protected $logger;
 
-
-    const REQUEST_URL_HOSTED_DEVELOPMENT = 'https://staging.doku.com/Suite/Receive';
-    const REQUEST_URL_HOSTED_PRODUCTION = 'https://pay.doku.com/Suite/Receive';
-
-    const REQUEST_URL_MIP_DEVELOPMENT = 'https://staging.doku.com/Suite/ReceiveMIP';
-    const REQUEST_URL_MIP_PRODUCTION = 'https://pay.doku.com/Suite/ReceiveMIP';
-
     const PREFIX_ENV_DEVELOPMENT = 'https://api-sandbox.doku.com';
     const PREFIX_ENV_PRODUCTION = 'http://jokul.doku.com';
-
-    const PAYMENT_URL_DEVELOPMENT = 'https://staging.doku.com/api/payment/paymentMip';
-    const PAYMENT_URL_PRODUCTION = 'https://pay.doku.com/api/payment/paymentMip';
-
-    const DIRECT_PAYMENT_URL_PRODUCTION = 'https://pay.doku.com/api/payment/PaymentMIPDirect';
-    const DIRECT_PAYMENT_URL_DEVELOPMENT = 'https://staging.doku.com/api/payment/PaymentMIPDirect';
 
     public function __construct(
         TransportBuilder $transportBuilder,
@@ -258,34 +245,6 @@ class Data extends AbstractHelper
         return "HMACSHA256=" . $signature;
     }
 
-    public function doPayment($data)
-    {
-
-        $url = SELF::PAYMENT_URL_PRODUCTION;
-
-        if ($this->config->getEnvironment() == 'development') {
-            $url = SELF::PAYMENT_URL_DEVELOPMENT;
-        }
-
-        $ch = curl_init($url);
-
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, 'data=' . json_encode($data));
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-        $responseJson = curl_exec($ch);
-
-        curl_close($ch);
-
-        if (is_string($responseJson)) {
-            return json_decode($responseJson, true);
-        } else {
-            return $responseJson;
-        }
-    }
-
     public function getTotalAdminFeeAndDisc($adminFee, $adminFeeType, $discountAmount, $discountType, $grandTotal)
     {
 
@@ -318,120 +277,6 @@ class Data extends AbstractHelper
         $total = array('total_admin_fee' => $totalAdminFee, 'total_discount' => $totalDisc);
 
         return $total;
-    }
-
-    public function doPrePayment($data)
-    {
-
-        $url = SELF::DIRECT_PAYMENT_URL_PRODUCTION;
-
-        if ($this->config->getEnvironment() == 'development') {
-            $url = SELF::DIRECT_PAYMENT_URL_DEVELOPMENT;
-        }
-
-        $ch = curl_init($url);
-
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, 'data=' . json_encode($data));
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-        $responseJson = curl_exec($ch);
-
-        curl_close($ch);
-
-        if (is_string($responseJson)) {
-            return json_decode($responseJson, true);
-        } else {
-            return $responseJson;
-        }
-    }
-
-    public function doCapture($dataParam)
-    {
-
-        $url = $this->config->getURLCapture();
-        $ch = curl_init($url);
-
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($dataParam));
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "Content-Type: application/x-www-form-urlencoded"
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-        $this->logger(get_class($this) . " ====== CAPTURE PARAM: " . json_encode($dataParam), 'DOKU_capture');
-        $data = curl_exec($ch);
-        curl_close($ch);
-
-        try {
-            $this->logger(get_class($this) . " ====== CAPTURE RESPONSE: " . $data, 'DOKU_capture');
-            $xml = new \SimpleXMLElement($data);
-            $response = json_decode(json_encode((array) $xml), TRUE);
-            return $response;
-        } catch (\Exception $e) {
-            $this->logger(get_class($this) . " ====== CAPTURE RESPONSE: " . $e->getMessage(), 'DOKU_capture');
-            return false;
-        }
-    }
-
-    public function doVoid($dataParam)
-    {
-
-        $url = $this->config->getURLVoid();
-        $ch = curl_init($url);
-
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($dataParam));
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "Content-Type: application/x-www-form-urlencoded"
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-        $this->logger(get_class($this) . " ====== VOID PARAM: " . json_encode($dataParam), 'DOKU_void');
-        $response = curl_exec($ch);
-        curl_close($ch);
-
-        try {
-            $this->logger(get_class($this) . " ====== VOID RESPONSE: " . $response, 'DOKU_void');
-            return $response;
-        } catch (\Exception $e) {
-            $this->logger(get_class($this) . " ====== VOID RESPONSE: " . $e->getMessage(), 'DOKU_void');
-            return false;
-        }
-    }
-
-    public function doRefund($dataParam)
-    {
-
-        $url = $this->config->getURLVoid();
-        $ch = curl_init($url);
-
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($dataParam));
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "Content-Type: application/x-www-form-urlencoded"
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-        $this->logger(get_class($this) . " ====== VOID PARAM: " . json_encode($dataParam), 'DOKU_void');
-        $response = curl_exec($ch);
-        curl_close($ch);
-
-        try {
-            $this->logger(get_class($this) . " ====== VOID RESPONSE: " . $response, 'DOKU_void');
-            return $response;
-        } catch (\Exception $e) {
-            $this->logger(get_class($this) . " ====== VOID RESPONSE: " . $e->getMessage(), 'DOKU_void');
-            return false;
-        }
     }
 
     public function getHowToPay($url)

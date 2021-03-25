@@ -42,7 +42,7 @@ define(
                             } else {
                                 alert({
                                     title: 'Payment error!',
-                                    content: 'Error code : ' + dataResponse.res_response_code + '<br>Please retry payment',
+                                    content: 'Error code : ' + dataResponse.response_msg + '<br>Please retry payment',
                                     actions: {
                                         always: function () {
                                         }
