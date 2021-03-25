@@ -94,13 +94,7 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
             $requestAmount = $requestParams['order']['amount'];
         }
 
-        $expiryValue = 360;
-
-        if (!empty($requestParams['EXPIRYTIME'])) {
-            $expiryValue = $requestParams['EXPIRYTIME'];
-        } else if (!empty($requestParams['expiredTime'])) {
-            $expiryValue = $requestParams['expiredTime'];
-        }
+        $expiryValue = $requestParams['virtual_account_info']['expired_time'];
 
         $expiryGmtDate = date('Y-m-d H:i:s', (strtotime('+' . $expiryValue . ' minutes', time())));
         $expiryStoreDate = $this->timeZone->date(new \DateTime($expiryGmtDate))->format('Y-m-d H:i:s');
