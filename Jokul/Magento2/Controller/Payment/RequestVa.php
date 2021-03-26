@@ -190,25 +190,38 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 $result = $this->helper->doGeneratePaycode($signatureParams, $params, $signature);
             } catch (\Exception $e) {
                 $this->logger->info('===== Jokul - VA Request Controller ===== Exception: ' . $e);
-                $result['res_response_code'] = "500";
-                $result['res_response_msg'] = "Can't connect to server";
             }
 
             $this->logger->info('===== Jokul - VA Request Controller ===== Response from Jokul: ' . json_encode($result, JSON_PRETTY_PRINT));
+            
+            if (isset($result['order']['invoice_number'])) {
+                $virtualAccountInfo = isset($result['virtual_account_info']) ? $result['virtual_account_info'] : '';
 
-            if (isset($result['virtual_account_info'])) {
-                $orderStatus = 'PENDING';
-                $result['result'] = 'SUCCESS';
+                if ($virtualAccountInfo !== '') {
+                    $this->logger->info('===== Jokul - VA Request Controller ===== Received Success Response from Jokul');
+                    $orderStatus = 'PENDING';
+                    $result['result'] = 'SUCCESS';
+                    $vaNumber = $result['virtual_account_info']['virtual_account_number'];
+                } elseif (isset($result['error'])) {
+                    $this->logger->info('===== Jokul - VA Request Controller ===== Received Error Response from Jokul');
+                    $result['result'] = 'FAILED';
+                    $result['error_message'] = $result['error']['message'];
+                } else {
+                    $this->logger->info('===== Jokul - VA Request Controller ===== Received Undefined Error from Jokul');
+                    $result['result'] = 'FAILED';
+                    $result['error_message'] = 'Undefined error';
+                }
             } else {
+                $this->logger->info('===== Jokul - VA Request Controller ===== Received Unexpected Error from Jokul');
                 $result['result'] = 'FAILED';
-                $result['errorMessage'] = $result['error']['message'];
+                $result['error_message'] = 'Unexpected error';
             }
 
+            $vaNumber = '';
+            
             $params['shared_key'] = $sharedKey;
             $params['response'] = $result;
-            
-            $vaNumber = $result['virtual_account_info']['virtual_account_number'];
-
+        
             $jsonResult = json_encode(array_merge($params), JSON_PRETTY_PRINT);
 
             $this->resourceConnection->getConnection()->insert('jokul_transaction', [
@@ -255,15 +268,15 @@ class RequestVa extends \Magento\Framework\App\Action\Action
         $this->logger->info('===== Jokul - VA Request Controller ===== End');
 
         if ($result['result'] == 'SUCCESS') {
-            $this->logger->info('===== Jokul - VA Request Controller ===== Redirecting to Success Page' . print_r($result, true));
-
             echo json_encode(array(
                 'err' => false,
-                'response_msg' => 'VA Number Generated',
+                'response_message' => 'VA Number Generated',
                 'result' => $redirectData
             ));
+            $this->logger->info('===== Jokul - VA Request Controller ===== Redirecting to Success Page' . print_r($result, true));
         } else {
-            $this->logger->info('===== Jokul - VA Request Controller ===== Show Error Popup: ' . print_r($result, true));
+            $this->logger->info('===== Jokul - VA Request Controller ===== Prepare Order Failed Procedure');
+            $this->logger->info('===== Jokul - VA Request Controller ===== Initiate Restore Cart');
 
             $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
             $_checkoutSession = $objectManager->create('\Magento\Checkout\Model\Session');
@@ -271,15 +284,22 @@ class RequestVa extends \Magento\Framework\App\Action\Action
 
             $order = $_checkoutSession->getLastRealOrder();
             $quote = $_quoteFactory->create()->loadByIdWithoutStore($order->getQuoteId());
+            $this->logger->info('===== Jokul - VA Request Controller ===== Get Cart');
             if ($quote->getId()) {
+                $this->logger->info('===== Jokul - VA Request Controller ===== Checking Cart');
                 $quote->setIsActive(1)->setReservedOrderId(null)->save();
                 $_checkoutSession->replaceQuote($quote);
+                $this->logger->info('===== Jokul - VA Request Controller ===== Restoring Cart');
+                $order->cancel()->save();
+                $this->logger->info('===== Jokul - VA Request Controller ===== Cart Restored');
                 echo json_encode(array(
                     'err' => true,
-                    'response_msg' => $result['errorMessage'],
+                    'response_message' => $result['error_message'],
                     'result' => $redirectData
                 ));
             }
+
+            $this->logger->info('===== Jokul - VA Request Controller ===== Show Error Popup: ' . print_r($result, true));
         }
     }
 }

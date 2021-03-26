@@ -42,7 +42,7 @@ define(
                             } else {
                                 alert({
                                     title: 'Something went wrong!',
-                                    content: `Failed reason: ${dataResponse.response_msg} <br>Please retry payment`,
+                                    content: `Failed reason: ${dataResponse.response_message} <br>Please retry payment`,
                                     actions: {
                                         always: function () {
                                         }

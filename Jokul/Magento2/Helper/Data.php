@@ -17,7 +17,7 @@ class Data extends AbstractHelper
     protected $logger;
 
     const PREFIX_ENV_DEVELOPMENT = 'https://api-sandbox.doku.com';
-    const PREFIX_ENV_PRODUCTION = 'http://jokul.doku.com';
+    const PREFIX_ENV_PRODUCTION = 'https://api-jokul.doku.com';
 
     public function __construct(
         TransportBuilder $transportBuilder,
@@ -97,16 +97,18 @@ class Data extends AbstractHelper
                 'customerEmail' => $order->getCustomerEmail(),
                 'storeName' => $order->getStoreName(),
                 'orderId' => $order->getIncrementId(),
-                'vaNumber' => $dokusTransactionOrder['va_number'],
+                'vaNumber' => !empty($vaNumber) ? $vaNumber : $dokusTransactionOrder['va_number'],
                 'amount' => number_format($dokusTransactionOrder['doku_grand_total'], 2, ",", "."),
                 'discountValue' => $discountValue,
                 'adminFeeValue' => $adminFeeValue,
                 'paymentChannel' => $paymentChannelLabel,
-                'expiry' => date('d F Y, H:i', strtotime($dokusTransactionOrder['expired_at_storetimezone'])),
+                'expiry' => date('d F Y, H:i', strtotime($expiryStoreDate)),
                 'paymentInstructions' => $this->getHowToPay($howToPayUrl)
             ];
 
             $this->dataObject->setData($emailParams);
+
+            $this->logger(get_class($this) . " ===== Jokul - Email Sender ===== Email params: " . print_r($emailParams, true), 'DOKU_send_email');
 
             $sender = [
                 'name' => $this->config->getSenderName(),

@@ -112,11 +112,11 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
 
                 if ($post['status'] == 'SUCCESS') {
                     $isSuccessOrder = true;
-                    $this->logger->info('===== Jokul - Redirect Controller ===== Order Status Success');
                     $path = "checkout/onepage/success";
+                    $this->logger->info('===== Jokul - Redirect Controller ===== Order Status Success');
                 } else {
                     $path ="checkout/cart";
-                    $this->messageManager->addWarningMessage('Payment Failed. Please Try Again or Call Customer Service.');
+                    $this->messageManager->addWarningMessage('Payment Failed. Please try again or contact our customer service.');
                     $order->cancel()->save();
                     $this->logger->info('===== Jokul - Redirect Controller ===== Order Status Failed');
                 }
