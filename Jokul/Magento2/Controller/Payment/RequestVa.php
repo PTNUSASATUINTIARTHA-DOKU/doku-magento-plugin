@@ -89,9 +89,9 @@ class RequestVa extends \Magento\Framework\App\Action\Action
     public function execute()
     {
 
-        $this->logger->info('===== Request controller VA GATEWAY ===== Start');
+        $this->logger->info('===== Jokul - VA Request Controller ===== Start');
 
-        $this->logger->info('===== Request controller VA GATEWAY ===== Find Order');
+        $this->logger->info('===== Jokul - VA Request Controller ===== Find Order to Execute');
 
         $result = array();
         $redirectData = array();
@@ -103,7 +103,7 @@ class RequestVa extends \Magento\Framework\App\Action\Action
             $this->session->getLastRealOrder()->setState(Order::STATE_NEW);
             $order->save();
 
-            $this->logger->info('===== Request controller VA GATEWAY ===== Order Found!');
+            $this->logger->info('===== Jokul - VA Request Controller ===== Order Found!');
 
             $configCode = $this->config->getRelationPaymentChannel($order->getPayment()->getMethod());
 
@@ -180,22 +180,21 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 )
             );
 
-            $this->logger->info('===== Request controller VA GATEWAY ===== request param = ' . json_encode($params, JSON_PRETTY_PRINT));
-            $this->logger->info('===== Request controller VA GATEWAY ===== send request');
-
-            $this->logger->info('NILAI PAYMENT CHANNEL ' . $configCode);
+            $this->logger->info('===== Jokul - VA Request Controller ===== Request params: ' . json_encode($params, JSON_PRETTY_PRINT));
+            $this->logger->info('===== Jokul - VA Request Controller ===== Payment channel: ' . $requestTarget);
+            $this->logger->info('===== Jokul - VA Request Controller ===== Send request to Jokul');
 
             $orderStatus = 'FAILED';
             try {
                 $signature = $this->helper->doCreateRequestSignature($signatureParams, $params);
                 $result = $this->helper->doGeneratePaycode($signatureParams, $params, $signature);
             } catch (\Exception $e) {
-                $this->logger->info('Eception ' . $e);
+                $this->logger->info('===== Jokul - VA Request Controller ===== Exception: ' . $e);
                 $result['res_response_code'] = "500";
                 $result['res_response_msg'] = "Can't connect to server";
             }
 
-            $this->logger->info('===== Request controller VA GATEWAY ===== response payment = ' . json_encode($result, JSON_PRETTY_PRINT));
+            $this->logger->info('===== Jokul - VA Request Controller ===== Response from Jokul: ' . json_encode($result, JSON_PRETTY_PRINT));
 
             if (isset($result['virtual_account_info'])) {
                 $orderStatus = 'PENDING';
@@ -255,18 +254,18 @@ class RequestVa extends \Magento\Framework\App\Action\Action
             $redirectData['WORDS'] = $redirectWords;
             $redirectData['STATUSCODE'] = $result['result'];
         } else {
-            $this->logger->info('===== Request controller VA GATEWAY ===== Order not found');
+            $this->logger->info('===== Jokul - VA Request Controller ===== Order not found!');
         }
 
-        $this->logger->info('===== Request controller VA GATEWAY ===== end');
+        $this->logger->info('===== Jokul - VA Request Controller ===== End');
 
         if ($result['result'] == 'success') {
             echo json_encode(array(
-                'err' => false, 'response_msg' => 'Generate paycode Success',
+                'err' => false, 'response_msg' => 'VA Number Generated',
                 'result' => $redirectData
             ));
         } else {
-            $this->logger->info('===== Request controller VA GATEWAY Response ===== ' . print_r($result, true));
+            $this->logger->info('===== Jokul - VA Request Controller ===== Jokul Magento Response: ' . print_r($result, true));
 
             $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
             $_checkoutSession = $objectManager->create('\Magento\Checkout\Model\Session');
@@ -278,7 +277,7 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 $quote->setIsActive(1)->setReservedOrderId(null)->save();
                 $_checkoutSession->replaceQuote($quote);
                 echo json_encode(array(
-                    'err' => false, 'response_msg' => 'Generate paycode failed (' . $result['errorMessage'] . ')',
+                    'err' => false, 'response_msg' => 'Failed to Generate VA Number (' . $result['errorMessage'] . ')',
                     'result' => $redirectData
                 ));
             }

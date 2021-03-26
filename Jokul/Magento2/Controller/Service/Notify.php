@@ -61,19 +61,19 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
 
     public function execute()
     {
-        $this->logger->info('===== Notify Controller ===== Start');
+        $this->logger->info('===== Jokul - Notification Controller ===== Start');
         try {
             // Start - Build Data Process
             $parsedRaw = array();
             $rawbody = urldecode(file_get_contents('php://input'));
             parse_str($rawbody, $parsedRaw);
 
-            $this->logger->info('NOTIFY RAW PARAMS : ' . $rawbody);
+            $this->logger->info('===== Jokul - Notification Controller ===== Notification Raw Request: ' . $rawbody);
 
             $postjson = json_encode($rawbody, JSON_PRETTY_PRINT);
             $postData = json_decode($rawbody, true);
 
-            $this->logger->info('===== Notify Controller ===== Finding order...');
+            $this->logger->info('===== Jokul - Notification Controller ===== Looking for the order on Magento Side');
 
             $connection = $this->resourceConnection->getConnection();
             $tableName = $this->resourceConnection->getTableName('jokul_transaction');
@@ -81,11 +81,11 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
 
             $invoiceNumber = $postData['order']['invoice_number'];
 
-            $this->logger->info('invoice : ' . $invoiceNumber);
+            $this->logger->info('===== Jokul - Notification Controller ===== Invoice Number: ' . $invoiceNumber);
             $order = $this->order->loadByIncrementId($invoiceNumber);
             if (!$order->getId()) {
-                $this->logger->info('===== Notify Controller ===== Order not found!');
-                $this->sendResponse($postData, true);
+                $this->logger->info('===== Jokul - Notification Controller ===== Order not found!');
+                $this->sendResponse(404);
                 die;
             }
 
@@ -94,19 +94,20 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
             $dokuOrder = $connection->fetchRow($sql);
 
             if (!isset($dokuOrder['invoice_number'])) {
-                $this->logger->info('===== Notify Controller ===== Invoice Number not found! in jokul_transaction table');
-                $this->sendResponse($postData, true);
+                $this->logger->info('===== Jokul - Notification Controller ===== Invoice Number not found in jokul_transaction table');
+                $this->sendResponse(404);
                 die;
             }
 
-            $this->logger->info('===== Notify Controller ===== Order found');
-            $this->logger->info('===== Notify Controller ===== Updating order...');
+            $this->logger->info('===== Jokul - Notification Controller ===== Order found');
+            $this->logger->info('===== Jokul - Notification Controller ===== Updating order based on notification received');
 
-            if("SUCCESS" == $dokuOrder['order_status']){
-                $this->logger->info('===== Notify Controller ===== Transaction already success...');
-                $this->sendResponse($postData, true);
+            if($postData['transaction']['status'] == $dokuOrder['order_status']){
+                $this->logger->info('===== Jokul - Notification Controller ===== Transaction already updated to SUCCESS');
+                $this->sendResponse(409);
                 die;
             }
+
             $requestParams = json_decode($dokuOrder['request_params'], true);
             $sharedKey = $requestParams['SHAREDID'];
             $this->sharedKey = $sharedKey;
@@ -122,13 +123,15 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
 
             $signature = $this->Magento2Helper->doCreateNotifySignature($signatureParams, $rawbody);
 
-            $this->logger->info('===== Notify Controller ===== Checking signature...');
+            $this->logger->info('===== Jokul - Notification Controller ===== Checking Signature');
 
             if ($headers['Signature'] != $signature) {
-                $this->logger->info('===== Notify Controller ===== signature not match!');
-                $this->sendResponse($postData, true);
+                $this->logger->info('===== Jokul - Notification Controller ===== Signature not match!');
+                $this->sendResponse(401);
                 die;
             }
+
+            $this->logger->info('===== Jokul - Notification Controller ===== Signature match!');
 
             $paymentMethod = $order->getPayment()->getMethod();
             if ($order->canInvoice() && !$order->hasInvoices() && $paymentMethod != \Jokul\Magento2\Model\Payment\CreditCardAuthorizationHosted::CODE) {
@@ -181,37 +184,23 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
             $sql = "Update " . $tableName . " SET `updated_at` = 'now()', `order_status` = 'SUCCESS' , `notify_params` = '" . $postjson . "' where invoice_number = '" . $invoiceNumber . "'";
             $connection->query($sql);
 
-            $this->logger->info('===== Notify Controller ===== Updating success...');
-            $this->sendResponse($postData, false);
+            $this->logger->info('===== Jokul - Notification Controller ===== Update transaction to SUCCESS');
+            $this->sendResponse(200);
 
-            $this->logger->info('===== Notify Controller ===== End');
+            $this->logger->info('===== Jokul - Notification Controller ===== End');
         } catch (\Exception $e) {
-            $this->logger->info('===== Notify Controller ===== Generate code error : ' . $e->getMessage());
-            $this->logger->info('===== Notify Controller ===== End');
+            $this->logger->info('===== Jokul - Notification Controller ===== Error reason: ' . $e->getMessage());
+            $this->logger->info('===== Jokul - Notification Controller ===== End');
 
-            $this->sendResponse($postData, true);
+            $this->sendResponse(400);
         }
     }
 
-    private function sendResponse($postData, $isFailed)
+    private function sendResponse($httpStatusCode)
     {
-        if ($isFailed) {
-            header('Access-Control-Allow-Origin: *');
-            header('Content-Type: application/json; charset=UTF-8');
-            http_response_code(400);
-        }
-
-        $json_data_output = array(
-            "order" => array(
-                "invoice_number" => $postData['order']['invoice_number'],
-                "amount" => $postData['order']['amount']
-            ),
-            "virtual_account_info" => array(
-                "virtual_account_number" => $postData['virtual_account_info']['virtual_account_number']
-            )
-        );
-
-        echo json_encode($json_data_output);
+        header('Access-Control-Allow-Origin: *');
+        header('Content-Type: application/json; charset=UTF-8');
+        http_response_code($httpStatusCode);
     }
 
     /**

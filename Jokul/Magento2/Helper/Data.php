@@ -80,7 +80,7 @@ class Data extends AbstractHelper
 
     public function sendDokuEmailOrder($order, $vaNumber = "", $dokusTransactionOrder = array(), $isSuccessOrder = true, $expiryStoreDate = "")
     {
-        $this->logger(get_class($this) . " ====== Email Sender ====== Preparing", 'DOKU_send_email');
+        $this->logger(get_class($this) . " ===== Jokul - Email Sender ===== Preparing Data", 'DOKU_send_email');
         try {
             $paymentChannelLabel = $order->getPayment()->getMethodInstance()->getTitle();
 
@@ -139,7 +139,7 @@ class Data extends AbstractHelper
                 $template = "failed_template";
             }
 
-            $this->logger(get_class($this) . " ====== Email Sender ====== Using template: " . $template, 'DOKU_send_email');
+            $this->logger(get_class($this) . " ===== Jokul - Email Sender ===== Template used: " . $template, 'DOKU_send_email');
 
             $this->transportBuilder->setTemplateIdentifier($template)->setFrom($sender)
                 ->addTo($order->getCustomerEmail(), $order->getCustomerName())
@@ -155,7 +155,7 @@ class Data extends AbstractHelper
             if ($this->config->getBccEmailAddress() !== null) {
                 $bccEmailAddress = explode(",", str_replace(" ", "", $this->config->getBccEmailAddress()));
                 $this->transportBuilder->addBcc($bccEmailAddress[0]);
-                $this->logger(get_class($this) . " ====== Email Sender ====== Bcc Listing: ", 'DOKU_send_email');
+                $this->logger(get_class($this) . " ===== Jokul - Email Sender ===== Bcc Listing: ", 'DOKU_send_email');
                 $this->logger(get_class($this) . print_r($bccEmailAddress, TRUE), 'DOKU_send_email');
             }
             $transport = $this->transportBuilder->getTransport();
@@ -179,7 +179,7 @@ class Data extends AbstractHelper
                 }
             }
         } catch (\Exception $e) {
-            $this->logger(get_class($this) . " ====== Email Sender ====== Failure: " . $e->getMessage(), 'DOKU_send_email');
+            $this->logger(get_class($this) . " ===== Jokul - Email Sender ===== Failure reason: " . $e->getMessage(), 'DOKU_send_email');
             return false;
         }
     }
@@ -195,7 +195,7 @@ class Data extends AbstractHelper
         } else {
             $url = $prefixprod . $path;
         }
-        $this->logger->info('===== Request controller VA GATEWAY ===== URL : ' . $url);
+        $this->logger->info('===== Jokul - Generate VA Number ===== Jokul URL to hit: ' . $url);
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -210,7 +210,7 @@ class Data extends AbstractHelper
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $responseJson = curl_exec($ch);
 
-        $this->logger->info('===== Request controller VA GATEWAY ===== Response : ' . print_r($responseJson, true));
+        $this->logger->info('===== Jokul - Generate VA Number ===== Response from Jokul: ' . print_r($responseJson, true));
 
         curl_close($ch);
 
@@ -300,7 +300,7 @@ class Data extends AbstractHelper
         $response = curl_exec($ch);
         $responseJson = json_decode($response, true);
 
-        $this->logger(get_class($this) . " Response from: " . $url . " => " . $response, 'DOKU_send_email');
+        $this->logger(get_class($this) . "===== Jokul - Get How to Pay ===== Response from Jokul: " . $url . " => " . $response, 'DOKU_send_email');
 
         return $responseJson['payment_instruction'];
     }

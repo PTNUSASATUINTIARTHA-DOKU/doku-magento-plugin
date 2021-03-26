@@ -50,21 +50,19 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
 
     public function execute() {
         $path = "";
-        $this->logger->info('===== Redirect Controller  ===== Start');
+        $this->logger->info('===== Jokul - Redirect Controller ===== Start');
         $post = $this->getRequest()->getParams();
 
         $postJson = json_encode($post, JSON_PRETTY_PRINT);
 
-        $this->logger->info('REDIRECT PARAMS : ' . $postJson);
-
-        $this->logger->info('===== Redirect Controller  ===== Finding order...');
+        $this->logger->info('===== Jokul - Redirect Controller ===== Looking for the order on the Magento Side');
 
         $connection = $this->resourceConnection->getConnection();
         $tableName = $this->resourceConnection->getTableName('jokul_transaction');
 
         if(!isset($post['INVOICENUMBER'])) {
 
-            $path = "checkout/onepage/failure";
+            $path = "checkout/cart";
             $resultRedirect = $this->resultRedirectFactory->create();
             return $resultRedirect->setPath($path);
         }
@@ -75,7 +73,7 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
         $dokuOrder = $connection->fetchRow($sql);
 
         if (!isset($dokuOrder['invoice_number'])) {
-            $this->logger->info('===== Notify Controller ===== Trans ID Merchant not found! in jokul_transaction table');
+            $this->logger->info('===== Jokul - Redirect Controller ===== Invoice Number not found in jokul_transaction table');
 
             $path = "";
             $this->messageManager->addError(__('Cannot found your order ID!'));
@@ -86,7 +84,6 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
 
         $requestParams = json_decode($dokuOrder['request_params'], true);
 
-        $this->logger->info('===== Redirect Controller  ===== REQUEST PARAM: '.json_encode($requestParams, JSON_PRETTY_PRINT));
         $sharedKey = $requestParams['SHAREDID'];
 
         $requestAmount = 0;
@@ -112,10 +109,10 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
 
             $isSuccessOrder = false;
 
-            $this->logger->info('===== Redirect Controller  ===== Order found!');
+            $this->logger->info('===== Jokul - Redirect Controller ===== Order found');
 
 
-            $this->logger->info('===== Redirect Controller  ===== Checking words');
+            $this->logger->info('===== Jokul - Redirect Controller =====  Checking words');
 
             $wordsParams = array(
                 'amount' => $requestAmount,
@@ -127,43 +124,43 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
             $words = $this->helper->doCreateWords($wordsParams);
 
             if ($words == $post['WORDS']) {
-                $this->logger->info('===== Redirect Controller  ===== Checking done');
+                $this->logger->info('===== Jokul - Redirect Controller ===== Words match');
 
-                $this->logger->info('===== Redirect Controller  ===== Check STATUSCODE');
+                $this->logger->info('===== Jokul - Redirect Controller ===== Check Order Status');
 
                 if ($post['STATUSCODE'] == 'success') {
                     $isSuccessOrder = true;
-                    $this->logger->info('===== Redirect Controller  ===== STATUSCODE Success');
+                    $this->logger->info('===== Jokul - Redirect Controller ===== Order Status Success');
                     $path = "checkout/onepage/success";
                 } else {
                     $path ="checkout/cart";
                     $this->messageManager->addWarningMessage('Payment Failed. Please Try Again or Call Customer Service.');
                     $order->cancel()->save();
-                    $this->logger->info('===== Redirect Controller  ===== STATUSCODE Failed!');
+                    $this->logger->info('===== Jokul - Redirect Controller ===== Order Status Failed');
                 }
 
-                $this->logger->info('===== Redirect Controller ===== Send Email Order  ===== Start');
+                $this->logger->info('===== Jokul - Redirect Controller ===== Send Email Notification - Start');
 
                 $this->helper->sendDokuEmailOrder($order, $vaNumber, $dokuOrder, $isSuccessOrder, $expiryStoreDate);
 
-                $this->logger->info('===== Redirect Controller ===== Send Email Order  ===== End');
+                $this->logger->info('===== Jokul - Redirect Controller ===== Send Email Notification - End');
 
             } else {
                 $path = "";
                 $order->cancel()->save();
                 $this->messageManager->addError(__('Sorry, something went wrong!'));
-                $this->logger->info('===== Redirect Controller ===== Words not match!');
+                $this->logger->info('===== Jokul - Redirect Controller ===== Words not match!');
             }
         } else {
             $path = "";
             $this->messageManager->addError(__('Order not found'));
-            $this->logger->info('===== Redirect Controller  ===== Order not found');
+            $this->logger->info('===== Jokul - Redirect Controller ===== Order not found');
         }
 
         $sql = "Update " . $tableName . " SET ".$additionalParams." `updated_at` = 'now()', `expired_at_gmt` = '".$expiryGmtDate."', `expired_at_storetimezone` = '".$expiryStoreDate."', `redirect_params` = '" . $postJson . "' where invoice_number = '" . $post['INVOICENUMBER'] . "'";
         $connection->query($sql);
 
-        $this->logger->info('===== Redirect Controller  ===== End');
+        $this->logger->info('===== Jokul - Redirect Controller ===== End');
 
         $resultRedirect = $this->resultRedirectFactory->create();
         return $resultRedirect->setPath($path);
