@@ -103,8 +103,8 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
             $this->logger->info('===== Jokul - Notification Controller ===== Updating order based on notification received');
 
             if($postData['transaction']['status'] == $dokuOrder['order_status']){
-                $this->logger->info('===== Jokul - Notification Controller ===== Transaction already updated to SUCCESS');
-                $this->sendResponse(409);
+                $this->logger->info('===== Jokul - Notification Controller ===== Transaction already updated to SUCCESS (Idempotent)');
+                $this->sendResponse(200);
                 die;
             }
 
