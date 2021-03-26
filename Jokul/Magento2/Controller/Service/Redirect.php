@@ -60,15 +60,7 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
         $connection = $this->resourceConnection->getConnection();
         $tableName = $this->resourceConnection->getTableName('jokul_transaction');
 
-        if(!isset($post['INVOICENUMBER'])) {
-
-            $path = "checkout/cart";
-            $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath($path);
-        }
-
-
-        $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $post['INVOICENUMBER'] . "'";
+        $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $post['invoice_number'] . "'";
 
         $dokuOrder = $connection->fetchRow($sql);
 
@@ -76,34 +68,25 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
             $this->logger->info('===== Jokul - Redirect Controller ===== Invoice Number not found in jokul_transaction table');
 
             $path = "";
-            $this->messageManager->addError(__('Cannot found your order ID!'));
+            $this->messageManager->addError(__('Order not found!'));
 
             $resultRedirect = $this->resultRedirectFactory->create();
             return $resultRedirect->setPath($path);
         }
 
         $requestParams = json_decode($dokuOrder['request_params'], true);
-
-        $sharedKey = $requestParams['SHAREDID'];
-
-        $requestAmount = 0;
-        if(isset($requestParams['order']['amount'])){
-            $requestAmount = $requestParams['order']['amount'];
-        }
+        $sharedKey = $requestParams['shared_key'];
+        $requestAmount = $requestParams['order']['amount'];
 
         $expiryValue = $requestParams['virtual_account_info']['expired_time'];
 
         $expiryGmtDate = date('Y-m-d H:i:s', (strtotime('+' . $expiryValue . ' minutes', time())));
         $expiryStoreDate = $this->timeZone->date(new \DateTime($expiryGmtDate))->format('Y-m-d H:i:s');
 
-        $additionalParams = "";
-        $vaNumber = "";
-        if (isset($post['PAYMENTCODE']) && !empty($post['PAYMENTCODE'])) {
-            $vaNumber = $post['PAYMENTCODE'];
-            $additionalParams = " `va_number` = '" . $vaNumber . "', ";
-        }
+        $vaNumber = $requestParams['response']['virtual_account_info']['virtual_account_number'];
+        $additionalParams = " `va_number` = '" . $vaNumber . "', ";
 
-        $order = $this->order->loadByIncrementId($post['INVOICENUMBER']);
+        $order = $this->order->loadByIncrementId($post['invoice_number']);
 
         if ($order->getEntityId()) {
 
@@ -111,24 +94,23 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
 
             $this->logger->info('===== Jokul - Redirect Controller ===== Order found');
 
+            $this->logger->info('===== Jokul - Redirect Controller =====  Checking Redirect Signature');
 
-            $this->logger->info('===== Jokul - Redirect Controller =====  Checking words');
-
-            $wordsParams = array(
+            $redirectSignatureParams = array(
                 'amount' => $requestAmount,
-                'sharedid' => $sharedKey,
+                'sharedkey' => $sharedKey,
                 'invoice' => $order->getIncrementId(),
-                'statuscode' => $post['STATUSCODE']
+                'status' => $post['status']
             );
 
-            $words = $this->helper->doCreateWords($wordsParams);
+            $redirectSignature = $this->helper->generateRedirectSignature($redirectSignatureParams);
 
-            if ($words == $post['WORDS']) {
-                $this->logger->info('===== Jokul - Redirect Controller ===== Words match');
+            if ($redirectSignature == $post['redirect_signature']) {
+                $this->logger->info('===== Jokul - Redirect Controller ===== Redirect Signature match!');
 
                 $this->logger->info('===== Jokul - Redirect Controller ===== Check Order Status');
 
-                if ($post['STATUSCODE'] == 'success') {
+                if ($post['status'] == 'SUCCESS') {
                     $isSuccessOrder = true;
                     $this->logger->info('===== Jokul - Redirect Controller ===== Order Status Success');
                     $path = "checkout/onepage/success";
@@ -149,7 +131,7 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
                 $path = "";
                 $order->cancel()->save();
                 $this->messageManager->addError(__('Sorry, something went wrong!'));
-                $this->logger->info('===== Jokul - Redirect Controller ===== Words not match!');
+                $this->logger->info('===== Jokul - Redirect Controller ===== Redirect Signature not match!');
             }
         } else {
             $path = "";
@@ -157,7 +139,7 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
             $this->logger->info('===== Jokul - Redirect Controller ===== Order not found');
         }
 
-        $sql = "Update " . $tableName . " SET ".$additionalParams." `updated_at` = 'now()', `expired_at_gmt` = '".$expiryGmtDate."', `expired_at_storetimezone` = '".$expiryStoreDate."', `redirect_params` = '" . $postJson . "' where invoice_number = '" . $post['INVOICENUMBER'] . "'";
+        $sql = "Update " . $tableName . " SET ".$additionalParams." `updated_at` = 'now()', `expired_at_gmt` = '".$expiryGmtDate."', `expired_at_storetimezone` = '".$expiryStoreDate."', `redirect_params` = '" . $postJson . "' where invoice_number = '" . $post['invoice_number'] . "'";
         $connection->query($sql);
 
         $this->logger->info('===== Jokul - Redirect Controller ===== End');

@@ -127,7 +127,7 @@ class RequestVa extends \Magento\Framework\App\Action\Action
             $grandTotal = $buffGrandTotal;
 
             $clientId = $config['payment']['core']['client_id'];
-            $sharedId = $this->config->getSharedKey();
+            $sharedKey = $this->config->getSharedKey();
             $expiryTime = isset($config['payment']['core']['expiry']) && (int) $config['payment']['core']['expiry'] != 0 ? $config['payment']['core']['expiry'] : 60;
 
             $customerName = trim($billingData->getFirstname() . " " . $billingData->getLastname());
@@ -150,7 +150,7 @@ class RequestVa extends \Magento\Framework\App\Action\Action
 
             $signatureParams = array(
                 "clientId" => $clientId,
-                "key" => $sharedId,
+                "key" => $sharedKey,
                 "requestTarget" => $requestTarget,
                 "requestId" => rand(1, 100000),
                 "requestTimestamp" => substr($requestTimestamp, 0, 19) . "Z"
@@ -198,21 +198,18 @@ class RequestVa extends \Magento\Framework\App\Action\Action
 
             if (isset($result['virtual_account_info'])) {
                 $orderStatus = 'PENDING';
-                $result['result'] = 'success';
+                $result['result'] = 'SUCCESS';
             } else {
                 $result['result'] = 'FAILED';
                 $result['errorMessage'] = $result['error']['message'];
             }
 
-            $params['SHAREDID'] = $sharedId;
-            $params['RESPONSE'] = $result;
+            $params['shared_key'] = $sharedKey;
+            $params['response'] = $result;
+            
+            $vaNumber = $result['virtual_account_info']['virtual_account_number'];
 
             $jsonResult = json_encode(array_merge($params), JSON_PRETTY_PRINT);
-
-            $vaNumber = '';
-            if (isset($result['virtual_account_info'])) {
-                $vaNumber = $result['virtual_account_info']['virtual_account_number'];
-            }
 
             $this->resourceConnection->getConnection()->insert('jokul_transaction', [
                 'quote_id' => $order->getQuoteId(),
@@ -238,34 +235,35 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 ->getStore($order->getStore()->getId())
                 ->getBaseUrl();
 
-            $redirectData['URL'] = $base_url . "jokulbackend/service/redirect";
-            $redirectData['RESPONSECODE'] = $result['result'];
-            $redirectData['RESPONSEMSG'] = $result['result'];
-            $redirectData['INVOICENUMBER'] = $order->getIncrementId();
+            $redirectData['url'] = $base_url . "jokulbackend/service/redirect";
+            $redirectData['invoice_number'] = $order->getIncrementId();
 
-            $wordsParams = array(
+            $redirectSignatureParams = array(
                 'amount' => $grandTotal,
-                'sharedid' => $sharedId,
+                'sharedkey' => $sharedKey,
                 'invoice' => $order->getIncrementId(),
-                'statuscode' => $result['result']
+                'status' => $result['result']
             );
 
-            $redirectWords = $this->helper->doCreateWords($wordsParams);
-            $redirectData['WORDS'] = $redirectWords;
-            $redirectData['STATUSCODE'] = $result['result'];
+            $redirectSignature = $this->helper->generateRedirectSignature($redirectSignatureParams);
+            $redirectData['redirect_signature'] = $redirectSignature;
+            $redirectData['status'] = $result['result'];
         } else {
             $this->logger->info('===== Jokul - VA Request Controller ===== Order not found!');
         }
 
         $this->logger->info('===== Jokul - VA Request Controller ===== End');
 
-        if ($result['result'] == 'success') {
+        if ($result['result'] == 'SUCCESS') {
+            $this->logger->info('===== Jokul - VA Request Controller ===== Redirecting to Success Page' . print_r($result, true));
+
             echo json_encode(array(
-                'err' => false, 'response_msg' => 'VA Number Generated',
+                'err' => false,
+                'response_msg' => 'VA Number Generated',
                 'result' => $redirectData
             ));
         } else {
-            $this->logger->info('===== Jokul - VA Request Controller ===== Jokul Magento Response: ' . print_r($result, true));
+            $this->logger->info('===== Jokul - VA Request Controller ===== Show Error Popup: ' . print_r($result, true));
 
             $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
             $_checkoutSession = $objectManager->create('\Magento\Checkout\Model\Session');
@@ -277,7 +275,8 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 $quote->setIsActive(1)->setReservedOrderId(null)->save();
                 $_checkoutSession->replaceQuote($quote);
                 echo json_encode(array(
-                    'err' => false, 'response_msg' => 'Failed to Generate VA Number (' . $result['errorMessage'] . ')',
+                    'err' => true,
+                    'response_msg' => $result['errorMessage'],
                     'result' => $redirectData
                 ));
             }

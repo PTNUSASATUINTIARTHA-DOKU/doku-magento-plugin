@@ -109,7 +109,7 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
             }
 
             $requestParams = json_decode($dokuOrder['request_params'], true);
-            $sharedKey = $requestParams['SHAREDID'];
+            $sharedKey = $requestParams['shared_key'];
             $this->sharedKey = $sharedKey;
 
             $headers = getallheaders();

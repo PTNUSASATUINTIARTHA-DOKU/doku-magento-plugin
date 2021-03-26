@@ -31,25 +31,10 @@ class Data extends AbstractHelper
         $this->config = $generalConfiguration;
     }
 
-    public function doCreateWords($data)
+    public function generateRedirectSignature($data)
     {
-        if (!empty($data['device_id']))
-            if (!empty($data['pairing_code']))
-                return sha1($data['amount'] . $data['clientid'] . $data['sharedid'] . $data['invoice'] . $data['currency'] . $data['token'] . $data['pairing_code'] . $data['device_id']);
-            else
-                return sha1($data['amount'] . $data['clientid'] . $data['sharedid'] . $data['invoice'] . $data['currency'] . $data['device_id']);
-        else if (!empty($data['pairing_code']))
-            return sha1($data['amount'] . $data['clientid'] . $data['sharedid'] . $data['invoice'] . $data['currency'] . $data['token'] . $data['pairing_code']);
-        else if (!empty($data['currency']))
-            return sha1($data['amount'] . $data['clientid'] . $data['sharedid'] . $data['invoice'] . $data['currency']);
-        else if (!empty($data['statuscode']))
-            return sha1($data['amount'] . $data['sharedid'] . $data['invoice'] . $data['statuscode']);
-        else if (!empty($data['resultmsg']) && !empty($data['verifystatus']))
-            return sha1($data['amount'] . $data['clientid'] . $data['sharedid'] . $data['invoice'] . $data['resultmsg'] . $data['verifystatus']);
-        else if (!empty($data['check_status']))
-            return sha1($data['clientid'] . $data['sharedid'] . $data['invoice']);
-        else
-            return sha1($data['amount'] . $data['clientid'] . $data['sharedid'] . $data['invoice']);
+
+        return base64_encode(hash('sha256', implode("|", $data), true));
     }
 
     public function sendRequest($dataParam, $url)
@@ -103,22 +88,21 @@ class Data extends AbstractHelper
             }
 
             $requestParams = json_decode($dokusTransactionOrder['request_params'], true);
-            $howToPayUrl = $requestParams['RESPONSE']['virtual_account_info']['how_to_pay_api'];
+            $howToPayUrl = $requestParams['response']['virtual_account_info']['how_to_pay_api'];
             $howToPayUrl = str_replace("\\", "", $howToPayUrl);
 
-
             $emailParams = [
-                'subject' => "Awaiting for Your Payment (" . $order->getIncrementId() . " - " . $paymentChannelLabel . ")",
+                'subject' => "Complete Your Payment for Order: " . $order->getIncrementId() . " (" . $paymentChannelLabel . ")",
                 'customerName' => $order->getCustomerName(),
                 'customerEmail' => $order->getCustomerEmail(),
                 'storeName' => $order->getStoreName(),
                 'orderId' => $order->getIncrementId(),
-                'vaNumber' => !empty($vaNumber) ? $vaNumber : $dokusTransactionOrder['va_number'],
+                'vaNumber' => $dokusTransactionOrder['va_number'],
                 'amount' => number_format($dokusTransactionOrder['doku_grand_total'], 2, ",", "."),
                 'discountValue' => $discountValue,
                 'adminFeeValue' => $adminFeeValue,
                 'paymentChannel' => $paymentChannelLabel,
-                'expiry' => date('d F Y, H:i', strtotime($expiryStoreDate)),
+                'expiry' => date('d F Y, H:i', strtotime($dokusTransactionOrder['expired_at_storetimezone'])),
                 'paymentInstructions' => $this->getHowToPay($howToPayUrl)
             ];
 
