@@ -152,7 +152,7 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 "clientId" => $clientId,
                 "key" => $sharedKey,
                 "requestTarget" => $requestTarget,
-                "requestId" => rand(1, 100000),
+                "requestId" => $this->helper->guidv4(),
                 "requestTimestamp" => substr($requestTimestamp, 0, 19) . "Z"
             );
 
