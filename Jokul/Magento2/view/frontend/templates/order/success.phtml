@@ -19,6 +19,11 @@
                 <br />
                 <?php echo __('Make your payment before: %1', $dokuOrderParams['expiry']); ?>
             </p>
+            <p>
+                <a href="<?php echo $dokuOrderParams['howToPayUrl'] ?>" target="_blank">
+                    <?php echo __('Click here to see payment instructions'); ?>
+                </a>
+            </p>
         </div>
     </div>
 </div>
@@ -29,8 +34,5 @@
     <li><?php echo __('Discount Amount: Rp. %1',  $dokuOrderParams['discountValue']); ?></li>
     <li><?php echo __('Admin Fee: Rp. %1', $dokuOrderParams['adminFeeValue']); ?></li>
 </ul>
-<a href="<?php echo $dokuOrderParams['howToPayUrl'] ?>">
-    <?php echo __('Click here to see payment instructions'); ?>
-</a>
 
 <br><br>

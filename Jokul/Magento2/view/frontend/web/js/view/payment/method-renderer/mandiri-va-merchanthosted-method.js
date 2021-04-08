@@ -32,7 +32,7 @@ define(
 
                             if (dataResponse.err == false) {
                                 jQuery.each(dataResponse.result, function (i, val) {
-                                    if (i != 'URL') {
+                                    if (i != 'url') {
                                         $("#mandiri-va-merchanthosted").append('<input type="hidden" name="' + i + '" value="' + val + '">');
                                     } else {
                                         $("#mandiri-va-merchanthosted").attr("action", val);
@@ -41,8 +41,8 @@ define(
                                 });
                             } else {
                                 alert({
-                                    title: 'Payment error!',
-                                    content: 'Error code : ' + dataResponse.res_response_code + '<br>Please retry payment',
+                                    title: 'Something went wrong!',
+                                    content: `Failed reason: ${dataResponse.response_message} <br>Please retry payment`,
                                     actions: {
                                         always: function () {
                                         }
@@ -52,7 +52,7 @@ define(
                         },
                         error: function (xhr, status, error) {
                             alert({
-                                title: 'Payment Error!',
+                                title: 'Error occured!',
                                 content: 'Please retry payment',
                                 actions: {
                                     always: function () {

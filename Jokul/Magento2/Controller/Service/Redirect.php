@@ -50,126 +50,99 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
 
     public function execute() {
         $path = "";
-        $this->logger->info('===== Redirect Controller  ===== Start');
+        $this->logger->info('===== Jokul - Redirect Controller ===== Start');
         $post = $this->getRequest()->getParams();
 
         $postJson = json_encode($post, JSON_PRETTY_PRINT);
 
-        $this->logger->info('REDIRECT PARAMS : ' . $postJson);
-
-        $this->logger->info('===== Redirect Controller  ===== Finding order...');
+        $this->logger->info('===== Jokul - Redirect Controller ===== Looking for the order on the Magento Side');
 
         $connection = $this->resourceConnection->getConnection();
         $tableName = $this->resourceConnection->getTableName('jokul_transaction');
 
-        if(!isset($post['INVOICENUMBER'])) {
-
-            $path = "checkout/onepage/failure";
-            $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath($path);
-        }
-
-
-        $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $post['INVOICENUMBER'] . "'";
+        $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $post['invoice_number'] . "'";
 
         $dokuOrder = $connection->fetchRow($sql);
 
         if (!isset($dokuOrder['invoice_number'])) {
-            $this->logger->info('===== Notify Controller ===== Trans ID Merchant not found! in jokul_transaction table');
+            $this->logger->info('===== Jokul - Redirect Controller ===== Invoice Number not found in jokul_transaction table');
 
             $path = "";
-            $this->messageManager->addError(__('Cannot found your order ID!'));
+            $this->messageManager->addError(__('Order not found!'));
 
             $resultRedirect = $this->resultRedirectFactory->create();
             return $resultRedirect->setPath($path);
         }
 
         $requestParams = json_decode($dokuOrder['request_params'], true);
+        $sharedKey = $requestParams['shared_key'];
+        $requestAmount = $requestParams['order']['amount'];
 
-        $this->logger->info('===== Redirect Controller  ===== REQUEST PARAM: '.json_encode($requestParams, JSON_PRETTY_PRINT));
-        $sharedKey = $requestParams['SHAREDID'];
-
-        $requestAmount = 0;
-        if(isset($requestParams['order']['amount'])){
-            $requestAmount = $requestParams['order']['amount'];
-        }
-
-        $expiryValue = 360;
-
-        if (!empty($requestParams['EXPIRYTIME'])) {
-            $expiryValue = $requestParams['EXPIRYTIME'];
-        } else if (!empty($requestParams['expiredTime'])) {
-            $expiryValue = $requestParams['expiredTime'];
-        }
+        $expiryValue = $requestParams['virtual_account_info']['expired_time'];
 
         $expiryGmtDate = date('Y-m-d H:i:s', (strtotime('+' . $expiryValue . ' minutes', time())));
         $expiryStoreDate = $this->timeZone->date(new \DateTime($expiryGmtDate))->format('Y-m-d H:i:s');
 
-        $additionalParams = "";
-        $vaNumber = "";
-        if (isset($post['PAYMENTCODE']) && !empty($post['PAYMENTCODE'])) {
-            $vaNumber = $post['PAYMENTCODE'];
-            $additionalParams = " `va_number` = '" . $vaNumber . "', ";
-        }
+        $vaNumber = $requestParams['response']['virtual_account_info']['virtual_account_number'];
+        $additionalParams = " `va_number` = '" . $vaNumber . "', ";
 
-        $order = $this->order->loadByIncrementId($post['INVOICENUMBER']);
+        $order = $this->order->loadByIncrementId($post['invoice_number']);
 
         if ($order->getEntityId()) {
 
             $isSuccessOrder = false;
 
-            $this->logger->info('===== Redirect Controller  ===== Order found!');
+            $this->logger->info('===== Jokul - Redirect Controller ===== Order found');
 
+            $this->logger->info('===== Jokul - Redirect Controller =====  Checking Redirect Signature');
 
-            $this->logger->info('===== Redirect Controller  ===== Checking words');
-
-            $wordsParams = array(
+            $redirectSignatureParams = array(
                 'amount' => $requestAmount,
-                'sharedid' => $sharedKey,
+                'sharedkey' => $sharedKey,
                 'invoice' => $order->getIncrementId(),
-                'statuscode' => $post['STATUSCODE']
+                'status' => $post['status']
             );
 
-            $words = $this->helper->doCreateWords($wordsParams);
+            $redirectSignature = $this->helper->generateRedirectSignature($redirectSignatureParams);
 
-            if ($words == $post['WORDS']) {
-                $this->logger->info('===== Redirect Controller  ===== Checking done');
+            if ($redirectSignature == $post['redirect_signature']) {
+                $this->logger->info('===== Jokul - Redirect Controller ===== Redirect Signature match!');
 
-                $this->logger->info('===== Redirect Controller  ===== Check STATUSCODE');
+                $this->logger->info('===== Jokul - Redirect Controller ===== Check Order Status');
 
-                if ($post['STATUSCODE'] == 'success') {
+                if ($post['status'] == 'SUCCESS') {
                     $isSuccessOrder = true;
-                    $this->logger->info('===== Redirect Controller  ===== STATUSCODE Success');
                     $path = "checkout/onepage/success";
+                    $this->logger->info('===== Jokul - Redirect Controller ===== Order Status Success');
                 } else {
                     $path ="checkout/cart";
-                    $this->messageManager->addWarningMessage('Payment Failed. Please Try Again or Call Customer Service.');
+                    $this->messageManager->addWarningMessage('Payment Failed. Please try again or contact our customer service.');
                     $order->cancel()->save();
-                    $this->logger->info('===== Redirect Controller  ===== STATUSCODE Failed!');
+                    $this->logger->info('===== Jokul - Redirect Controller ===== Order Status Failed');
                 }
 
-                $this->logger->info('===== Redirect Controller ===== Send Email Order  ===== Start');
+                $this->logger->info('===== Jokul - Redirect Controller ===== Send Email Notification - Start');
 
                 $this->helper->sendDokuEmailOrder($order, $vaNumber, $dokuOrder, $isSuccessOrder, $expiryStoreDate);
 
-                $this->logger->info('===== Redirect Controller ===== Send Email Order  ===== End');
+                $this->logger->info('===== Jokul - Redirect Controller ===== Send Email Notification - End');
 
             } else {
                 $path = "";
                 $order->cancel()->save();
                 $this->messageManager->addError(__('Sorry, something went wrong!'));
-                $this->logger->info('===== Redirect Controller ===== Words not match!');
+                $this->logger->info('===== Jokul - Redirect Controller ===== Redirect Signature not match!');
             }
         } else {
             $path = "";
             $this->messageManager->addError(__('Order not found'));
-            $this->logger->info('===== Redirect Controller  ===== Order not found');
+            $this->logger->info('===== Jokul - Redirect Controller ===== Order not found');
         }
 
-        $sql = "Update " . $tableName . " SET ".$additionalParams." `updated_at` = 'now()', `expired_at_gmt` = '".$expiryGmtDate."', `expired_at_storetimezone` = '".$expiryStoreDate."', `redirect_params` = '" . $postJson . "' where invoice_number = '" . $post['INVOICENUMBER'] . "'";
+        $sql = "Update " . $tableName . " SET ".$additionalParams." `updated_at` = 'now()', `expired_at_gmt` = '".$expiryGmtDate."', `expired_at_storetimezone` = '".$expiryStoreDate."', `redirect_params` = '" . $postJson . "' where invoice_number = '" . $post['invoice_number'] . "'";
         $connection->query($sql);
 
-        $this->logger->info('===== Redirect Controller  ===== End');
+        $this->logger->info('===== Jokul - Redirect Controller ===== End');
 
         $resultRedirect = $this->resultRedirectFactory->create();
         return $resultRedirect->setPath($path);

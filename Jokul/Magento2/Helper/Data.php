@@ -16,21 +16,8 @@ class Data extends AbstractHelper
     protected $config;
     protected $logger;
 
-
-    const REQUEST_URL_HOSTED_DEVELOPMENT = 'https://staging.doku.com/Suite/Receive';
-    const REQUEST_URL_HOSTED_PRODUCTION = 'https://pay.doku.com/Suite/Receive';
-
-    const REQUEST_URL_MIP_DEVELOPMENT = 'https://staging.doku.com/Suite/ReceiveMIP';
-    const REQUEST_URL_MIP_PRODUCTION = 'https://pay.doku.com/Suite/ReceiveMIP';
-
     const PREFIX_ENV_DEVELOPMENT = 'https://api-sandbox.doku.com';
-    const PREFIX_ENV_PRODUCTION = 'http://jokul.doku.com';
-
-    const PAYMENT_URL_DEVELOPMENT = 'https://staging.doku.com/api/payment/paymentMip';
-    const PAYMENT_URL_PRODUCTION = 'https://pay.doku.com/api/payment/paymentMip';
-
-    const DIRECT_PAYMENT_URL_PRODUCTION = 'https://pay.doku.com/api/payment/PaymentMIPDirect';
-    const DIRECT_PAYMENT_URL_DEVELOPMENT = 'https://staging.doku.com/api/payment/PaymentMIPDirect';
+    const PREFIX_ENV_PRODUCTION = 'https://api-jokul.doku.com';
 
     public function __construct(
         TransportBuilder $transportBuilder,
@@ -44,25 +31,10 @@ class Data extends AbstractHelper
         $this->config = $generalConfiguration;
     }
 
-    public function doCreateWords($data)
+    public function generateRedirectSignature($data)
     {
-        if (!empty($data['device_id']))
-            if (!empty($data['pairing_code']))
-                return sha1($data['amount'] . $data['clientid'] . $data['sharedid'] . $data['invoice'] . $data['currency'] . $data['token'] . $data['pairing_code'] . $data['device_id']);
-            else
-                return sha1($data['amount'] . $data['clientid'] . $data['sharedid'] . $data['invoice'] . $data['currency'] . $data['device_id']);
-        else if (!empty($data['pairing_code']))
-            return sha1($data['amount'] . $data['clientid'] . $data['sharedid'] . $data['invoice'] . $data['currency'] . $data['token'] . $data['pairing_code']);
-        else if (!empty($data['currency']))
-            return sha1($data['amount'] . $data['clientid'] . $data['sharedid'] . $data['invoice'] . $data['currency']);
-        else if (!empty($data['statuscode']))
-            return sha1($data['amount'] . $data['sharedid'] . $data['invoice'] . $data['statuscode']);
-        else if (!empty($data['resultmsg']) && !empty($data['verifystatus']))
-            return sha1($data['amount'] . $data['clientid'] . $data['sharedid'] . $data['invoice'] . $data['resultmsg'] . $data['verifystatus']);
-        else if (!empty($data['check_status']))
-            return sha1($data['clientid'] . $data['sharedid'] . $data['invoice']);
-        else
-            return sha1($data['amount'] . $data['clientid'] . $data['sharedid'] . $data['invoice']);
+
+        return base64_encode(hash('sha256', implode("|", $data), true));
     }
 
     public function sendRequest($dataParam, $url)
@@ -93,7 +65,7 @@ class Data extends AbstractHelper
 
     public function sendDokuEmailOrder($order, $vaNumber = "", $dokusTransactionOrder = array(), $isSuccessOrder = true, $expiryStoreDate = "")
     {
-        $this->logger(get_class($this) . " ====== Email Sender ====== Preparing", 'DOKU_send_email');
+        $this->logger(get_class($this) . " ===== Jokul - Email Sender ===== Preparing Data", 'DOKU_send_email');
         try {
             $paymentChannelLabel = $order->getPayment()->getMethodInstance()->getTitle();
 
@@ -116,12 +88,11 @@ class Data extends AbstractHelper
             }
 
             $requestParams = json_decode($dokusTransactionOrder['request_params'], true);
-            $howToPayUrl = $requestParams['RESPONSE']['virtual_account_info']['how_to_pay_api'];
+            $howToPayUrl = $requestParams['response']['virtual_account_info']['how_to_pay_api'];
             $howToPayUrl = str_replace("\\", "", $howToPayUrl);
 
-
             $emailParams = [
-                'subject' => "Awaiting for Your Payment (" . $order->getIncrementId() . " - " . $paymentChannelLabel . ")",
+                'subject' => "Complete Your Payment for Order: " . $order->getIncrementId() . " (" . $paymentChannelLabel . ")",
                 'customerName' => $order->getCustomerName(),
                 'customerEmail' => $order->getCustomerEmail(),
                 'storeName' => $order->getStoreName(),
@@ -136,6 +107,8 @@ class Data extends AbstractHelper
             ];
 
             $this->dataObject->setData($emailParams);
+
+            $this->logger(get_class($this) . " ===== Jokul - Email Sender ===== Email params: " . print_r($emailParams, true), 'DOKU_send_email');
 
             $sender = [
                 'name' => $this->config->getSenderName(),
@@ -152,7 +125,7 @@ class Data extends AbstractHelper
                 $template = "failed_template";
             }
 
-            $this->logger(get_class($this) . " ====== Email Sender ====== Using template: " . $template, 'DOKU_send_email');
+            $this->logger(get_class($this) . " ===== Jokul - Email Sender ===== Template used: " . $template, 'DOKU_send_email');
 
             $this->transportBuilder->setTemplateIdentifier($template)->setFrom($sender)
                 ->addTo($order->getCustomerEmail(), $order->getCustomerName())
@@ -168,7 +141,7 @@ class Data extends AbstractHelper
             if ($this->config->getBccEmailAddress() !== null) {
                 $bccEmailAddress = explode(",", str_replace(" ", "", $this->config->getBccEmailAddress()));
                 $this->transportBuilder->addBcc($bccEmailAddress[0]);
-                $this->logger(get_class($this) . " ====== Email Sender ====== Bcc Listing: ", 'DOKU_send_email');
+                $this->logger(get_class($this) . " ===== Jokul - Email Sender ===== Bcc Listing: ", 'DOKU_send_email');
                 $this->logger(get_class($this) . print_r($bccEmailAddress, TRUE), 'DOKU_send_email');
             }
             $transport = $this->transportBuilder->getTransport();
@@ -192,7 +165,7 @@ class Data extends AbstractHelper
                 }
             }
         } catch (\Exception $e) {
-            $this->logger(get_class($this) . " ====== Email Sender ====== Failure: " . $e->getMessage(), 'DOKU_send_email');
+            $this->logger(get_class($this) . " ===== Jokul - Email Sender ===== Failure reason: " . $e->getMessage(), 'DOKU_send_email');
             return false;
         }
     }
@@ -208,7 +181,7 @@ class Data extends AbstractHelper
         } else {
             $url = $prefixprod . $path;
         }
-        $this->logger->info('===== Request controller VA GATEWAY ===== URL : ' . $url);
+        $this->logger->info('===== Jokul - Generate VA Number ===== Jokul URL to hit: ' . $url);
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -223,7 +196,7 @@ class Data extends AbstractHelper
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $responseJson = curl_exec($ch);
 
-        $this->logger->info('===== Request controller VA GATEWAY ===== Response : ' . print_r($responseJson, true));
+        $this->logger->info('===== Jokul - Generate VA Number ===== Response from Jokul: ' . print_r($responseJson, true));
 
         curl_close($ch);
 
@@ -256,34 +229,6 @@ class Data extends AbstractHelper
 
         $signature = base64_encode(hash_hmac('SHA256', htmlspecialchars_decode($signatureComponent), htmlspecialchars_decode($params['key']), True));
         return "HMACSHA256=" . $signature;
-    }
-
-    public function doPayment($data)
-    {
-
-        $url = SELF::PAYMENT_URL_PRODUCTION;
-
-        if ($this->config->getEnvironment() == 'development') {
-            $url = SELF::PAYMENT_URL_DEVELOPMENT;
-        }
-
-        $ch = curl_init($url);
-
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, 'data=' . json_encode($data));
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-        $responseJson = curl_exec($ch);
-
-        curl_close($ch);
-
-        if (is_string($responseJson)) {
-            return json_decode($responseJson, true);
-        } else {
-            return $responseJson;
-        }
     }
 
     public function getTotalAdminFeeAndDisc($adminFee, $adminFeeType, $discountAmount, $discountType, $grandTotal)
@@ -320,120 +265,6 @@ class Data extends AbstractHelper
         return $total;
     }
 
-    public function doPrePayment($data)
-    {
-
-        $url = SELF::DIRECT_PAYMENT_URL_PRODUCTION;
-
-        if ($this->config->getEnvironment() == 'development') {
-            $url = SELF::DIRECT_PAYMENT_URL_DEVELOPMENT;
-        }
-
-        $ch = curl_init($url);
-
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, 'data=' . json_encode($data));
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-        $responseJson = curl_exec($ch);
-
-        curl_close($ch);
-
-        if (is_string($responseJson)) {
-            return json_decode($responseJson, true);
-        } else {
-            return $responseJson;
-        }
-    }
-
-    public function doCapture($dataParam)
-    {
-
-        $url = $this->config->getURLCapture();
-        $ch = curl_init($url);
-
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($dataParam));
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "Content-Type: application/x-www-form-urlencoded"
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-        $this->logger(get_class($this) . " ====== CAPTURE PARAM: " . json_encode($dataParam), 'DOKU_capture');
-        $data = curl_exec($ch);
-        curl_close($ch);
-
-        try {
-            $this->logger(get_class($this) . " ====== CAPTURE RESPONSE: " . $data, 'DOKU_capture');
-            $xml = new \SimpleXMLElement($data);
-            $response = json_decode(json_encode((array) $xml), TRUE);
-            return $response;
-        } catch (\Exception $e) {
-            $this->logger(get_class($this) . " ====== CAPTURE RESPONSE: " . $e->getMessage(), 'DOKU_capture');
-            return false;
-        }
-    }
-
-    public function doVoid($dataParam)
-    {
-
-        $url = $this->config->getURLVoid();
-        $ch = curl_init($url);
-
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($dataParam));
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "Content-Type: application/x-www-form-urlencoded"
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-        $this->logger(get_class($this) . " ====== VOID PARAM: " . json_encode($dataParam), 'DOKU_void');
-        $response = curl_exec($ch);
-        curl_close($ch);
-
-        try {
-            $this->logger(get_class($this) . " ====== VOID RESPONSE: " . $response, 'DOKU_void');
-            return $response;
-        } catch (\Exception $e) {
-            $this->logger(get_class($this) . " ====== VOID RESPONSE: " . $e->getMessage(), 'DOKU_void');
-            return false;
-        }
-    }
-
-    public function doRefund($dataParam)
-    {
-
-        $url = $this->config->getURLVoid();
-        $ch = curl_init($url);
-
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($dataParam));
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "Content-Type: application/x-www-form-urlencoded"
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-        $this->logger(get_class($this) . " ====== VOID PARAM: " . json_encode($dataParam), 'DOKU_void');
-        $response = curl_exec($ch);
-        curl_close($ch);
-
-        try {
-            $this->logger(get_class($this) . " ====== VOID RESPONSE: " . $response, 'DOKU_void');
-            return $response;
-        } catch (\Exception $e) {
-            $this->logger(get_class($this) . " ====== VOID RESPONSE: " . $e->getMessage(), 'DOKU_void');
-            return false;
-        }
-    }
-
     public function getHowToPay($url)
     {
         $ch = curl_init();
@@ -455,9 +286,19 @@ class Data extends AbstractHelper
         $response = curl_exec($ch);
         $responseJson = json_decode($response, true);
 
-        $this->logger(get_class($this) . " Response from: " . $url . " => " . $response, 'DOKU_send_email');
+        $this->logger(get_class($this) . "===== Jokul - Get How to Pay ===== Response from Jokul: " . $url . " => " . $response, 'DOKU_send_email');
 
         return $responseJson['payment_instruction'];
+    }
+
+    function guidv4($data = null)
+    {
+        $data = $data ?? random_bytes(16);
+
+        $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // set version to 0100
+        $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
+
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 
     public function logger($var, $file)

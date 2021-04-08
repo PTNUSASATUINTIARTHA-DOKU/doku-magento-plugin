@@ -56,7 +56,7 @@ class Success extends \Magento\Sales\Block\Order\Totals
         $order = $this->getOrder();
         $dokusTransactionOrder = $this->getDokuTransaction();
         $requestParam = json_decode($dokusTransactionOrder['request_params'],true);
-        $howToPayUrl = $requestParam['RESPONSE']['virtual_account_info']['how_to_pay_page'];
+        $howToPayUrl = $requestParam['response']['virtual_account_info']['how_to_pay_page'];
 
         $paymentChannelLabel = $order->getPayment()->getMethodInstance()->getTitle();
 

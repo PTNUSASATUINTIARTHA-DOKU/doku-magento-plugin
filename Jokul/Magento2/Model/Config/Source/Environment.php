@@ -9,7 +9,7 @@ class Environment implements ArrayInterface {
     public function toOptionArray() {
         return array(
             array(
-                'label' => 'Development',
+                'label' => 'Sandbox',
                 'value' => 'development',
             ),
             array(

@@ -29,11 +29,10 @@ define(
                         showLoader: true,
                         success: function (response) {
                             var dataResponse = $.parseJSON(response);
-                            // console.log("RESPONSE DI JS " + dataResponse +": response "+response)
-
+                            
                             if (dataResponse.err == false) {
                                 jQuery.each(dataResponse.result, function (i, val) {
-                                    if (i != 'URL') {
+                                    if (i != 'url') {
                                         $("#permata-va-merchanthosted").append('<input type="hidden" name="' + i + '" value="' + val + '">');
                                     } else {
                                         $("#permata-va-merchanthosted").attr("action", val);
@@ -42,8 +41,8 @@ define(
                                 });
                             } else {
                                 alert({
-                                    title: 'Payment error!',
-                                    content: 'Error code : ' + dataResponse.response_msg + '<br>Please retry payment',
+                                    title: 'Something went wrong!',
+                                    content: `Failed reason: ${dataResponse.response_message} <br>Please retry payment`,
                                     actions: {
                                         always: function () {
                                         }
@@ -53,7 +52,7 @@ define(
                         },
                         error: function (xhr, status, error) {
                             alert({
-                                title: 'Payment Error!',
+                                title: 'Error occured!',
                                 content: 'Please retry payment',
                                 actions: {
                                     always: function () {

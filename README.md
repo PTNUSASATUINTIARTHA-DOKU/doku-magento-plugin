@@ -30,6 +30,7 @@ Jokul makes it easy for you accept payments from various channels. Jokul also hi
 6. Run `php bin/magento module:status` again to ensure `Jokul_Magento2` is enabled already.
 7. You should flush Magento cache by running `php bin/magento cache:flush`
 8. Compile Magento with newly added module by running `php bin/magento setup:di:compile`
+9. You may run flush Magento cache again `php bin/magento cache:flush`
 ​
 ## Plugin Usage
 ​
@@ -38,16 +39,16 @@ Jokul makes it easy for you accept payments from various channels. Jokul also hi
 1. Login to your Magento Admin Panel
 2. Click Store > Configuration
 3. Click Sales > Payment Methods
-4. You will find "Jokul - Payment Gateway"
-5. Dropdown the arrow icon to see the details and enable "Jokul - Payment Gateway"
+4. You will find "Jokul"
+5. Dropdown the arrow icon to see the details
 6. Here is the fileds that you required to set:
 ​
-    ![General Configuration](https://i.ibb.co/xjt1z18/generalconfiguration.png)
+    ![General Configuration](https://i.ibb.co/qyCfkXR/Screen-Shot-2021-03-25-at-01-40-53.png)
     
     - **Production Client ID**: Client ID you retrieved from the Production environment Jokul Back Office
     - **Sandbox Client ID**: Client ID you retrieved from the Sandbox environment Jokul Back Office
-    - **Production Shared Key**: Secret Key you retrieved from the Production environment Jokul Back Office
-    - **Sandbox Shared Key**: Secret Key you retrieved from the Sandbox environment Jokul Back Office
+    - **Production Secret Key**: Secret Key you retrieved from the Production environment Jokul Back Office
+    - **Sandbox Secret Key**: Secret Key you retrieved from the Sandbox environment Jokul Back Office
     - **Environment**: For testing purpose, select Sandbox. For accepting real transactions, select Production
     - **Expiry Time**: Input the time that for VA expiration in minutes
     - **Email Sender Adress**: You can fill this coloumn with your email address. This will later be used as info to send notifications to your customers
@@ -62,17 +63,17 @@ Jokul makes it easy for you accept payments from various channels. Jokul also hi
 ​
 This is the preview of the Virtual Account Configuration
 ​
-![VA Configuration](https://i.ibb.co/s9xNvMN/vaconfiguration.png)
+![VA Configuration](https://i.ibb.co/WxZfMZd/Screen-Shot-2021-03-25-at-01-41-13.png)
 ​
 To show the VA options to your customers, simply dropdown the channel that you wish to show.
 ​
-![VA Configuration Details](https://i.ibb.co/tHCwdyt/vadetailconfiguration.png)
+![VA Configuration Details](https://i.ibb.co/PYJGf8w/Screen-Shot-2021-03-25-at-01-41-04.png)
 ​
 You can also edit how the VA channels will be shown to your customers by inputing below:  
 ​
 - **Title**: Input the title. This title will be visible in your store view
 - **Description**: Input the description. This description will be visible in your store view
-- **Discount Amount**: Fill in the amount of discount you provide. Adjust the type with a discount percentage or a fixed amount.
-- **Discount Type**: Select the type of discount
-- **Admin Fee**: Fill in the amount of admin fee you provide. Adjust the type with a admin fee percentage or a fixed amount.
-- **Admin Fee Type**: Select the type of admin fee
+- **Discount Amount**: Fill in the amount of discount you provide. Input number only. For Percentage Type, the number is `0-100`
+- **Discount Type**: Select the type of discount. Options: Fixed amount, Percentage
+- **Admin Fee**: Fill in the amount of admin fee you provide. Input number only. For Percentage Type, the number is `0-100`
+- **Admin Fee Type**: Select the type of admin fee. Options: Fixed amount, Percentage
