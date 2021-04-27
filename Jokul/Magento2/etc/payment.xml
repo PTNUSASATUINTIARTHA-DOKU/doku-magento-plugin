@@ -22,5 +22,8 @@
         <method name="permata_va_merchanthosted">
             <allow_multiple_address>1</allow_multiple_address>
         </method>
+        <method name="alfamart_merchanthosted">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
     </methods>
 </payment>

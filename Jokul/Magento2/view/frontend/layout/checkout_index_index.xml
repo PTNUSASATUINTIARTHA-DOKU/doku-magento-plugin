@@ -61,6 +61,22 @@
                                                                         </item>
                                                                     </item>
                                                                 </item>
+                                                                <item name="merchanthosted-doku-cc" xsi:type="array">
+                                                                    <item name="component" xsi:type="string">Jokul_Magento2/js/view/payment/core-va-merchanthosted</item>
+                                                                    <item name="methods" xsi:type="array">
+                                                                        <item name="doku_cc_merchanthosted" xsi:type="array">
+                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
+                                                                        </item>
+                                                                    </item>
+                                                                </item>
+                                                                <item name="merchanthosted-alfamart" xsi:type="array">
+                                                                    <item name="component" xsi:type="string">Jokul_Magento2/js/view/payment/core-va-merchanthosted</item>
+                                                                    <item name="methods" xsi:type="array">
+                                                                        <item name="alfamart_merchanthosted" xsi:type="array">
+                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
+                                                                        </item>
+                                                                    </item>
+                                                                </item>
                                                             </item>
                                                         </item>
                                                     </item>

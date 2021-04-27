@@ -16,7 +16,7 @@ use Jokul\Magento2\Model\GeneralConfiguration;
 use \Magento\Store\Model\StoreManagerInterface;
 use \Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 
-class RequestVa extends \Magento\Framework\App\Action\Action
+class RequestO2O extends \Magento\Framework\App\Action\Action
 {
 
     protected $_pageFactory;
@@ -89,9 +89,9 @@ class RequestVa extends \Magento\Framework\App\Action\Action
     public function execute()
     {
 
-        $this->logger->info('===== Jokul - VA Request Controller ===== Start');
+        $this->logger->info('===== Jokul - O2O Request Controller ===== Start');
 
-        $this->logger->info('===== Jokul - VA Request Controller ===== Find Order to Execute');
+        $this->logger->info('===== Jokul - O2O Request Controller ===== Find Order to Execute');
 
         $result = array();
         $redirectData = array();
@@ -103,7 +103,7 @@ class RequestVa extends \Magento\Framework\App\Action\Action
             $this->session->getLastRealOrder()->setState(Order::STATE_NEW);
             $order->save();
 
-            $this->logger->info('===== Jokul - VA Request Controller ===== Order Found!');
+            $this->logger->info('===== Jokul - O2O Request Controller ===== Order Found!');
 
             $configCode = $this->config->getRelationPaymentChannel($order->getPayment()->getMethod());
 
@@ -129,44 +129,25 @@ class RequestVa extends \Magento\Framework\App\Action\Action
             $clientId = $config['payment']['core']['client_id'];
             $sharedKey = $this->config->getSharedKey();
             $expiryTime = isset($config['payment']['core']['expiry']) && (int) $config['payment']['core']['expiry'] != 0 ? $config['payment']['core']['expiry'] : 60;
-            $vaNumber = '';
+
             $customerName = trim($billingData->getFirstname() . " " . $billingData->getLastname());
 
-            $requestTarget = "";
-            if ($configCode == 01) {
-                $requestTarget = "/mandiri-virtual-account/v2/payment-code";
-            } elseif ($configCode == 02) {
-                $requestTarget = "/bsm-virtual-account/v2/payment-code";
-            } elseif ($configCode == 03) {
-                $requestTarget = "/doku-virtual-account/v2/payment-code";
-            } elseif ($configCode == 04) {
-                $requestTarget = "/bca-virtual-account/v2/payment-code";
-            } elseif($configCode == 05){
-                $requestTarget = "/permata-virtual-account/v2/payment-code";
-            }
-
-            $requestTimestamp = date("Y-m-d H:i:s");
-            $requestTimestamp = date(DATE_ISO8601, strtotime($requestTimestamp));
-
-            $signatureParams = array(
-                "clientId" => $clientId,
-                "key" => $sharedKey,
-                "requestTarget" => $requestTarget,
-                "requestId" => $this->helper->guidv4(),
-                "requestTimestamp" => substr($requestTimestamp, 0, 19) . "Z"
-            );
+            $this->logger->info(print_r($config, true));
 
             $params = array(
                 "order" => array(
                     "invoice_number" => $order->getIncrementId(),
                     "amount" => $grandTotal
                 ),
-                "virtual_account_info" => array(
+                "online_to_offline_info" => array(
                     "expired_time" => $expiryTime,
                     "reusable_status" => false,
-                    "info1" => '',
-                    "info2" => '',
-                    "info3" => '',
+                    "info1" => ''
+                ),
+                "alfa_info" => array(
+                    "receipt" => array(
+                        "footer_message" => $this->config->getFooterMessage()
+                    )
                 ),
                 "customer" => array(
                     "name" => $customerName,
@@ -180,51 +161,66 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 )
             );
 
-            $this->logger->info('===== Jokul - VA Request Controller ===== Request params: ' . json_encode($params, JSON_PRETTY_PRINT));
-            $this->logger->info('===== Jokul - VA Request Controller ===== Payment channel: ' . $requestTarget);
-            $this->logger->info('===== Jokul - VA Request Controller ===== Send request to Jokul');
+            $requestTarget = "";
+            if ($configCode == 07) {
+                $requestTarget = "/alfa-online-to-offline/v2/payment-code";
+            }
+
+            $requestTimestamp = date("Y-m-d H:i:s");
+            $requestTimestamp = date(DATE_ISO8601, strtotime($requestTimestamp));
+
+            $signatureParams = array(
+                "clientId" => $clientId,
+                "key" => $sharedKey,
+                "requestTarget" => $requestTarget,
+                "requestId" => $this->helper->guidv4(),
+                "requestTimestamp" => substr($requestTimestamp, 0, 19) . "Z"
+            );
+
+            $this->logger->info('===== Jokul - O2O Request Controller ===== Request params: ' . json_encode($params, JSON_PRETTY_PRINT));
+            $this->logger->info('===== Jokul - O2O Request Controller ===== Payment channel: ' . $requestTarget);
+            $this->logger->info('===== Jokul - O2O Request Controller ===== Send request to Jokul');
 
             $orderStatus = 'FAILED';
             try {
                 $signature = $this->helper->doCreateRequestSignature($signatureParams, $params);
                 $result = $this->helper->doGeneratePaycode($signatureParams, $params, $signature);
             } catch (\Exception $e) {
-                $this->logger->info('===== Jokul - VA Request Controller ===== Exception: ' . $e);
+                $this->logger->info('===== Jokul - O2O Request Controller ===== Exception: ' . $e);
             }
 
-            $this->logger->info('===== Jokul - VA Request Controller ===== Response from Jokul: ' . json_encode($result, JSON_PRETTY_PRINT));
+            $this->logger->info('===== Jokul - O2O Request Controller ===== Response from Jokul: ' . json_encode($result, JSON_PRETTY_PRINT));
 
             if (isset($result['order']['invoice_number'])) {
-                $virtualAccountInfo = isset($result['virtual_account_info']) ? $result['virtual_account_info'] : '';
+                $o2oInfo = isset($result['online_to_offline_info']) ? $result['online_to_offline_info'] : '';
 
-                if ($virtualAccountInfo !== '') {
-                    $this->logger->info('===== Jokul - VA Request Controller ===== Received Success Response from Jokul');
+                if ($o2oInfo !== '') {
+                    $this->logger->info('===== Jokul - O2O Request Controller ===== Received Success Response from Jokul');
                     $orderStatus = 'PENDING';
                     $result['result'] = 'SUCCESS';
-                    $vaNumber = $result['virtual_account_info']['virtual_account_number'];
+                    $vaNumber = $result['online_to_offline_info']['payment_code'];
                 } elseif (isset($result['error'])) {
-                    $this->logger->info('===== Jokul - VA Request Controller ===== Received Error Response from Jokul');
+                    $this->logger->info('===== Jokul - O2O Request Controller ===== Received Error Response from Jokul');
                     $result['result'] = 'FAILED';
                     $result['error_message'] = $result['error']['message'];
                 } else {
-                    $this->logger->info('===== Jokul - VA Request Controller ===== Received Undefined Error from Jokul');
+                    $this->logger->info('===== Jokul - O2O Request Controller ===== Received Undefined Error from Jokul');
                     $result['result'] = 'FAILED';
                     $result['error_message'] = 'Undefined error';
                 }
             } else {
-                $this->logger->info('===== Jokul - VA Request Controller ===== Received Unexpected Error from Jokul');
+                $this->logger->info('===== Jokul - O2O Request Controller ===== Received Unexpected Error from Jokul');
                 $result['result'] = 'FAILED';
                 $result['error_message'] = 'Unexpected error';
             }
-
-
 
             $params['shared_key'] = $sharedKey;
             $params['response'] = $result;
 
             $jsonResult = json_encode(array_merge($params), JSON_PRETTY_PRINT);
 
-            $this->resourceConnection->getConnection()->insert('jokul_transaction', [
+            $tableName = $this->resourceConnection->getTableName('jokul_transaction');
+            $this->resourceConnection->getConnection()->insert($tableName, [
                 'quote_id' => $order->getQuoteId(),
                 'store_id' => $order->getStoreId(),
                 'order_id' => $order->getId(),
@@ -262,21 +258,21 @@ class RequestVa extends \Magento\Framework\App\Action\Action
             $redirectData['redirect_signature'] = $redirectSignature;
             $redirectData['status'] = $result['result'];
         } else {
-            $this->logger->info('===== Jokul - VA Request Controller ===== Order not found!');
+            $this->logger->info('===== Jokul - O2O Request Controller ===== Order not found!');
         }
 
-        $this->logger->info('===== Jokul - VA Request Controller ===== End');
+        $this->logger->info('===== Jokul - O2O Request Controller ===== End');
 
         if ($result['result'] == 'SUCCESS') {
             echo json_encode(array(
                 'err' => false,
-                'response_message' => 'VA Number Generated',
+                'response_message' => 'O2O Number Generated',
                 'result' => $redirectData
             ));
-            $this->logger->info('===== Jokul - VA Request Controller ===== Redirecting to Success Page' . print_r($result, true));
+            $this->logger->info('===== Jokul - O2O Request Controller ===== Redirecting to Success Page' . print_r($result, true));
         } else {
-            $this->logger->info('===== Jokul - VA Request Controller ===== Prepare Order Failed Procedure');
-            $this->logger->info('===== Jokul - VA Request Controller ===== Initiate Restore Cart');
+            $this->logger->info('===== Jokul - O2O Request Controller ===== Prepare Order Failed Procedure');
+            $this->logger->info('===== Jokul - O2O Request Controller ===== Initiate Restore Cart');
 
             $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
             $_checkoutSession = $objectManager->create('\Magento\Checkout\Model\Session');
@@ -284,14 +280,14 @@ class RequestVa extends \Magento\Framework\App\Action\Action
 
             $order = $_checkoutSession->getLastRealOrder();
             $quote = $_quoteFactory->create()->loadByIdWithoutStore($order->getQuoteId());
-            $this->logger->info('===== Jokul - VA Request Controller ===== Get Cart');
+            $this->logger->info('===== Jokul - O2O Request Controller ===== Get Cart');
             if ($quote->getId()) {
-                $this->logger->info('===== Jokul - VA Request Controller ===== Checking Cart');
+                $this->logger->info('===== Jokul - O2O Request Controller ===== Checking Cart');
                 $quote->setIsActive(1)->setReservedOrderId(null)->save();
                 $_checkoutSession->replaceQuote($quote);
-                $this->logger->info('===== Jokul - VA Request Controller ===== Restoring Cart');
+                $this->logger->info('===== Jokul - O2O Request Controller ===== Restoring Cart');
                 $order->cancel()->save();
-                $this->logger->info('===== Jokul - VA Request Controller ===== Cart Restored');
+                $this->logger->info('===== Jokul - O2O Request Controller ===== Cart Restored');
                 echo json_encode(array(
                     'err' => true,
                     'response_message' => $result['error_message'],
@@ -299,7 +295,7 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 ));
             }
 
-            $this->logger->info('===== Jokul - VA Request Controller ===== Show Error Popup: ' . print_r($result, true));
+            $this->logger->info('===== Jokul - O2O Request Controller ===== Show Error Popup: ' . print_r($result, true));
         }
     }
 }

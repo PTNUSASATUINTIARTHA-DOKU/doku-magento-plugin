@@ -5,7 +5,6 @@ namespace Jokul\Magento2\Model;
 use Magento\Checkout\Model\ConfigProviderInterface;
 use \Magento\Framework\App\Config\ScopeConfigInterface;
 use \Magento\Framework\Stdlib\DateTime\TimezoneInterface;
-//use Jokul\Magento2\Helper\Data;
 
 class GeneralConfiguration implements ConfigProviderInterface
 {
@@ -27,7 +26,9 @@ class GeneralConfiguration implements ConfigProviderInterface
         'mandiri_syariah_va_merchanthosted' => "02",
         'doku_va_merchanthosted' => "03",
         'bca_va_merchanthosted' => "04",
-        'permata_va_merchanthosted' => "05"
+        'permata_va_merchanthosted' => "05",
+        'doku_cc_merchanthosted' => "06",
+        'alfamart_merchanthosted' => "07"
     ];
 
     public function __construct(
