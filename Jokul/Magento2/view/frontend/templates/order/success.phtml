@@ -2,37 +2,54 @@
 
 <div role="alert" class="messages">
     <div class="message-warning message warning">
-        <div>
-            <h3 style="margin-top: 0px !important;">
-                <?php echo __('Please transfer your payment to this payment code / VA number:'); ?></b></p>
-            </h3>
-            <h2>
-                <?php echo $dokuOrderParams['vaNumber'] ?>
-            </h2>
-            <h4>
-                <strong>
-                    <?php echo __('Payment Amount: Rp.  %1', $dokuOrderParams['amount']); ?>
-                </strong>
-            </h4>
-            <p>
-                <?php echo __('Payment Channel: %1', $dokuOrderParams['paymentChannel']); ?>
-                <br />
-                <?php echo __('Make your payment before: %1', $dokuOrderParams['expiry']); ?>
-            </p>
-            <p>
-                <a href="<?php echo $dokuOrderParams['howToPayUrl'] ?>" target="_blank">
-                    <?php echo __('Click here to see payment instructions'); ?>
-                </a>
-            </p>
-        </div>
+        <?php if (empty($this->params['transaction_type'])) : ?>
+            <div>
+                <h3 style="margin-top: 0px !important;">
+                    <?php echo __('Please transfer your payment to this payment code / VA number:'); ?></b></p>
+                </h3>
+                <h2>
+                    <?php echo $dokuOrderParams['vaNumber'] ?>
+                </h2>
+                <h4>
+                    <strong>
+                        <?php echo __('Payment Amount: Rp.  %1', $dokuOrderParams['amount']); ?>
+                    </strong>
+                </h4>
+                <p>
+                    <?php echo __('Payment Channel: %1', $dokuOrderParams['paymentChannel']); ?>
+                    <br />
+                    <?php echo __('Make your payment before: %1', $dokuOrderParams['expiry']); ?>
+                </p>
+            </div>
+        <?php else : ?>
+            <div>
+                <h3 style="margin-top: 0px !important;">
+                    <?php echo __('Your Transaction is '.$this->params['result']); ?></b></p>
+                </h3>
+                <h4>
+                    <strong>
+                        <?php echo __('Payment Amount: Rp.  %1', $dokuOrderParams['amount']); ?>
+                    </strong>
+                </h4>
+                <p>
+                    <?php echo __('Payment Channel: %1', $dokuOrderParams['paymentChannel']); ?>
+                </p>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 
 <p><strong>Here is your order details:</strong></p>
 <ul>
+    <li><?php echo __('Invoice Number : %1', $dokuOrderParams['orderId']); ?></li>
     <li><?php echo __('Total Amount: Rp. %1', $dokuOrderParams['amount']); ?></li>
     <li><?php echo __('Discount Amount: Rp. %1',  $dokuOrderParams['discountValue']); ?></li>
     <li><?php echo __('Admin Fee: Rp. %1', $dokuOrderParams['adminFeeValue']); ?></li>
 </ul>
+<?php if (empty($dokuOrderParams['transactionType'])) : ?>
+    <a href="<?php echo $dokuOrderParams['howToPayUrl'] ?>">
+        <?php echo __('Click here to see payment instructions'); ?>
+    </a>
+<?php endif; ?>
 
 <br><br>

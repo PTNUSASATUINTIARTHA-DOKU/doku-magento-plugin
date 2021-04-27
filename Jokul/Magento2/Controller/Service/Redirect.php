@@ -14,7 +14,8 @@ use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 
-class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface {
+class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
+{
 
     protected $order;
     protected $logger;
@@ -26,15 +27,15 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
     protected $transactionRepository;
 
     public function __construct(
-            Order $order,
-            LoggerInterface $logger,
-            Session $session,
-            ResourceConnection $resourceConnection,
-            Data $helper,
-            \Magento\Framework\App\Action\Context $context,
-            \Magento\Framework\Stdlib\DateTime\TimezoneInterface $timeZone,
-            Validator $formKeyValidator,
-            TransactionRepositoryInterface $transactionRepository
+        Order $order,
+        LoggerInterface $logger,
+        Session $session,
+        ResourceConnection $resourceConnection,
+        Data $helper,
+        \Magento\Framework\App\Action\Context $context,
+        \Magento\Framework\Stdlib\DateTime\TimezoneInterface $timeZone,
+        Validator $formKeyValidator,
+        TransactionRepositoryInterface $transactionRepository
     ) {
 
         $this->order = $order;
@@ -48,7 +49,8 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
         return parent::__construct($context);
     }
 
-    public function execute() {
+    public function execute()
+    {
         $path = "";
         $this->logger->info('===== Jokul - Redirect Controller ===== Start');
         $post = $this->getRequest()->getParams();
@@ -57,12 +59,23 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
 
         $this->logger->info('===== Jokul - Redirect Controller ===== Looking for the order on the Magento Side');
 
+        $this->logger->info('===== Redirect Controller  ===== Finding order...');
+        $transactionType = isset($post['TRANSACTIONTYPE']) ? $post['TRANSACTIONTYPE'] : "";
         $connection = $this->resourceConnection->getConnection();
         $tableName = $this->resourceConnection->getTableName('jokul_transaction');
+
+        if (!isset($post['invoice_number'])) {
+
+            $path = "checkout/onepage/failure";
+            $resultRedirect = $this->resultRedirectFactory->create();
+            return $resultRedirect->setPath($path);
+        }
+
 
         $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $post['invoice_number'] . "'";
 
         $dokuOrder = $connection->fetchRow($sql);
+        $paymentChannel = $dokuOrder['payment_channel_id'];
 
         if (!isset($dokuOrder['invoice_number'])) {
             $this->logger->info('===== Jokul - Redirect Controller ===== Invoice Number not found in jokul_transaction table');
@@ -78,13 +91,24 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
         $sharedKey = $requestParams['shared_key'];
         $requestAmount = $requestParams['order']['amount'];
 
-        $expiryValue = $requestParams['virtual_account_info']['expired_time'];
+        $O2Ochannel = array(07);
+        $expiryStoreDate = "";
+        $additionalParams = "";
+        $vaNumber = "";
+        $expiryGmtDate = "";
+        if ($paymentChannel != 06) {
+            if (in_array($paymentChannel, $O2Ochannel)) {
+                $expiryValue = $requestParams['online_to_offline_info']['expired_time'];
+                $vaNumber = $requestParams['response']['online_to_offline_info']['payment_code'];
+            } else {
+                $expiryValue = $requestParams['virtual_account_info']['expired_time'];
+                $vaNumber = $requestParams['response']['virtual_account_info']['virtual_account_number'];
+            }
 
-        $expiryGmtDate = date('Y-m-d H:i:s', (strtotime('+' . $expiryValue . ' minutes', time())));
-        $expiryStoreDate = $this->timeZone->date(new \DateTime($expiryGmtDate))->format('Y-m-d H:i:s');
-
-        $vaNumber = $requestParams['response']['virtual_account_info']['virtual_account_number'];
-        $additionalParams = " `va_number` = '" . $vaNumber . "', ";
+            $expiryGmtDate = date('Y-m-d H:i:s', (strtotime('+' . $expiryValue . ' minutes', time())));
+            $expiryStoreDate = $this->timeZone->date(new \DateTime($expiryGmtDate))->format('Y-m-d H:i:s');
+            $additionalParams = " `va_number` = '" . $vaNumber . "', ";
+        }
 
         $order = $this->order->loadByIncrementId($post['invoice_number']);
 
@@ -105,17 +129,18 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
 
             $redirectSignature = $this->helper->generateRedirectSignature($redirectSignatureParams);
 
-            if ($redirectSignature == $post['redirect_signature']) {
+            if (strtolower($redirectSignature)  == strtolower($post['redirect_signature'])) {
                 $this->logger->info('===== Jokul - Redirect Controller ===== Redirect Signature match!');
 
-                $this->logger->info('===== Jokul - Redirect Controller ===== Check Order Status');
+                $this->logger->info(' post[status] ' . $post['status']);
+                if (strtolower($post['status']) == strtolower('success')) {
 
-                if ($post['status'] == 'SUCCESS') {
+                    $this->logger->info('===== Jokul - Redirect Controller ===== Check Order Status');
                     $isSuccessOrder = true;
                     $path = "checkout/onepage/success";
-                    $this->logger->info('===== Jokul - Redirect Controller ===== Order Status Success');
+                    $this->deleteCart();
                 } else {
-                    $path ="checkout/cart";
+                    $path = "checkout/cart";
                     $this->messageManager->addWarningMessage('Payment Failed. Please try again or contact our customer service.');
                     $order->cancel()->save();
                     $this->logger->info('===== Jokul - Redirect Controller ===== Order Status Failed');
@@ -126,7 +151,6 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
                 $this->helper->sendDokuEmailOrder($order, $vaNumber, $dokuOrder, $isSuccessOrder, $expiryStoreDate);
 
                 $this->logger->info('===== Jokul - Redirect Controller ===== Send Email Notification - End');
-
             } else {
                 $path = "";
                 $order->cancel()->save();
@@ -139,13 +163,28 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
             $this->logger->info('===== Jokul - Redirect Controller ===== Order not found');
         }
 
-        $sql = "Update " . $tableName . " SET ".$additionalParams." `updated_at` = 'now()', `expired_at_gmt` = '".$expiryGmtDate."', `expired_at_storetimezone` = '".$expiryStoreDate."', `redirect_params` = '" . $postJson . "' where invoice_number = '" . $post['invoice_number'] . "'";
+        $sql = "Update " . $tableName . " SET " . $additionalParams . " `updated_at` = 'now()', `expired_at_gmt` = '" . $expiryGmtDate . "', `expired_at_storetimezone` = '" . $expiryStoreDate . "', `redirect_params` = '" . $postJson . "' where invoice_number = '" . $post['invoice_number'] . "'";
         $connection->query($sql);
 
-        $this->logger->info('===== Jokul - Redirect Controller ===== End');
+        $this->logger->info('===== Redirect Controller  ===== End');
 
+        $this->session->setLastSuccessQuoteId($order->getQuoteId());
+        $this->session->setLastOrderId($order->getEntityId());
+        $this->session->setLastRealOrderId($order->getEntityId());
+
+
+        $params = array('invoice' => $order->getIncrementId(), 'result' => $post['status'], 'transaction_type' => $transactionType);
         $resultRedirect = $this->resultRedirectFactory->create();
-        return $resultRedirect->setPath($path);
+        return $resultRedirect->setPath($path, $params);
+    }
+    public function deleteCart()
+    {
+
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $cartObject = $objectManager->create('Magento\Checkout\Model\Cart');
+        $cartObject->truncate()->save();
+
+        $this->logger->info('delete Cart');
     }
 
     /**
@@ -165,5 +204,4 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
     {
         return true;
     }
-
 }

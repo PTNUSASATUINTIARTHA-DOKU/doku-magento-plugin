@@ -34,6 +34,14 @@ define(
             {
                 type: 'permata_va_merchanthosted',
                 component: 'Jokul_Magento2/js/view/payment/method-renderer/permata-va-merchanthosted-method'
+            },
+            {
+                type: 'doku_cc_merchanthosted',
+                component: 'Jokul_Magento2/js/view/payment/method-renderer/credit-card-method'
+            },
+            {
+                type: 'alfamart_merchanthosted',
+                component: 'Jokul_Magento2/js/view/payment/method-renderer/alfamart-merchanthosted-method'
             }
         );
 
