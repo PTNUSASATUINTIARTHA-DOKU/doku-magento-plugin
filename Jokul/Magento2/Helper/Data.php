@@ -17,7 +17,7 @@ class Data extends AbstractHelper
     protected $logger;
 
     const PREFIX_ENV_DEVELOPMENT = 'https://api-sandbox.doku.com';
-    const PREFIX_ENV_PRODUCTION = 'https://api-jokul.doku.com';
+    const PREFIX_ENV_PRODUCTION = 'https://api.doku.com';
 
     public function __construct(
         TransportBuilder $transportBuilder,
