@@ -179,12 +179,22 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
                 $order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
             }
 
+
+
+            if(strtolower($postData['transaction']['status']) == strtolower('SUCCESS')){
+                $sql = "Update " . $tableName . " SET `updated_at` = 'now()', `order_status` = 'SUCCESS' , `notify_params` = '" . $postjson . "' where invoice_number = '" . $invoiceNumber . "'";
+                $connection->query($sql);
+                $order->setData('state', 'processing');
+                $order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
+                $this->logger->info('===== Jokul - Notification Controller ===== Update transaction to SUCCESS');
+            } else if (strtolower($postData['transaction']['status']) == strtolower('FAILED')){
+                $sql = "Update " . $tableName . " SET `updated_at` = 'now()', `order_status` = 'FAILED' , `notify_params` = '" . $postjson . "' where invoice_number = '" . $invoiceNumber . "'";
+                $connection->query($sql);
+                $order->setData('state', 'canceled');
+                $order->setStatus(\Magento\Sales\Model\Order::STATE_CANCELED);
+                $this->logger->info('===== Jokul - Notification Controller ===== Update transaction to FAILED');
+            }
             $order->save();
-
-            $sql = "Update " . $tableName . " SET `updated_at` = 'now()', `order_status` = 'SUCCESS' , `notify_params` = '" . $postjson . "' where invoice_number = '" . $invoiceNumber . "'";
-            $connection->query($sql);
-
-            $this->logger->info('===== Jokul - Notification Controller ===== Update transaction to SUCCESS');
             $this->sendResponse(200);
 
             $this->logger->info('===== Jokul - Notification Controller ===== End');

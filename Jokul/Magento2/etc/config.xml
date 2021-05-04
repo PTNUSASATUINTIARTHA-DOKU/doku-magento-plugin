@@ -32,8 +32,25 @@
                 <description>Bank Permata VA Configuration</description>
                 <payment_code_prefix>88899</payment_code_prefix>
             </permata_va_merchanthosted>
+            <doku_cc_merchanthosted>
+                <title>Jokul Credit Card</title>
+                <description>Jokul Credit Card</description>
+                <payment_code_prefix>88899</payment_code_prefix>
+            </doku_cc_merchanthosted>
+            <alfamart_merchanthosted>
+                <title>Alfamart</title>
+                <description>Alfamart</description>
+            </alfamart_merchanthosted>
         </doku_merchanthosted_config>
         <payment>
+            <doku_cc_merchanthosted>
+                <title>Jokul Credit Card</title>
+                <description>Jokul Credit Card</description>
+                <payment_code_prefix>88899</payment_code_prefix>
+                <allowspecific>0</allowspecific>
+                <group>offline</group>
+                <model>Jokul\Magento2\Model\Payment\CreditCardJokul</model>
+            </doku_cc_merchanthosted>
             <mandiri_va_merchanthosted>
                 <title>Bank Mandiri VA</title>
                 <description>Bayar pesanan dengan transfer dari Bank Mandiri</description>
@@ -89,6 +106,17 @@
                 <admin_fee>0</admin_fee>
                 <model>Jokul\Magento2\Model\Payment\PermataVaMerchanthosted</model>
             </permata_va_merchanthosted>
+            <alfamart_merchanthosted>
+                <title>Alfamart</title>
+                <description>Bayar pesanan dengan pembayaran melalui Alfamart</description>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <group>offline</group>
+                <disc_amount>0</disc_amount>
+                <admin_fee>0</admin_fee>
+                <footer_message>Place your footer Message here</footer_message>
+                <model>Jokul\Magento2\Model\Payment\AlfamartMerchanthosted</model>
+            </alfamart_merchanthosted>
         </payment>
     </default>
 </config>

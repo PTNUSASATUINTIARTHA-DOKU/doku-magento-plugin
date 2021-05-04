@@ -308,4 +308,43 @@ class Data extends AbstractHelper
         $logger->addWriter($writer);
         $logger->info($var);
     }
+        public function doRequestCcPaymentForm($params, $data, $signature)
+    {
+        $prefixdev      = SELF::PREFIX_ENV_DEVELOPMENT;
+        $prefixprod     = SELF::PREFIX_ENV_PRODUCTION;
+        $path           = $params['requestTarget'];
+
+        if ($this->config->getEnvironment() == 'development') {
+            $url = $prefixdev . $path;
+        } else {
+            $url = $prefixprod . $path;
+        }
+        $this->logger->info('===== Request controller Credit Card GATEWAY ===== URL : ' . $url);
+
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'Signature:' . $signature,
+            'Request-Id:' . $params['requestId'],
+            'Client-Id:' . $params['clientId'],
+            'Request-Timestamp:' . $params['requestTimestamp'],
+            'Request-Target:' . $params['requestTarget']
+        ));
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $responseJson = curl_exec($ch);
+
+        $this->logger->info('===== Request controller Credit Card GATEWAY ===== Response he: ' . json_encode($responseJson, JSON_PRETTY_PRINT));
+
+        curl_close($ch);
+
+        if (is_string($responseJson)) {
+            $this->logger->info('===== Request controller Credit Card GATEWAY ===== Response he 1: ' . json_encode(json_decode($responseJson, true), JSON_PRETTY_PRINT));
+            return json_decode($responseJson, true);
+        } else {
+            $this->logger->info('===== Request controller Credit Card GATEWAY ===== Response he: 2 ' . json_encode($responseJson, JSON_PRETTY_PRINT));
+            return $responseJson;
+        }
+    }
 }

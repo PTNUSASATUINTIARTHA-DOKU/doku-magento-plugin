@@ -219,6 +219,99 @@
                         <config_path>payment/permata_va_merchanthosted/admin_fee_type</config_path>
                     </field>
                 </group>
+                <group id="doku_cc_merchanthosted" translate="label" type="text" sortOrder="230" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Credit Card</label>
+                    <field id="active" translate="label" type="select" sortOrder="231" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Enabled</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/doku_cc_merchanthosted/active</config_path>
+                    </field>
+                    <field id="title" translate="label" type="text" sortOrder="232" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Title</label>
+                        <config_path>payment/doku_cc_merchanthosted/title</config_path>
+                    </field>
+                    <field id="description" translate="label" type="text" sortOrder="233" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Description</label>
+                        <config_path>payment/doku_cc_merchanthosted/description</config_path>
+                    </field>
+                    <field id="discountAmount" translate="label" type="text" sortOrder="234" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Discount Amount</label>
+                        <config_path>payment/doku_cc_merchanthosted/discountAmount</config_path>
+                    </field>
+                    <field id="discType" translate="label" type="select" sortOrder="235" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Discount Type</label>
+                        <source_model>Jokul\Magento2\Model\Config\Source\PercentageSelect</source_model>
+                        <config_path>payment/doku_cc_merchanthosted/discType</config_path>
+                    </field>
+                    <field id="adminFee" translate="label" type="text" sortOrder="236" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Admin Fee</label>
+                        <config_path>payment/doku_cc_merchanthosted/adminFee</config_path>
+                    </field>
+                    <field id="adminFeeType" translate="label" type="select" sortOrder="237" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Admin Fee Type</label>
+                        <source_model>Jokul\Magento2\Model\Config\Source\PercentageSelect</source_model>
+                        <config_path>payment/doku_cc_merchanthosted/adminFeeType</config_path>
+                    </field>
+                    <field id="ccFormBackgroundColor" translate="label" type="text" sortOrder="238" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>CC Form - Background Color</label>
+                        <config_path>payment/doku_cc_merchanthosted/ccFormBackgroundColor</config_path>
+                    </field>
+                    <field id="ccFormLabelColor" translate="label" type="text" sortOrder="239" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>CC Form - Label Color</label>
+                        <config_path>payment/doku_cc_merchanthosted/ccFormLabelColor</config_path>
+                    </field>
+                    <field id="ccFormButtonBackgroundColor" translate="label" type="text" sortOrder="240" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>CC Form - Button Background Color</label>
+                        <config_path>payment/doku_cc_merchanthosted/ccFormButtonBackgroundColor</config_path>
+                    </field>
+                    <field id="ccFormButtonFontColor" translate="label" type="text" sortOrder="241" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>CC Form - Button Font Color</label>
+                        <config_path>payment/doku_cc_merchanthosted/ccFormButtonFontColor</config_path>
+                    </field>
+                    <field id="languageSelect" translate="label" type="select" sortOrder="242" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Language</label>
+                        <source_model>Jokul\Magento2\Model\Config\Source\LanguageSelect</source_model>
+                        <config_path>payment/doku_cc_merchanthosted/languageSelect</config_path>
+                    </field>
+                </group>
+                <group id="alfamart_merchanthosted" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Alfamart</label>
+                    <field id="active" translate="label" type="select" sortOrder="201" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Enabled</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/alfamart_merchanthosted/active</config_path>
+                    </field>
+                    <field id="title" translate="label" type="text" sortOrder="202" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Title</label>
+                        <config_path>payment/alfamart_merchanthosted/title</config_path>
+                    </field>
+                    <field id="description" translate="label" type="text" sortOrder="217" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Description</label>
+                        <config_path>payment/alfamart_merchanthosted/description</config_path>
+                    </field>
+                    <field id="disc_amount" translate="label" type="text" sortOrder="220" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Discount Amount</label>
+                        <config_path>payment/alfamart_merchanthosted/disc_amount</config_path>
+                    </field>
+                    <field id="disc_type" translate="label" type="select" sortOrder="221" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Discount Type</label>
+                        <source_model>Jokul\Magento2\Model\Config\Source\PercentageSelect</source_model>
+                        <config_path>payment/alfamart_merchanthosted/disc_type</config_path>
+                    </field>
+                    <field id="admin_fee" translate="label" type="text" sortOrder="222" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Admin Fee</label>
+                        <config_path>payment/alfamart_merchanthosted/admin_fee</config_path>
+                    </field>
+                    <field id="admin_fee_type" translate="label" type="select" sortOrder="223" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Admin Fee Type</label>
+                        <source_model>Jokul\Magento2\Model\Config\Source\PercentageSelect</source_model>
+                        <config_path>payment/alfamart_merchanthosted/admin_fee_type</config_path>
+                    </field>
+                    <field id="footer_message" translate="label" type="text" sortOrder="224" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Footer Message</label>
+                        <config_path>payment/alfamart_merchanthosted/footer_message</config_path>
+                    </field>
+                </group>
             </group>
         </section>
     </system>
