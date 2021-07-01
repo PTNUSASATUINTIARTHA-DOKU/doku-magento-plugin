@@ -3,10 +3,10 @@
 namespace Jokul\Magento2\Controller\Payment;
 
 use Magento\Sales\Model\Order;
-use \Psr\Log\LoggerInterface;
+use \Jokul\Magento2\Helper\Logger;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\ResourceConnection;
-use Jokul\Magento2\Model\DokuMerchanthostedConfigProvider;
+use Jokul\Magento2\Model\JokulConfigProvider;
 use Jokul\Magento2\Helper\Data;
 use \Magento\Framework\App\Action\Context;
 use \Magento\Framework\View\Result\PageFactory;
@@ -36,11 +36,11 @@ class RequestO2O extends \Magento\Framework\App\Action\Action
         Session $session,
         Order $order,
         ResourceConnection $resourceConnection,
-        DokuMerchanthostedConfigProvider $config,
+        JokulConfigProvider $config,
         Data $helper,
         Context $context,
         PageFactory $pageFactory,
-        LoggerInterface $loggerInterface,
+        Logger $loggerInterface,
         SessionFactory $sessionFactory,
         Http $httpRequest,
         GeneralConfiguration $_generalConfiguration,
@@ -89,9 +89,9 @@ class RequestO2O extends \Magento\Framework\App\Action\Action
     public function execute()
     {
 
-        $this->logger->info('===== Jokul - O2O Request Controller ===== Start');
+        $this->logger->doku_log('RequestO2O','Jokul - O2O Request Start');
 
-        $this->logger->info('===== Jokul - O2O Request Controller ===== Find Order to Execute');
+        $this->logger->doku_log('RequestO2O','Jokul - O2O Request Find Order to Execute');
 
         $result = array();
         $redirectData = array();
@@ -101,9 +101,8 @@ class RequestO2O extends \Magento\Framework\App\Action\Action
         if ($order->getEntityId()) {
             $order->setState(Order::STATE_NEW);
             $this->session->getLastRealOrder()->setState(Order::STATE_NEW);
-            $order->save();
 
-            $this->logger->info('===== Jokul - O2O Request Controller ===== Order Found!');
+            $this->logger->doku_log('RequestO2O','Jokul - O2O Request Order Found!');
 
             $configCode = $this->config->getRelationPaymentChannel($order->getPayment()->getMethod());
 
@@ -125,14 +124,13 @@ class RequestO2O extends \Magento\Framework\App\Action\Action
             $buffGrandTotal = $grandTotal - $totalAdminFeeDisc['total_discount'];
 
             $grandTotal = $buffGrandTotal;
-
+            $order->setGrandTotal($grandTotal);
+            $order->save();
             $clientId = $config['payment']['core']['client_id'];
             $sharedKey = $this->config->getSharedKey();
             $expiryTime = isset($config['payment']['core']['expiry']) && (int) $config['payment']['core']['expiry'] != 0 ? $config['payment']['core']['expiry'] : 60;
 
             $customerName = trim($billingData->getFirstname() . " " . $billingData->getLastname());
-
-            $this->logger->info(print_r($config, true));
 
             $params = array(
                 "order" => array(
@@ -177,39 +175,37 @@ class RequestO2O extends \Magento\Framework\App\Action\Action
                 "requestTimestamp" => substr($requestTimestamp, 0, 19) . "Z"
             );
 
-            $this->logger->info('===== Jokul - O2O Request Controller ===== Request params: ' . json_encode($params, JSON_PRETTY_PRINT));
-            $this->logger->info('===== Jokul - O2O Request Controller ===== Payment channel: ' . $requestTarget);
-            $this->logger->info('===== Jokul - O2O Request Controller ===== Send request to Jokul');
+            $this->logger->doku_log('RequestO2O','Jokul - O2O Request Request data : ' . json_encode($params, JSON_PRETTY_PRINT));
+            $this->logger->doku_log('RequestO2O','Jokul - O2O Request Send request to Jokul');
 
             $orderStatus = 'FAILED';
             try {
                 $signature = $this->helper->doCreateRequestSignature($signatureParams, $params);
                 $result = $this->helper->doGeneratePaycode($signatureParams, $params, $signature);
             } catch (\Exception $e) {
-                $this->logger->info('===== Jokul - O2O Request Controller ===== Exception: ' . $e);
+                $this->logger->doku_log('RequestO2O','Jokul - O2O Request Exception: ' . $e);
             }
 
-            $this->logger->info('===== Jokul - O2O Request Controller ===== Response from Jokul: ' . json_encode($result, JSON_PRETTY_PRINT));
 
             if (isset($result['order']['invoice_number'])) {
                 $o2oInfo = isset($result['online_to_offline_info']) ? $result['online_to_offline_info'] : '';
 
                 if ($o2oInfo !== '') {
-                    $this->logger->info('===== Jokul - O2O Request Controller ===== Received Success Response from Jokul');
+                    $this->logger->doku_log('RequestO2O','Jokul - O2O Request Received Success Response from Jokul');
                     $orderStatus = 'PENDING';
                     $result['result'] = 'SUCCESS';
                     $vaNumber = $result['online_to_offline_info']['payment_code'];
                 } elseif (isset($result['error'])) {
-                    $this->logger->info('===== Jokul - O2O Request Controller ===== Received Error Response from Jokul');
+                    $this->logger->doku_log('RequestO2O','Jokul - O2O Request Received Error Response from Jokul');
                     $result['result'] = 'FAILED';
                     $result['error_message'] = $result['error']['message'];
                 } else {
-                    $this->logger->info('===== Jokul - O2O Request Controller ===== Received Undefined Error from Jokul');
+                    $this->logger->doku_log('RequestO2O','Jokul - O2O Request Received Undefined Error from Jokul');
                     $result['result'] = 'FAILED';
                     $result['error_message'] = 'Undefined error';
                 }
             } else {
-                $this->logger->info('===== Jokul - O2O Request Controller ===== Received Unexpected Error from Jokul');
+                $this->logger->doku_log('RequestO2O','Jokul - O2O Request Received Unexpected Error from Jokul');
                 $result['result'] = 'FAILED';
                 $result['error_message'] = 'Unexpected error';
             }
@@ -258,10 +254,10 @@ class RequestO2O extends \Magento\Framework\App\Action\Action
             $redirectData['redirect_signature'] = $redirectSignature;
             $redirectData['status'] = $result['result'];
         } else {
-            $this->logger->info('===== Jokul - O2O Request Controller ===== Order not found!');
+            $this->logger->doku_log('RequestO2O','Jokul - O2O Request Order not found!');
         }
 
-        $this->logger->info('===== Jokul - O2O Request Controller ===== End');
+        $this->logger->doku_log('RequestO2O','Jokul - O2O Request End');
 
         if ($result['result'] == 'SUCCESS') {
             echo json_encode(array(
@@ -269,10 +265,10 @@ class RequestO2O extends \Magento\Framework\App\Action\Action
                 'response_message' => 'O2O Number Generated',
                 'result' => $redirectData
             ));
-            $this->logger->info('===== Jokul - O2O Request Controller ===== Redirecting to Success Page' . print_r($result, true));
+            $this->logger->doku_log('RequestO2O','Jokul - O2O Request Redirecting to Success Page' . print_r($result, true));
         } else {
-            $this->logger->info('===== Jokul - O2O Request Controller ===== Prepare Order Failed Procedure');
-            $this->logger->info('===== Jokul - O2O Request Controller ===== Initiate Restore Cart');
+            $this->logger->doku_log('RequestO2O','Jokul - O2O Request Prepare Order Failed Procedure');
+            $this->logger->doku_log('RequestO2O','Jokul - O2O Request Initiate Restore Cart');
 
             $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
             $_checkoutSession = $objectManager->create('\Magento\Checkout\Model\Session');
@@ -280,14 +276,14 @@ class RequestO2O extends \Magento\Framework\App\Action\Action
 
             $order = $_checkoutSession->getLastRealOrder();
             $quote = $_quoteFactory->create()->loadByIdWithoutStore($order->getQuoteId());
-            $this->logger->info('===== Jokul - O2O Request Controller ===== Get Cart');
+            $this->logger->doku_log('RequestO2O','Jokul - O2O Request Get Cart');
             if ($quote->getId()) {
-                $this->logger->info('===== Jokul - O2O Request Controller ===== Checking Cart');
+                $this->logger->doku_log('RequestO2O','Jokul - O2O Request Checking Cart');
                 $quote->setIsActive(1)->setReservedOrderId(null)->save();
                 $_checkoutSession->replaceQuote($quote);
-                $this->logger->info('===== Jokul - O2O Request Controller ===== Restoring Cart');
+                $this->logger->doku_log('RequestO2O','Jokul - O2O Request Restoring Cart');
                 $order->cancel()->save();
-                $this->logger->info('===== Jokul - O2O Request Controller ===== Cart Restored');
+                $this->logger->doku_log('RequestO2O','Jokul - O2O Request Cart Restored');
                 echo json_encode(array(
                     'err' => true,
                     'response_message' => $result['error_message'],
@@ -295,7 +291,7 @@ class RequestO2O extends \Magento\Framework\App\Action\Action
                 ));
             }
 
-            $this->logger->info('===== Jokul - O2O Request Controller ===== Show Error Popup: ' . print_r($result, true));
+            $this->logger->doku_log('RequestO2O','Jokul - O2O Request Show Error Popup: ' . print_r($result, true));
         }
     }
 }

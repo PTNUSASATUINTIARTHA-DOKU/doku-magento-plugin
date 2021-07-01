@@ -69,7 +69,7 @@ define(
                 });
             },
             getDescription: function(){
-                return window.checkoutConfig.payment.doku_cc_merchanthosted.description
+                return window.checkoutConfig.payment.doku_cc.description
             }
         });
     }

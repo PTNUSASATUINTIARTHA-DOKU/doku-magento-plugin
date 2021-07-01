@@ -80,12 +80,6 @@ class InstallSchema implements InstallSchemaInterface
 				['nullable' => false],
 				'Doku Request'
 			)->addColumn(
-				'identify_params',
-				Table::TYPE_TEXT,
-				65538,
-				['nullable' => false],
-				'Doku identify'
-			)->addColumn(
 				'redirect_params',
 				Table::TYPE_TEXT,
 				65538,

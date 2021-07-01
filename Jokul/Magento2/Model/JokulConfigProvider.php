@@ -6,15 +6,15 @@ use Magento\Checkout\Model\ConfigProviderInterface;
 use \Magento\Framework\App\Config\ScopeConfigInterface;
 use \Jokul\Magento2\Model\GeneralConfiguration;
 
-class DokuMerchanthostedConfigProvider implements ConfigProviderInterface
+class JokulConfigProvider implements ConfigProviderInterface
 {
     protected $_scopeConfig;
     protected $_generalConfiguration;
-    const CC_THEME_LANGUAGE = 'payment/doku_cc_merchanthosted/languageSelect';
-    const CC_THEME_BACKGROUND_COLOR = 'payment/doku_cc_merchanthosted/ccFormBackgroundColor';
-    const CC_THEME_FONT_COLOR = 'payment/doku_cc_merchanthosted/ccFormLabelColor';
-    const CC_THEME_BTN_BACKGROUND_COLOR = 'payment/doku_cc_merchanthosted/ccFormButtonBackgroundColor';
-    const CC_THEME_BTN_FONT_COLOR = 'payment/doku_cc_merchanthosted/ccFormButtonFontColor';
+    const CC_THEME_LANGUAGE = 'payment/doku_cc/languageSelect';
+    const CC_THEME_BACKGROUND_COLOR = 'payment/doku_cc/ccFormBackgroundColor';
+    const CC_THEME_FONT_COLOR = 'payment/doku_cc/ccFormLabelColor';
+    const CC_THEME_BTN_BACKGROUND_COLOR = 'payment/doku_cc/ccFormButtonBackgroundColor';
+    const CC_THEME_BTN_FONT_COLOR = 'payment/doku_cc/ccFormButtonFontColor';
 
     public function __construct(
         ScopeConfigInterface $scopeConfig,
@@ -47,9 +47,7 @@ class DokuMerchanthostedConfigProvider implements ConfigProviderInterface
         return array('payment' => array_merge($this->_generalConfiguration->getConfig()['payment'], $this->getConfig()['payment']));
     }
 
-    public function getPaymentCodePrefix($paymentMethod){
-       return $this->_scopeConfig->getValue('payment/'.$paymentMethod.'/payment_code_prefix', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-    }
+
 
     public function getPaymentAdminFeeAmount($paymentMethod){
          return $this->_scopeConfig->getValue('payment/'.$paymentMethod.'/admin_fee', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
@@ -68,7 +66,7 @@ class DokuMerchanthostedConfigProvider implements ConfigProviderInterface
     }
 
     public function getFooterMessage(){
-        return $this->_scopeConfig->getValue('payment/alfamart_merchanthosted/footer_message', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        return $this->_scopeConfig->getValue('payment/alfamart/footer_message', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
    }
 
     public function getCCThemelanguage()
@@ -100,14 +98,11 @@ class DokuMerchanthostedConfigProvider implements ConfigProviderInterface
         $configData = array();
 
         foreach($paymentList as $index => $value){
-            $expIdx = explode("_", $index);
-            if (end($expIdx) == 'merchanthosted') {
                 $configData['payment'][$index]['description'] = $this->getPaymentDescription($index);
                 $configData['payment'][$index]['admin_fee'] = $this->getPaymentAdminFeeAmount($index);
                 $configData['payment'][$index]['admin_fee_type'] = $this->getPaymentAdminFeeType($index);
                 $configData['payment'][$index]['disc_amount'] = $this->getPaymentDiscountAmount($index);
                 $configData['payment'][$index]['disc_type'] = $this->getPaymentDiscountType($index);
-            }
         }
 
         return $configData;

@@ -3,10 +3,10 @@
 namespace Jokul\Magento2\Controller\Payment;
 
 use Magento\Sales\Model\Order;
-use \Psr\Log\LoggerInterface;
+use \Jokul\Magento2\Helper\Logger;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\ResourceConnection;
-use Jokul\Magento2\Model\DokuMerchanthostedConfigProvider;
+use Jokul\Magento2\Model\JokulConfigProvider;
 use Jokul\Magento2\Helper\Data;
 use \Magento\Framework\App\Action\Context;
 use \Magento\Framework\View\Result\PageFactory;
@@ -36,11 +36,11 @@ class RequestVa extends \Magento\Framework\App\Action\Action
         Session $session,
         Order $order,
         ResourceConnection $resourceConnection,
-        DokuMerchanthostedConfigProvider $config,
+        JokulConfigProvider $config,
         Data $helper,
         Context $context,
         PageFactory $pageFactory,
-        LoggerInterface $loggerInterface,
+        Logger $loggerInterface,
         SessionFactory $sessionFactory,
         Http $httpRequest,
         GeneralConfiguration $_generalConfiguration,
@@ -89,10 +89,6 @@ class RequestVa extends \Magento\Framework\App\Action\Action
     public function execute()
     {
 
-        $this->logger->info('===== Jokul - VA Request Controller ===== Start');
-
-        $this->logger->info('===== Jokul - VA Request Controller ===== Find Order to Execute');
-
         $result = array();
         $redirectData = array();
 
@@ -101,9 +97,6 @@ class RequestVa extends \Magento\Framework\App\Action\Action
         if ($order->getEntityId()) {
             $order->setState(Order::STATE_NEW);
             $this->session->getLastRealOrder()->setState(Order::STATE_NEW);
-            $order->save();
-
-            $this->logger->info('===== Jokul - VA Request Controller ===== Order Found!');
 
             $configCode = $this->config->getRelationPaymentChannel($order->getPayment()->getMethod());
 
@@ -126,6 +119,9 @@ class RequestVa extends \Magento\Framework\App\Action\Action
 
             $grandTotal = $buffGrandTotal;
 
+
+            $order->setGrandTotal($grandTotal);
+            $order->save();
             $clientId = $config['payment']['core']['client_id'];
             $sharedKey = $this->config->getSharedKey();
             $expiryTime = isset($config['payment']['core']['expiry']) && (int) $config['payment']['core']['expiry'] != 0 ? $config['payment']['core']['expiry'] : 60;
@@ -180,51 +176,47 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 )
             );
 
-            $this->logger->info('===== Jokul - VA Request Controller ===== Request params: ' . json_encode($params, JSON_PRETTY_PRINT));
-            $this->logger->info('===== Jokul - VA Request Controller ===== Payment channel: ' . $requestTarget);
-            $this->logger->info('===== Jokul - VA Request Controller ===== Send request to Jokul');
+            $this->logger->doku_log('RequestVa','Jokul - VA Request data : ' . json_encode($params, JSON_PRETTY_PRINT), $order->getIncrementId());
 
             $orderStatus = 'FAILED';
             try {
                 $signature = $this->helper->doCreateRequestSignature($signatureParams, $params);
                 $result = $this->helper->doGeneratePaycode($signatureParams, $params, $signature);
             } catch (\Exception $e) {
-                $this->logger->info('===== Jokul - VA Request Controller ===== Exception: ' . $e);
+                $this->logger->doku_log('RequestVa','Jokul - VA Request Controller Exception: ' . $e);
             }
 
-            $this->logger->info('===== Jokul - VA Request Controller ===== Response from Jokul: ' . json_encode($result, JSON_PRETTY_PRINT));
 
             if (isset($result['order']['invoice_number'])) {
                 $virtualAccountInfo = isset($result['virtual_account_info']) ? $result['virtual_account_info'] : '';
 
                 if ($virtualAccountInfo !== '') {
-                    $this->logger->info('===== Jokul - VA Request Controller ===== Received Success Response from Jokul');
+                    $this->logger->doku_log('RequestVa','Jokul - VA Request Received Success Response from Jokul',$order->getIncrementId());
                     $orderStatus = 'PENDING';
                     $result['result'] = 'SUCCESS';
                     $vaNumber = $result['virtual_account_info']['virtual_account_number'];
                 } elseif (isset($result['error'])) {
-                    $this->logger->info('===== Jokul - VA Request Controller ===== Received Error Response from Jokul');
+                    $this->logger->doku_log('RequestVa','Jokul - VA Request Received Error Response from Jokul',$order->getIncrementId());
                     $result['result'] = 'FAILED';
                     $result['error_message'] = $result['error']['message'];
                 } else {
-                    $this->logger->info('===== Jokul - VA Request Controller ===== Received Undefined Error from Jokul');
+                    $this->logger->doku_log('RequestVa','Jokul - VA Request Received Undefined Error from Jokul',$order->getIncrementId());
                     $result['result'] = 'FAILED';
                     $result['error_message'] = 'Undefined error';
                 }
             } else {
-                $this->logger->info('===== Jokul - VA Request Controller ===== Received Unexpected Error from Jokul');
+                $this->logger->doku_log('RequestVa','Jokul - VA Request Received Unexpected Error from Jokul',$order->getIncrementId());
                 $result['result'] = 'FAILED';
                 $result['error_message'] = 'Unexpected error';
             }
-
-
 
             $params['shared_key'] = $sharedKey;
             $params['response'] = $result;
 
             $jsonResult = json_encode(array_merge($params), JSON_PRETTY_PRINT);
 
-            $this->resourceConnection->getConnection()->insert('jokul_transaction', [
+            $tableName = $this->resourceConnection->getTableName('jokul_transaction');
+            $this->resourceConnection->getConnection()->insert($tableName, [
                 'quote_id' => $order->getQuoteId(),
                 'store_id' => $order->getStoreId(),
                 'order_id' => $order->getId(),
@@ -262,10 +254,10 @@ class RequestVa extends \Magento\Framework\App\Action\Action
             $redirectData['redirect_signature'] = $redirectSignature;
             $redirectData['status'] = $result['result'];
         } else {
-            $this->logger->info('===== Jokul - VA Request Controller ===== Order not found!');
+            $this->logger->doku_log('RequestVa','Jokul - VA Request Order not found!',$order->getIncrementId());
         }
 
-        $this->logger->info('===== Jokul - VA Request Controller ===== End');
+        $this->logger->doku_log('RequestVa','Jokul - VA Request Controller End',$order->getIncrementId());
 
         if ($result['result'] == 'SUCCESS') {
             echo json_encode(array(
@@ -273,10 +265,10 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 'response_message' => 'VA Number Generated',
                 'result' => $redirectData
             ));
-            $this->logger->info('===== Jokul - VA Request Controller ===== Redirecting to Success Page' . print_r($result, true));
+            $this->logger->doku_log('RequestVa','Jokul - VA Request Controller Redirecting to Success Page' ,$order->getIncrementId());
         } else {
-            $this->logger->info('===== Jokul - VA Request Controller ===== Prepare Order Failed Procedure');
-            $this->logger->info('===== Jokul - VA Request Controller ===== Initiate Restore Cart');
+            $this->logger->doku_log('RequestVa','Jokul - VA Request Controller Prepare Order Failed Procedure',$order->getIncrementId());
+            $this->logger->doku_log('RequestVa','Jokul - VA Request Controller Initiate Restore Cart',$order->getIncrementId());
 
             $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
             $_checkoutSession = $objectManager->create('\Magento\Checkout\Model\Session');
@@ -284,14 +276,14 @@ class RequestVa extends \Magento\Framework\App\Action\Action
 
             $order = $_checkoutSession->getLastRealOrder();
             $quote = $_quoteFactory->create()->loadByIdWithoutStore($order->getQuoteId());
-            $this->logger->info('===== Jokul - VA Request Controller ===== Get Cart');
+            $this->logger->doku_log('RequestVa','Jokul - VA Request Controller Get Cart',$order->getIncrementId());
             if ($quote->getId()) {
-                $this->logger->info('===== Jokul - VA Request Controller ===== Checking Cart');
+                $this->logger->doku_log('RequestVa','Jokul - VA Request Controller Checking Cart',$order->getIncrementId());
                 $quote->setIsActive(1)->setReservedOrderId(null)->save();
                 $_checkoutSession->replaceQuote($quote);
-                $this->logger->info('===== Jokul - VA Request Controller ===== Restoring Cart');
+                $this->logger->doku_log('RequestVa','Jokul - VA Request Controller Restoring Cart',$order->getIncrementId());
                 $order->cancel()->save();
-                $this->logger->info('===== Jokul - VA Request Controller ===== Cart Restored');
+                $this->logger->doku_log('RequestVa','Jokul - VA Request Controller Cart Restored',$order->getIncrementId());
                 echo json_encode(array(
                     'err' => true,
                     'response_message' => $result['error_message'],
@@ -299,7 +291,7 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 ));
             }
 
-            $this->logger->info('===== Jokul - VA Request Controller ===== Show Error Popup: ' . print_r($result, true));
+            $this->logger->doku_log('RequestVa','Jokul - VA Request Controller Show Error Popup: ' . print_r($result, true));
         }
     }
 }

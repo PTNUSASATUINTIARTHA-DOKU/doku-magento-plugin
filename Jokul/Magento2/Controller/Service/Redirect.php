@@ -3,7 +3,7 @@
 namespace Jokul\Magento2\Controller\Service;
 
 use Magento\Sales\Model\Order;
-use Psr\Log\LoggerInterface;
+use Jokul\Magento2\Helper\Logger;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\ResourceConnection;
 use Jokul\Magento2\Helper\Data;
@@ -28,7 +28,7 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
 
     public function __construct(
         Order $order,
-        LoggerInterface $logger,
+        Logger $logger,
         Session $session,
         ResourceConnection $resourceConnection,
         Data $helper,
@@ -52,19 +52,20 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
     public function execute()
     {
         $path = "";
-        $this->logger->info('===== Jokul - Redirect Controller ===== Start');
+        $this->logger->doku_log('Redirect','Jokul - Redirect Controller Start');
         $post = $this->getRequest()->getParams();
 
         $postJson = json_encode($post, JSON_PRETTY_PRINT);
 
-        $this->logger->info('===== Jokul - Redirect Controller ===== Looking for the order on the Magento Side');
+        $this->logger->doku_log('Redirect','Jokul - Redirect Controller Looking for the order on the Magento Side');
 
-        $this->logger->info('===== Redirect Controller  ===== Finding order...');
+        $this->logger->doku_log('Redirect','Redirect Controller  Finding order...');
         $transactionType = isset($post['TRANSACTIONTYPE']) ? $post['TRANSACTIONTYPE'] : "";
         $connection = $this->resourceConnection->getConnection();
         $tableName = $this->resourceConnection->getTableName('jokul_transaction');
 
         if (!isset($post['invoice_number'])) {
+            $this->logger->doku_log('Redirect','Jokul - Redirect Controller Invoice Number empty');
 
             $path = "checkout/onepage/failure";
             $resultRedirect = $this->resultRedirectFactory->create();
@@ -78,7 +79,7 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
         $paymentChannel = $dokuOrder['payment_channel_id'];
 
         if (!isset($dokuOrder['invoice_number'])) {
-            $this->logger->info('===== Jokul - Redirect Controller ===== Invoice Number not found in jokul_transaction table');
+            $this->logger->doku_log('Redirect','Jokul - Redirect Controller Invoice Number not found in jokul_transaction table');
 
             $path = "";
             $this->messageManager->addError(__('Order not found!'));
@@ -116,9 +117,9 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
 
             $isSuccessOrder = false;
 
-            $this->logger->info('===== Jokul - Redirect Controller ===== Order found');
+            $this->logger->doku_log('Redirect','Jokul - Redirect Controller Order found',$order->getIncrementId());
 
-            $this->logger->info('===== Jokul - Redirect Controller =====  Checking Redirect Signature');
+            $this->logger->doku_log('Redirect','Jokul - Redirect Controller  Checking Redirect Signature',$order->getIncrementId());
 
             $redirectSignatureParams = array(
                 'amount' => $requestAmount,
@@ -130,12 +131,11 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
             $redirectSignature = $this->helper->generateRedirectSignature($redirectSignatureParams);
 
             if (strtolower($redirectSignature)  == strtolower($post['redirect_signature'])) {
-                $this->logger->info('===== Jokul - Redirect Controller ===== Redirect Signature match!');
+                $this->logger->doku_log('Redirect','Jokul - Redirect Controller Redirect Signature match!',$order->getIncrementId());
 
-                $this->logger->info(' post[status] ' . $post['status']);
                 if (strtolower($post['status']) == strtolower('success')) {
 
-                    $this->logger->info('===== Jokul - Redirect Controller ===== Check Order Status');
+                    $this->logger->doku_log('Redirect','Jokul - Redirect Controller Check Order Status',$order->getIncrementId());
                     $isSuccessOrder = true;
                     $path = "checkout/onepage/success";
                     $this->deleteCart();
@@ -143,30 +143,30 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
                     $path = "checkout/cart";
                     $this->messageManager->addWarningMessage('Payment Failed. Please try again or contact our customer service.');
                     $order->cancel()->save();
-                    $this->logger->info('===== Jokul - Redirect Controller ===== Order Status Failed');
+                    $this->logger->doku_log('Redirect','Jokul - Redirect Controller Order Status Failed',$order->getIncrementId());
                 }
 
-                $this->logger->info('===== Jokul - Redirect Controller ===== Send Email Notification - Start');
+                $this->logger->doku_log('Redirect','Jokul - Redirect Controller Send Email Notification - Start',$order->getIncrementId());
 
                 $this->helper->sendDokuEmailOrder($order, $vaNumber, $dokuOrder, $isSuccessOrder, $expiryStoreDate);
 
-                $this->logger->info('===== Jokul - Redirect Controller ===== Send Email Notification - End');
+                $this->logger->doku_log('Redirect','Jokul - Redirect Controller Send Email Notification - End',$order->getIncrementId());
             } else {
                 $path = "";
                 $order->cancel()->save();
                 $this->messageManager->addError(__('Sorry, something went wrong!'));
-                $this->logger->info('===== Jokul - Redirect Controller ===== Redirect Signature not match!');
+                $this->logger->doku_log('Redirect','Jokul - Redirect Controller Redirect Signature not match!',$order->getIncrementId());
             }
         } else {
             $path = "";
             $this->messageManager->addError(__('Order not found'));
-            $this->logger->info('===== Jokul - Redirect Controller ===== Order not found');
+            $this->logger->doku_log('Redirect','Jokul - Redirect Controller Order not found');
         }
 
         $sql = "Update " . $tableName . " SET " . $additionalParams . " `updated_at` = 'now()', `expired_at_gmt` = '" . $expiryGmtDate . "', `expired_at_storetimezone` = '" . $expiryStoreDate . "', `redirect_params` = '" . $postJson . "' where invoice_number = '" . $post['invoice_number'] . "'";
         $connection->query($sql);
 
-        $this->logger->info('===== Redirect Controller  ===== End');
+        $this->logger->doku_log('Redirect','Redirect Controller  End');
 
         $this->session->setLastSuccessQuoteId($order->getQuoteId());
         $this->session->setLastOrderId($order->getEntityId());
@@ -184,7 +184,7 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
         $cartObject = $objectManager->create('Magento\Checkout\Model\Cart');
         $cartObject->truncate()->save();
 
-        $this->logger->info('delete Cart');
+        $this->logger->doku_log('Redirect','delete Cart');
     }
 
     /**
