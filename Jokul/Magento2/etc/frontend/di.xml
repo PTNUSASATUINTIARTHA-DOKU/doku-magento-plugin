@@ -6,7 +6,7 @@
                 <item name="jokul_magento2_config_provider" xsi:type="object">Jokul\Magento2\Model\GeneralConfiguration</item>
             </argument>
             <argument name="configProviders" xsi:type="array">
-                <item name="jokul_magento2_merchant_hosted_config_provider" xsi:type="object">Jokul\Magento2\Model\DokuMerchanthostedConfigProvider</item>
+                <item name="jokul_magento2_merchant_hosted_config_provider" xsi:type="object">Jokul\Magento2\Model\JokulConfigProvider</item>
             </argument>
         </arguments>
     </type>

@@ -46,7 +46,7 @@
     <li><?php echo __('Discount Amount: Rp. %1',  $dokuOrderParams['discountValue']); ?></li>
     <li><?php echo __('Admin Fee: Rp. %1', $dokuOrderParams['adminFeeValue']); ?></li>
 </ul>
-<?php if (empty($dokuOrderParams['transactionType'])) : ?>
+<?php if (empty($this->params['transaction_type'])) : ?>
     <a href="<?php echo $dokuOrderParams['howToPayUrl'] ?>">
         <?php echo __('Click here to see payment instructions'); ?>
     </a>

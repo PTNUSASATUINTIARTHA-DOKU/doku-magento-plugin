@@ -29,7 +29,7 @@ define(
                         showLoader: true,
                         success: function (response) {
                             var dataResponse = $.parseJSON(response);
-                            
+
                             if (dataResponse.err == false) {
                                 jQuery.each(dataResponse.result, function (i, val) {
                                     if (i != 'url') {
@@ -60,12 +60,12 @@ define(
                                 }
                             });
                         }
-                    }); 
+                    });
 
 //                window.location = url.build('dokuhosted/payment/request');
                 },
                 getDescription: function(){
-                     return window.checkoutConfig.payment.mandiri_syariah_va_merchanthosted.description
+                     return window.checkoutConfig.payment.mandiri_syariah_va.description
                 }
             });
         }

@@ -6,7 +6,7 @@ use \Magento\Framework\App\Helper\AbstractHelper;
 use \Magento\Framework\Mail\Template\TransportBuilder;
 use \Magento\Framework\DataObject;
 use \Jokul\Magento2\Model\GeneralConfiguration;
-use \Psr\Log\LoggerInterface;
+use \Jokul\Magento2\Helper\Logger;
 
 class Data extends AbstractHelper
 {
@@ -23,7 +23,7 @@ class Data extends AbstractHelper
         TransportBuilder $transportBuilder,
         DataObject $dataObject,
         GeneralConfiguration $generalConfiguration,
-        LoggerInterface $loggerInterface
+        Logger $loggerInterface
     ) {
         $this->logger = $loggerInterface;
         $this->transportBuilder = $transportBuilder;
@@ -65,7 +65,7 @@ class Data extends AbstractHelper
 
     public function sendDokuEmailOrder($order, $vaNumber = "", $dokusTransactionOrder = array(), $isSuccessOrder = true, $expiryStoreDate = "")
     {
-        $this->logger(get_class($this) . " ===== Jokul - Email Sender ===== Preparing Data", 'DOKU_send_email');
+        $this->logger('Data' . " Jokul - Email Sender Preparing Data", 'DOKU_send_email');
         try {
             $paymentChannelLabel = $order->getPayment()->getMethodInstance()->getTitle();
 
@@ -88,7 +88,12 @@ class Data extends AbstractHelper
             }
 
             $requestParams = json_decode($dokusTransactionOrder['request_params'], true);
-            $howToPayUrl = $requestParams['response']['virtual_account_info']['how_to_pay_api'];
+            $O2Ochannel = array(07);
+            if (in_array($dokusTransactionOrder['payment_channel_id'], $O2Ochannel)) {
+                $howToPayUrl = $requestParams['response']['online_to_offline_info']['how_to_pay_api'];
+            } else {
+                $howToPayUrl = $requestParams['response']['virtual_account_info']['how_to_pay_api'];
+            }
             $howToPayUrl = str_replace("\\", "", $howToPayUrl);
 
             $emailParams = [
@@ -108,7 +113,7 @@ class Data extends AbstractHelper
 
             $this->dataObject->setData($emailParams);
 
-            $this->logger(get_class($this) . " ===== Jokul - Email Sender ===== Email params: " . print_r($emailParams, true), 'DOKU_send_email');
+            $this->logger('Data' . " Jokul - Email Sender Email params: " . print_r($emailParams, true), 'DOKU_send_email');
 
             $sender = [
                 'name' => $this->config->getSenderName(),
@@ -116,7 +121,7 @@ class Data extends AbstractHelper
             ];
 
             $template = "success_template";
-            $vaChannels = array("01", "02", "03", "04", "05");
+            $vaChannels = array("01", "02", "03", "04", "05", "07");
             if ($isSuccessOrder) {
                 if (in_array($dokusTransactionOrder['payment_channel_id'], $vaChannels)) {
                     $template = 'default_va_template';
@@ -125,7 +130,7 @@ class Data extends AbstractHelper
                 $template = "failed_template";
             }
 
-            $this->logger(get_class($this) . " ===== Jokul - Email Sender ===== Template used: " . $template, 'DOKU_send_email');
+            $this->logger('Data' . " Jokul - Email Sender Template used: " . $template, 'DOKU_send_email');
 
             $this->transportBuilder->setTemplateIdentifier($template)->setFrom($sender)
                 ->addTo($order->getCustomerEmail(), $order->getCustomerName())
@@ -141,8 +146,8 @@ class Data extends AbstractHelper
             if ($this->config->getBccEmailAddress() !== null) {
                 $bccEmailAddress = explode(",", str_replace(" ", "", $this->config->getBccEmailAddress()));
                 $this->transportBuilder->addBcc($bccEmailAddress[0]);
-                $this->logger(get_class($this) . " ===== Jokul - Email Sender ===== Bcc Listing: ", 'DOKU_send_email');
-                $this->logger(get_class($this) . print_r($bccEmailAddress, TRUE), 'DOKU_send_email');
+                $this->logger('Data' . " Jokul - Email Sender Bcc Listing: ", 'DOKU_send_email');
+                $this->logger('Data' . print_r($bccEmailAddress, TRUE), 'DOKU_send_email');
             }
             $transport = $this->transportBuilder->getTransport();
             $transport->sendMessage();
@@ -165,7 +170,7 @@ class Data extends AbstractHelper
                 }
             }
         } catch (\Exception $e) {
-            $this->logger(get_class($this) . " ===== Jokul - Email Sender ===== Failure reason: " . $e->getMessage(), 'DOKU_send_email');
+            $this->logger('Data' . " Jokul - Email Sender Failure reason: " . $e->getMessage(), 'DOKU_send_email');
             return false;
         }
     }
@@ -181,7 +186,7 @@ class Data extends AbstractHelper
         } else {
             $url = $prefixprod . $path;
         }
-        $this->logger->info('===== Jokul - Generate VA Number ===== Jokul URL to hit: ' . $url);
+        $this->logger->doku_log('Data','Jokul - Request URL : ' . $url);
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -196,13 +201,16 @@ class Data extends AbstractHelper
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $responseJson = curl_exec($ch);
 
-        $this->logger->info('===== Jokul - Generate VA Number ===== Response from Jokul: ' . print_r($responseJson, true));
+
 
         curl_close($ch);
 
         if (is_string($responseJson)) {
-            return json_decode($responseJson, true);
+            $responseJson = json_decode($responseJson, true);
+            $this->logger->doku_log('Data','Jokul - Response Generate Paycode : ' . json_encode($responseJson, JSON_PRETTY_PRINT));
+            return $responseJson;
         } else {
+            $this->logger->doku_log('Data','Jokul - Response Generate Paycode : ' . json_encode($responseJson, JSON_PRETTY_PRINT));
             return $responseJson;
         }
     }
@@ -286,7 +294,7 @@ class Data extends AbstractHelper
         $response = curl_exec($ch);
         $responseJson = json_decode($response, true);
 
-        $this->logger(get_class($this) . "===== Jokul - Get How to Pay ===== Response from Jokul: " . $url . " => " . $response, 'DOKU_send_email');
+        $this->logger('Data' . "Jokul - Get How to Pay Response from Jokul: " . $url . " => " . $response, 'DOKU_send_email');
 
         return $responseJson['payment_instruction'];
     }
@@ -319,7 +327,7 @@ class Data extends AbstractHelper
         } else {
             $url = $prefixprod . $path;
         }
-        $this->logger->info('===== Request controller Credit Card GATEWAY ===== URL : ' . $url);
+        $this->logger->doku_log('Data','Request controller Credit Card URL : ' . $url);
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -335,15 +343,13 @@ class Data extends AbstractHelper
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $responseJson = curl_exec($ch);
 
-        $this->logger->info('===== Request controller Credit Card GATEWAY ===== Response he: ' . json_encode($responseJson, JSON_PRETTY_PRINT));
-
         curl_close($ch);
 
         if (is_string($responseJson)) {
-            $this->logger->info('===== Request controller Credit Card GATEWAY ===== Response he 1: ' . json_encode(json_decode($responseJson, true), JSON_PRETTY_PRINT));
+            $this->logger->doku_log('Data','Request controller Credit Card Response : ' . json_encode(json_decode($responseJson, true), JSON_PRETTY_PRINT));
             return json_decode($responseJson, true);
         } else {
-            $this->logger->info('===== Request controller Credit Card GATEWAY ===== Response he: 2 ' . json_encode($responseJson, JSON_PRETTY_PRINT));
+            $this->logger->doku_log('Data','Request controller Credit Card Response : ' . json_encode($responseJson, JSON_PRETTY_PRINT));
             return $responseJson;
         }
     }

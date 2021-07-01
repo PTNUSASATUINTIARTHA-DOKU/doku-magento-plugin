@@ -22,13 +22,13 @@ class GeneralConfiguration implements ConfigProviderInterface
     const BCC_EMAIL_CONFIG_PATH = 'payment/doku_general_config/sender_mail_bcc';
 
     const REL_PAYMENT_CHANNEL = [
-        'mandiri_va_merchanthosted' => "01",
-        'mandiri_syariah_va_merchanthosted' => "02",
-        'doku_va_merchanthosted' => "03",
-        'bca_va_merchanthosted' => "04",
-        'permata_va_merchanthosted' => "05",
-        'doku_cc_merchanthosted' => "06",
-        'alfamart_merchanthosted' => "07"
+        'mandiri_va' => "01",
+        'mandiri_syariah_va' => "02",
+        'doku_va' => "03",
+        'bca_va' => "04",
+        'permata_va' => "05",
+        'doku_cc' => "06",
+        'alfamart' => "07"
     ];
 
     public function __construct(

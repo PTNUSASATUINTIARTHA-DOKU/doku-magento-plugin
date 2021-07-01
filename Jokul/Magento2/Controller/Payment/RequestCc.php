@@ -4,10 +4,10 @@ namespace Jokul\Magento2\Controller\Payment;
 
 use Magento\Sales\Model\Order;
 use Magento\Setup\Exception;
-use \Psr\Log\LoggerInterface;
+use \Jokul\Magento2\Helper\Logger;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\ResourceConnection;
-use Jokul\Magento2\Model\DokuMerchanthostedConfigProvider;
+use Jokul\Magento2\Model\JokulConfigProvider;
 use Jokul\Magento2\Helper\Data;
 use \Magento\Framework\App\Action\Context;
 use \Magento\Framework\View\Result\PageFactory;
@@ -32,22 +32,25 @@ class RequestCc extends \Magento\Framework\App\Action\Action
     protected $generalConfiguration;
     protected $storeManagerInterface;
     protected $_timezoneInterface;
+    protected $_customerSession;
 
     public function __construct(
+        \Magento\Customer\Model\Session $customerSession,
         Session $session,
         Order $order,
         ResourceConnection $resourceConnection,
-        DokuMerchanthostedConfigProvider $config,
+        JokulConfigProvider $config,
         Data $helper,
         Context $context,
         PageFactory $pageFactory,
-        LoggerInterface $loggerInterface,
+        Logger $loggerInterface,
         SessionFactory $sessionFactory,
         Http $httpRequest,
         GeneralConfiguration $_generalConfiguration,
         StoreManagerInterface $_storeManagerInterface,
         TimezoneInterface $timezoneInterface
     ) {
+        $this->_customerSession = $customerSession;
         $this->session = $session;
         $this->logger = $loggerInterface;
         $this->order = $order;
@@ -104,21 +107,19 @@ class RequestCc extends \Magento\Framework\App\Action\Action
     public function execute()
     {
 
-        $this->logger->info('===== Request controller Credit Card GATEWAY ===== Start');
+        $this->logger->doku_log('RequestCC','Request controller Credit Card Start');
 
-        $this->logger->info('===== Request controller Credit Card GATEWAY ===== Find Order');
+        $this->logger->doku_log('RequestCC','Request controller Credit Card Find Order');
 
         $result = array();
         $redirectData = array();
 
         $order = $this->getOrder();
-        $this->logger->info('Get Entity : ' . strval($order->getEntityId()));
         if ($order->getEntityId()) {
             $order->setState(Order::STATE_NEW);
             $this->session->getLastRealOrder()->setState(Order::STATE_NEW);
-            $order->save();
 
-            $this->logger->info('===== Request controller Credit Card GATEWAY ===== Order Found!');
+            $this->logger->doku_log('RequestCC','Request controller Credit Card Order Found!',$order->getIncrementId());
 
             $configCode = $this->config->getRelationPaymentChannel($order->getPayment()->getMethod());
 
@@ -140,7 +141,8 @@ class RequestCc extends \Magento\Framework\App\Action\Action
             $buffGrandTotal = $grandTotal - $totalAdminFeeDisc['total_discount'];
 
             $grandTotal = $buffGrandTotal;
-
+            $order->setGrandTotal($grandTotal);
+            $order->save();
             $clientId = $config['payment']['core']['client_id'];
             $sharedId = $this->config->getSharedKey();
             $expiryTime = isset($config['payment']['core']['expiry']) && (int) $config['payment']['core']['expiry'] != 0 ?  $config['payment']['core']['expiry'] : 0;
@@ -157,7 +159,7 @@ class RequestCc extends \Magento\Framework\App\Action\Action
                 "clientId" => $clientId,
                 "key" => $sharedId,
                 "requestTarget" => $requestTarget,
-                "requestId" => $regId,
+                "requestId" => $this->guidv4(),
                 "requestTimestamp" => substr($requestTimestamp, 0, 19) . "Z"
             );
 
@@ -202,11 +204,10 @@ class RequestCc extends \Magento\Framework\App\Action\Action
             $base_url = $this->storeManagerInterface->getStore($order->getStore()->getId())->getBaseUrl();
             $callbackUrl = $base_url . "jokulbackend/service/redirect?" . http_build_query($redirectParamsSuccess);
             $failed_url=$base_url . "jokulbackend/service/redirect?" . http_build_query($redirectParamsFailed);
-            $this->logger->info('===== Request controller Credit Card GATEWAY CALLBACK ====== ' . $callbackUrl);
 
             $params = array(
                 "customer" => array(
-                    "id" => $regId,
+                    "id" => $this->_customerSession->getCustomer()->getId(),
                     "name" => $customerName,
                     "email" => $billingData->getEmail(),
                     "phone" => $order->getShippingAddress()->getTelephone(),
@@ -240,8 +241,8 @@ class RequestCc extends \Magento\Framework\App\Action\Action
             );
 
 
-            $this->logger->info('===== Request controller Credit Card GATEWAY ===== request param = ' . json_encode($params, JSON_PRETTY_PRINT));
-            $this->logger->info('===== Request controller Credit Card GATEWAY ===== send request');
+            $this->logger->doku_log('RequestCC','Request controller Credit Card request data : ' . json_encode($params, JSON_PRETTY_PRINT));
+            $this->logger->doku_log('RequestCC','Request controller Credit Card send request');
 
 
             $orderStatus = 'FAILED';
@@ -249,10 +250,9 @@ class RequestCc extends \Magento\Framework\App\Action\Action
                 $signature = $this->helper->doCreateRequestSignature($signatureParams, $params);
                 $result = $this->helper->doRequestCcPaymentForm($signatureParams, $params, $signature);
             } catch (\Exception $e) {
-                $this->logger->info('Eception ' . $e);
+                $this->logger->doku_log('RequestCC','Eception ' . $e);
 
             }
-            $this->logger->info('===== response CC ' . print_r($result, true));
 
             if (isset($result['credit_card_payment_page'])) {
                 $this->keepCart();
@@ -307,10 +307,10 @@ class RequestCc extends \Magento\Framework\App\Action\Action
             ]);
 
         } else {
-            $this->logger->info('===== Request controller Credit Card GATEWAY ===== Order not found');
+            $this->logger->doku_log('RequestCC','Request controller Credit Card Order not found');
         }
 
-        $this->logger->info('===== Request controller Credit Card GATEWAY ===== end');
+        $this->logger->doku_log('RequestCC','Request controller Credit Card end',$order->getIncrementId());
 
         if (isset($result['credit_card_payment_page'])) {
             echo json_encode(array(
@@ -318,8 +318,8 @@ class RequestCc extends \Magento\Framework\App\Action\Action
                 'result' => $redirectData
             ));
         } else {
-            $this->logger->info('===== Jokul - Credit Card Request Controller ===== Prepare Order Failed Procedure');
-            $this->logger->info('===== Jokul - Credit Card Request Controller ===== Initiate Restore Cart');
+            $this->logger->doku_log('RequestCC','Jokul - Credit Card Request Controller Prepare Order Failed Procedure',$order->getIncrementId());
+            $this->logger->doku_log('RequestCC','Jokul - Credit Card Request Controller Initiate Restore Cart',$order->getIncrementId());
 
             $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
             $_checkoutSession = $objectManager->create('\Magento\Checkout\Model\Session');
@@ -327,14 +327,14 @@ class RequestCc extends \Magento\Framework\App\Action\Action
 
             $order = $_checkoutSession->getLastRealOrder();
             $quote = $_quoteFactory->create()->loadByIdWithoutStore($order->getQuoteId());
-            $this->logger->info('===== Jokul - Credit Card Request Controller ===== Get Cart');
+            $this->logger->doku_log('RequestCC','Jokul - Credit Card Request Controller Get Cart');
             if ($quote->getId()) {
-                $this->logger->info('===== Jokul - Credit Card Request Controller ===== Checking Cart');
+                $this->logger->doku_log('RequestCC','Jokul - Credit Card Request Controller Checking Cart');
                 $quote->setIsActive(1)->setReservedOrderId(null)->save();
                 $_checkoutSession->replaceQuote($quote);
-                $this->logger->info('===== Jokul - Credit Card Request Controller ===== Restoring Cart');
+                $this->logger->doku_log('RequestCC','Jokul - Credit Card Request Controller Restoring Cart');
                 $order->cancel()->save();
-                $this->logger->info('===== Jokul - Credit Card Request Controller ===== Cart Restored');
+                $this->logger->doku_log('RequestCC','Jokul - Credit Card Request Controller Cart Restored',$order->getIncrementId());
                 echo json_encode(array(
                     'err' => true,
                     'response_message' => $result['error']['message'],
@@ -342,5 +342,13 @@ class RequestCc extends \Magento\Framework\App\Action\Action
                 ));
             }
         }
+    }
+
+    function guidv4($data = null)
+    {
+        $data = $data ?? random_bytes(16);
+        $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // set version to 0100
+        $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 }

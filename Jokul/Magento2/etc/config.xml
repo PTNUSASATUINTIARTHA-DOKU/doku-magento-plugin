@@ -6,107 +6,97 @@
                 <development_url>https://staging.doku.com/doku-js/assets/js/doku.uncompress-1.4-SNAPSHOOT.js</development_url>
             </js_merchant_hosted>
         </doku_general_config>
-        <doku_merchanthosted_config>
-            <mandiri_va_merchanthosted>
+        <doku_config>
+            <mandiri_va>
                 <title>Bank Mandiri VA</title>
                 <description>Bank Mandiri VA Configuration</description>
-                <payment_code_prefix>88899</payment_code_prefix>
-            </mandiri_va_merchanthosted>
-            <mandiri_syariah_va_merchanthosted>
+            </mandiri_va>
+            <mandiri_syariah_va>
                 <title>Bank Syariah Indonesia VA</title>
                 <description>Bank Syariah Indonesia VA Configuration</description>
-                <payment_code_prefix>88899</payment_code_prefix>
-            </mandiri_syariah_va_merchanthosted>
-            <doku_va_merchanthosted>
+            </mandiri_syariah_va>
+            <doku_va>
                 <title>Other Banks (VA by DOKU)</title>
                 <description>DOKU VA Configuration</description>
-                <payment_code_prefix>88899</payment_code_prefix>
-            </doku_va_merchanthosted>
-            <bca_va_merchanthosted>
+            </doku_va>
+            <bca_va>
                 <title>BCA VA</title>
                 <description>BCA VA Configuration</description>
-                <payment_code_prefix>88899</payment_code_prefix>
-            </bca_va_merchanthosted>
-            <permata_va_merchanthosted>
+            </bca_va>
+            <permata_va>
                 <title>Bank Permata VA</title>
                 <description>Bank Permata VA Configuration</description>
-                <payment_code_prefix>88899</payment_code_prefix>
-            </permata_va_merchanthosted>
-            <doku_cc_merchanthosted>
+            </permata_va>
+            <doku_cc>
                 <title>Jokul Credit Card</title>
                 <description>Jokul Credit Card</description>
-                <payment_code_prefix>88899</payment_code_prefix>
-            </doku_cc_merchanthosted>
-            <alfamart_merchanthosted>
+            </doku_cc>
+            <alfamart>
                 <title>Alfamart</title>
                 <description>Alfamart</description>
-            </alfamart_merchanthosted>
-        </doku_merchanthosted_config>
+            </alfamart>
+        </doku_config>
         <payment>
-            <doku_cc_merchanthosted>
+            <doku_cc>
                 <title>Jokul Credit Card</title>
                 <description>Jokul Credit Card</description>
-                <payment_code_prefix>88899</payment_code_prefix>
                 <allowspecific>0</allowspecific>
                 <group>offline</group>
+                <disc_amount>0</disc_amount>
+                <admin_fee>0</admin_fee>
                 <model>Jokul\Magento2\Model\Payment\CreditCardJokul</model>
-            </doku_cc_merchanthosted>
-            <mandiri_va_merchanthosted>
+            </doku_cc>
+            <mandiri_va>
                 <title>Bank Mandiri VA</title>
                 <description>Bayar pesanan dengan transfer dari Bank Mandiri</description>
-                <payment_code_prefix>88899</payment_code_prefix>
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
                 <group>offline</group>
                 <disc_amount>0</disc_amount>
                 <admin_fee>0</admin_fee>
-                <model>Jokul\Magento2\Model\Payment\MandiriVaMerchanthosted</model>
-            </mandiri_va_merchanthosted>
-            <mandiri_syariah_va_merchanthosted>
+                <model>Jokul\Magento2\Model\Payment\MandiriVa</model>
+            </mandiri_va>
+            <mandiri_syariah_va>
                 <title>Bank Syariah Indonesia VA</title>
                 <description>Bayar pesanan dengan transfer dari Bank Syariah Indonesia</description>
-                <payment_code_prefix>88899</payment_code_prefix>
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
                 <group>offline</group>
                 <disc_amount>0</disc_amount>
                 <admin_fee>0</admin_fee>
-                <model>Jokul\Magento2\Model\Payment\MandiriSyariahVaMerchanthosted</model>
-            </mandiri_syariah_va_merchanthosted>
-            <doku_va_merchanthosted>
+                <model>Jokul\Magento2\Model\Payment\MandiriSyariahVa</model>
+            </mandiri_syariah_va>
+            <doku_va>
                 <title>Other Banks (VA by DOKU)</title>
                 <description>Bayar pesanan dengan transfer dari bank lain</description>
-                <payment_code_prefix>88899</payment_code_prefix>
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
                 <group>offline</group>
                 <disc_amount>0</disc_amount>
                 <admin_fee>0</admin_fee>
-                <model>Jokul\Magento2\Model\Payment\DokuVaMerchanthosted</model>
-            </doku_va_merchanthosted>
-            <bca_va_merchanthosted>
+                <model>Jokul\Magento2\Model\Payment\DokuVa</model>
+            </doku_va>
+            <bca_va>
                 <title>BCA VA</title>
                 <description>Bayar pesanan dengan transfer dari BCA</description>
-                <payment_code_prefix>88899</payment_code_prefix>
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
                 <group>offline</group>
                 <disc_amount>0</disc_amount>
                 <admin_fee>0</admin_fee>
-                <model>Jokul\Magento2\Model\Payment\BcaVaMerchanthosted</model>
-            </bca_va_merchanthosted>
-            <permata_va_merchanthosted>
+                <model>Jokul\Magento2\Model\Payment\BcaVa</model>
+            </bca_va>
+            <permata_va>
                 <title>Bank Permata VA</title>
                 <description>Bayar pesanan dengan transfer dari Bank Permata</description>
-                <payment_code_prefix>88899</payment_code_prefix>
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
                 <group>offline</group>
                 <disc_amount>0</disc_amount>
                 <admin_fee>0</admin_fee>
-                <model>Jokul\Magento2\Model\Payment\PermataVaMerchanthosted</model>
-            </permata_va_merchanthosted>
-            <alfamart_merchanthosted>
+                <model>Jokul\Magento2\Model\Payment\PermataVa</model>
+            </permata_va>
+            <alfamart>
                 <title>Alfamart</title>
                 <description>Bayar pesanan dengan pembayaran melalui Alfamart</description>
                 <order_status>pending</order_status>
@@ -115,8 +105,8 @@
                 <disc_amount>0</disc_amount>
                 <admin_fee>0</admin_fee>
                 <footer_message>Place your footer Message here</footer_message>
-                <model>Jokul\Magento2\Model\Payment\AlfamartMerchanthosted</model>
-            </alfamart_merchanthosted>
+                <model>Jokul\Magento2\Model\Payment\Alfamart</model>
+            </alfamart>
         </payment>
     </default>
 </config>
