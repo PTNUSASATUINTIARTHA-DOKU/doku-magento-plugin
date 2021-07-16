@@ -21,7 +21,6 @@ This `doku_log` is useful to help simplify the process of checking if an issue o
 1. Open your `MAGENTO_DIR` directory on your store's webserver.
 2. Then check `doku_log` and open file in your store's webserver.
 3. You will see `doku log` file by date.
-https://i.ibb.co/T1MkDVD/Screen-Shot-2021-07-16-at-21-41-51.png
 4. And you can download the file. 
 5. If an issue occurs, you can send this `doku_log` file to the team to make it easier to find the cause of the issue.
 
