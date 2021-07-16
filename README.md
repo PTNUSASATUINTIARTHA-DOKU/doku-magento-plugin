@@ -19,7 +19,7 @@ This `doku_log` is useful to help simplify the process of checking if an issue o
 ## How to take doku_log file?
 ​
 1. Open your `MAGENTO_DIR` directory on your store's webserver.
-2. Create folder `doku_log` in your directory store's, so plugin will automatically track in your store's webserver.
+2. Create folder `doku_log` in your directory store's, so plugin will automatically track log in your store's webserver.
 3. Then check `doku_log` and open file in your store's webserver.
 4. You will see `doku log` file by date.
 5. And you can download the file. 
