@@ -16,7 +16,7 @@ Jokul makes it easy for you accept payments from various channels. Jokul also hi
 This `doku_log` is useful to help simplify the process of checking if an issue occurs. If there are problems or problems using the plugin, you can contact our team by sending this doku_log file. `Doku_log` will record all transaction processes from any channel by date.
 
 ​
-## How to take doku_log file?
+## How to use and take doku_log file?
 ​
 1. Open your `MAGENTO_DIR` directory on your store's webserver.
 2. Create folder `doku_log` in your directory store's, so plugin will automatically track log in your store's webserver.
