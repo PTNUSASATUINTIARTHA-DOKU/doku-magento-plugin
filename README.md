@@ -13,7 +13,7 @@ Jokul makes it easy for you accept payments from various channels. Jokul also hi
 
 ## Jokul Magento Already Supported `doku_log`
 ​
-This `doku_log` is useful to help simplify the process of checking if an issue occurs. If there are problems or problems using the plugin, you can contact our team by sending this doku_log file. `Doku_log` will record all transaction processes from any channel by date.
+This `doku_log` is useful to help simplify the process of checking if an issue occurs related to the payment process using the Jokul Plugin. If there are problems or problems using the plugin, you can contact our team by sending this doku_log file. `Doku_log` will record all transaction processes from any channel by date.
 
 ​
 ## How to use and take doku_log file?
