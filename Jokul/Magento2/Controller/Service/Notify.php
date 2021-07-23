@@ -135,7 +135,7 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
             $this->logger->doku_log('Notify','Jokul - Notification Controller Signature match!');
 
             $paymentMethod = $order->getPayment()->getMethod();
-            if ($order->canInvoice() && !$order->hasInvoices()) {
+            if (!$order->hasInvoices()) {
                 $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
                 $invoice = $this->invoiceService->prepareInvoice($order);
                 $invoice->setTotalPaid($order->getGrandTotal());
