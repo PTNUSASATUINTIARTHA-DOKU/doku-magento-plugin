@@ -154,6 +154,41 @@
                     </field>
                 </group>
 
+                <group id="bri_va" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Bank Rakyat Indonesia VA</label>
+                    <field id="active" translate="label" type="select" sortOrder="201" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Enabled</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/bri_va/active</config_path>
+                    </field>
+                    <field id="title" translate="label" type="text" sortOrder="202" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Title</label>
+                        <config_path>payment/bri_va/title</config_path>
+                    </field>
+                    <field id="description" translate="label" type="text" sortOrder="217" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Description</label>
+                        <config_path>payment/bri_va/description</config_path>
+                    </field>
+                    <field id="disc_amount" translate="label" type="text" sortOrder="220" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Discount Amount</label>
+                        <config_path>payment/bri_va/disc_amount</config_path>
+                    </field>
+                    <field id="disc_type" translate="label" type="select" sortOrder="221" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Discount Type</label>
+                        <source_model>Jokul\Magento2\Model\Config\Source\PercentageSelect</source_model>
+                        <config_path>payment/bri_va/disc_type</config_path>
+                    </field>
+                    <field id="admin_fee" translate="label" type="text" sortOrder="222" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Admin Fee</label>
+                        <config_path>payment/bri_va/admin_fee</config_path>
+                    </field>
+                    <field id="admin_fee_type" translate="label" type="select" sortOrder="223" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Admin Fee Type</label>
+                        <source_model>Jokul\Magento2\Model\Config\Source\PercentageSelect</source_model>
+                        <config_path>payment/bri_va/admin_fee_type</config_path>
+                    </field>
+                </group>
+
                 <group id="doku_va" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Other Banks (VA by DOKU)</label>
                     <field id="active" translate="label" type="select" sortOrder="201" showInDefault="1" showInWebsite="1" showInStore="0">

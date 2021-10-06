@@ -129,16 +129,28 @@ class RequestVa extends \Magento\Framework\App\Action\Action
             $customerName = trim($billingData->getFirstname() . " " . $billingData->getLastname());
 
             $requestTarget = "";
-            if ($configCode == 01) {
-                $requestTarget = "/mandiri-virtual-account/v2/payment-code";
-            } elseif ($configCode == 02) {
-                $requestTarget = "/bsm-virtual-account/v2/payment-code";
-            } elseif ($configCode == 03) {
-                $requestTarget = "/doku-virtual-account/v2/payment-code";
-            } elseif ($configCode == 04) {
-                $requestTarget = "/bca-virtual-account/v2/payment-code";
-            } elseif($configCode == 05){
-                $requestTarget = "/permata-virtual-account/v2/payment-code";
+            switch ($configCode) {
+                case "01":
+                    $requestTarget = "/mandiri-virtual-account/v2/payment-code";
+                    break;
+                case "02":
+                    $requestTarget = "/bsm-virtual-account/v2/payment-code";
+                    break;
+                case "03":
+                    $requestTarget = "/doku-virtual-account/v2/payment-code";
+                    break;
+                case "04":
+                    $requestTarget = "/bca-virtual-account/v2/payment-code";
+                    break;
+                case "05":
+                    $requestTarget = "/permata-virtual-account/v2/payment-code";
+                    break;
+                case "08":
+                    $requestTarget = "/bri-virtual-account/v2/payment-code";
+                    break;
+                default:
+                    $this->logger->doku_log('RequestVa', 'Jokul - VA No channel with configCode ' + $configCode + "registered.");
+                    break;
             }
 
             $requestTimestamp = date("Y-m-d H:i:s");
@@ -176,14 +188,14 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 )
             );
 
-            $this->logger->doku_log('RequestVa','Jokul - VA Request data : ' . json_encode($params, JSON_PRETTY_PRINT), $order->getIncrementId());
+            $this->logger->doku_log('RequestVa', 'Jokul - VA Request data : ' . json_encode($params, JSON_PRETTY_PRINT), $order->getIncrementId());
 
             $orderStatus = 'FAILED';
             try {
                 $signature = $this->helper->doCreateRequestSignature($signatureParams, $params);
                 $result = $this->helper->doGeneratePaycode($signatureParams, $params, $signature);
             } catch (\Exception $e) {
-                $this->logger->doku_log('RequestVa','Jokul - VA Request Controller Exception: ' . $e);
+                $this->logger->doku_log('RequestVa', 'Jokul - VA Request Controller Exception: ' . $e);
             }
 
 
@@ -191,21 +203,21 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 $virtualAccountInfo = isset($result['virtual_account_info']) ? $result['virtual_account_info'] : '';
 
                 if ($virtualAccountInfo !== '') {
-                    $this->logger->doku_log('RequestVa','Jokul - VA Request Received Success Response from Jokul',$order->getIncrementId());
+                    $this->logger->doku_log('RequestVa', 'Jokul - VA Request Received Success Response from Jokul', $order->getIncrementId());
                     $orderStatus = 'PENDING';
                     $result['result'] = 'SUCCESS';
                     $vaNumber = $result['virtual_account_info']['virtual_account_number'];
                 } elseif (isset($result['error'])) {
-                    $this->logger->doku_log('RequestVa','Jokul - VA Request Received Error Response from Jokul',$order->getIncrementId());
+                    $this->logger->doku_log('RequestVa', 'Jokul - VA Request Received Error Response from Jokul', $order->getIncrementId());
                     $result['result'] = 'FAILED';
                     $result['error_message'] = $result['error']['message'];
                 } else {
-                    $this->logger->doku_log('RequestVa','Jokul - VA Request Received Undefined Error from Jokul',$order->getIncrementId());
+                    $this->logger->doku_log('RequestVa', 'Jokul - VA Request Received Undefined Error from Jokul', $order->getIncrementId());
                     $result['result'] = 'FAILED';
                     $result['error_message'] = 'Undefined error';
                 }
             } else {
-                $this->logger->doku_log('RequestVa','Jokul - VA Request Received Unexpected Error from Jokul',$order->getIncrementId());
+                $this->logger->doku_log('RequestVa', 'Jokul - VA Request Received Unexpected Error from Jokul', $order->getIncrementId());
                 $result['result'] = 'FAILED';
                 $result['error_message'] = 'Unexpected error';
             }
@@ -254,10 +266,10 @@ class RequestVa extends \Magento\Framework\App\Action\Action
             $redirectData['redirect_signature'] = $redirectSignature;
             $redirectData['status'] = $result['result'];
         } else {
-            $this->logger->doku_log('RequestVa','Jokul - VA Request Order not found!',$order->getIncrementId());
+            $this->logger->doku_log('RequestVa', 'Jokul - VA Request Order not found!', $order->getIncrementId());
         }
 
-        $this->logger->doku_log('RequestVa','Jokul - VA Request Controller End',$order->getIncrementId());
+        $this->logger->doku_log('RequestVa', 'Jokul - VA Request Controller End', $order->getIncrementId());
 
         if ($result['result'] == 'SUCCESS') {
             echo json_encode(array(
@@ -265,10 +277,10 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 'response_message' => 'VA Number Generated',
                 'result' => $redirectData
             ));
-            $this->logger->doku_log('RequestVa','Jokul - VA Request Controller Redirecting to Success Page' ,$order->getIncrementId());
+            $this->logger->doku_log('RequestVa', 'Jokul - VA Request Controller Redirecting to Success Page', $order->getIncrementId());
         } else {
-            $this->logger->doku_log('RequestVa','Jokul - VA Request Controller Prepare Order Failed Procedure',$order->getIncrementId());
-            $this->logger->doku_log('RequestVa','Jokul - VA Request Controller Initiate Restore Cart',$order->getIncrementId());
+            $this->logger->doku_log('RequestVa', 'Jokul - VA Request Controller Prepare Order Failed Procedure', $order->getIncrementId());
+            $this->logger->doku_log('RequestVa', 'Jokul - VA Request Controller Initiate Restore Cart', $order->getIncrementId());
 
             $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
             $_checkoutSession = $objectManager->create('\Magento\Checkout\Model\Session');
@@ -276,14 +288,14 @@ class RequestVa extends \Magento\Framework\App\Action\Action
 
             $order = $_checkoutSession->getLastRealOrder();
             $quote = $_quoteFactory->create()->loadByIdWithoutStore($order->getQuoteId());
-            $this->logger->doku_log('RequestVa','Jokul - VA Request Controller Get Cart',$order->getIncrementId());
+            $this->logger->doku_log('RequestVa', 'Jokul - VA Request Controller Get Cart', $order->getIncrementId());
             if ($quote->getId()) {
-                $this->logger->doku_log('RequestVa','Jokul - VA Request Controller Checking Cart',$order->getIncrementId());
+                $this->logger->doku_log('RequestVa', 'Jokul - VA Request Controller Checking Cart', $order->getIncrementId());
                 $quote->setIsActive(1)->setReservedOrderId(null)->save();
                 $_checkoutSession->replaceQuote($quote);
-                $this->logger->doku_log('RequestVa','Jokul - VA Request Controller Restoring Cart',$order->getIncrementId());
+                $this->logger->doku_log('RequestVa', 'Jokul - VA Request Controller Restoring Cart', $order->getIncrementId());
                 $order->cancel()->save();
-                $this->logger->doku_log('RequestVa','Jokul - VA Request Controller Cart Restored',$order->getIncrementId());
+                $this->logger->doku_log('RequestVa', 'Jokul - VA Request Controller Cart Restored', $order->getIncrementId());
                 echo json_encode(array(
                     'err' => true,
                     'response_message' => $result['error_message'],
@@ -291,7 +303,7 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 ));
             }
 
-            $this->logger->doku_log('RequestVa','Jokul - VA Request Controller Show Error Popup: ' . print_r($result, true));
+            $this->logger->doku_log('RequestVa', 'Jokul - VA Request Controller Show Error Popup: ' . print_r($result, true));
         }
     }
 }

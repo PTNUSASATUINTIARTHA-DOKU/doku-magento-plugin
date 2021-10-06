@@ -13,6 +13,9 @@
         <method name="mandiri_syariah_va">
             <allow_multiple_address>1</allow_multiple_address>
         </method>
+        <method name="bri_va">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
         <method name="doku_va">
             <allow_multiple_address>1</allow_multiple_address>
         </method>

@@ -121,7 +121,7 @@ class Data extends AbstractHelper
             ];
 
             $template = "success_template";
-            $vaChannels = array("01", "02", "03", "04", "05", "07");
+            $vaChannels = array("01", "02", "03", "04", "05", "07", "08");
             if ($isSuccessOrder) {
                 if (in_array($dokusTransactionOrder['payment_channel_id'], $vaChannels)) {
                     $template = 'default_va_template';

@@ -15,6 +15,10 @@
                 <title>Bank Syariah Indonesia VA</title>
                 <description>Bank Syariah Indonesia VA Configuration</description>
             </mandiri_syariah_va>
+            <bri_va>
+                <title>Bank Rakyat Indonesia VA</title>
+                <description>Bank Rakyat Indonesia VA Configuration</description>
+            </bri_va>
             <doku_va>
                 <title>Other Banks (VA by DOKU)</title>
                 <description>DOKU VA Configuration</description>
@@ -66,6 +70,16 @@
                 <admin_fee>0</admin_fee>
                 <model>Jokul\Magento2\Model\Payment\MandiriSyariahVa</model>
             </mandiri_syariah_va>
+            <bri_va>
+                <title>Bank Rakyat Indonesia VA</title>
+                <description>Bayar pesanan dengan transfer dari Bank Rakyat Indonesia</description>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <group>offline</group>
+                <disc_amount>0</disc_amount>
+                <admin_fee>0</admin_fee>
+                <model>Jokul\Magento2\Model\Payment\BriVa</model>
+            </bri_va>
             <doku_va>
                 <title>Other Banks (VA by DOKU)</title>
                 <description>Bayar pesanan dengan transfer dari bank lain</description>

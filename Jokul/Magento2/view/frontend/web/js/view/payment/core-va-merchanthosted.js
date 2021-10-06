@@ -24,6 +24,10 @@ define(
                 component: 'Jokul_Magento2/js/view/payment/method-renderer/mandiri-syariah-va-merchanthosted-method'
             },
             {
+                type: 'bri_va',
+                component: 'Jokul_Magento2/js/view/payment/method-renderer/bri-va-merchanthosted-method'
+            },
+            {
                 type: 'doku_va',
                 component: 'Jokul_Magento2/js/view/payment/method-renderer/doku-va-merchanthosted-method'
             },
