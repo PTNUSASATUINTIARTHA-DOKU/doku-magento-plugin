@@ -235,7 +235,7 @@ class RequestCc extends \Magento\Framework\App\Action\Action
                 "additional_info" => array(
                     "integration" => array(
                         "name" => "magento-plugin",
-                        "version" => "1.2.0"
+                        "version" => "1.3.0"
                     )
                 )
             );
