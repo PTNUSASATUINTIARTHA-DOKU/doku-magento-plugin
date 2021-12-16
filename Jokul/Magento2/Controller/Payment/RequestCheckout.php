@@ -4,6 +4,7 @@ namespace Jokul\Magento2\Controller\Payment;
 
 use Magento\Sales\Model\Order;
 use \Jokul\Magento2\Helper\Logger;
+use \Psr\Log\LoggerInterface;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\ResourceConnection;
 use Jokul\Magento2\Model\JokulConfigProvider;
@@ -16,7 +17,7 @@ use Jokul\Magento2\Model\GeneralConfiguration;
 use \Magento\Store\Model\StoreManagerInterface;
 use \Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 
-class RequestO2O extends \Magento\Framework\App\Action\Action
+class RequestCheckout extends \Magento\Framework\App\Action\Action
 {
 
     protected $_pageFactory;
@@ -40,7 +41,7 @@ class RequestO2O extends \Magento\Framework\App\Action\Action
         Data $helper,
         Context $context,
         PageFactory $pageFactory,
-        Logger $loggerInterface,
+        LoggerInterface $loggerInterface,
         SessionFactory $sessionFactory,
         Http $httpRequest,
         GeneralConfiguration $_generalConfiguration,
@@ -88,10 +89,9 @@ class RequestO2O extends \Magento\Framework\App\Action\Action
 
     public function execute()
     {
+        $this->logger->info('===== Request controller Checkout GATEWAY ===== Start');
 
-        $this->logger->doku_log('RequestO2O','Jokul - O2O Request Start');
-
-        $this->logger->doku_log('RequestO2O','Jokul - O2O Request Find Order to Execute');
+        $this->logger->info('===== Request controller Checkout GATEWAY ===== Find Order');
 
         $result = array();
         $redirectData = array();
@@ -101,8 +101,9 @@ class RequestO2O extends \Magento\Framework\App\Action\Action
         if ($order->getEntityId()) {
             $order->setState(Order::STATE_NEW);
             $this->session->getLastRealOrder()->setState(Order::STATE_NEW);
+            $order->save();
 
-            $this->logger->doku_log('RequestO2O','Jokul - O2O Request Order Found!');
+            $this->logger->info('===== Request controller Checkout GATEWAY ===== Order Found!');
 
             $configCode = $this->config->getRelationPaymentChannel($order->getPayment()->getMethod());
 
@@ -124,97 +125,108 @@ class RequestO2O extends \Magento\Framework\App\Action\Action
             $buffGrandTotal = $grandTotal - $totalAdminFeeDisc['total_discount'];
 
             $grandTotal = $buffGrandTotal;
-            $order->setGrandTotal($grandTotal);
-            $order->save();
+
             $clientId = $config['payment']['core']['client_id'];
             $sharedKey = $this->config->getSharedKey();
-            $expiryTime = isset($config['payment']['core']['expiry']) && (int) $config['payment']['core']['expiry'] != 0 ? $config['payment']['core']['expiry'] : 60;
+            $expiryTime = isset($config['payment']['core']['expiry']) && (int) $config['payment']['core']['expiry'] != 0 ?  $config['payment']['core']['expiry'] : 60;
 
             $customerName = trim($billingData->getFirstname() . " " . $billingData->getLastname());
+
+            $requestTarget = "/checkout/v1/payment";
+
+            $requestTimestamp = date("Y-m-d H:i:s");
+            $requestTimestamp = date(DATE_ISO8601, strtotime($requestTimestamp));
+
+            $itemQty[] = array('name' => 'grandTotal', 'price' => $grandTotal, 'quantity' => '1');
+
+            $signatureParams = array(
+                "clientId" => $clientId,
+                "key" => $sharedKey,
+                "requestTarget" => $requestTarget,
+                "requestId" => rand(1, 100000),
+                "requestTimestamp" => substr($requestTimestamp, 0, 19) . "Z"
+            );
+
+            $redirectSignatureParams = array(
+                'amount' => $grandTotal,
+                'sharedkey' => $sharedKey,
+                'invoice' => $order->getIncrementId(),
+                'status' => 'success'
+            );
+
+            $redirectSignature = $this->helper->generateRedirectSignature($redirectSignatureParams);
+            $redirectParamsSuccess['invoice_number'] = $order->getIncrementId();
+            $redirectParamsSuccess['redirect_signature'] = $redirectSignature;
+
+            $redirectParamsSuccess['status'] = 'success';
+            $redirectParamsSuccess['TRANSACTIONTYPE'] = 'checkoutsuccess';
+
+            $base_url = $this->storeManagerInterface->getStore($order->getStore()->getId())->getBaseUrl();
+            $callbackUrl = $base_url . "jokulbackend/service/redirect?" . http_build_query($redirectParamsSuccess);
 
             $params = array(
                 "order" => array(
                     "invoice_number" => $order->getIncrementId(),
-                    "amount" => $grandTotal
+                    "line_items" => $itemQty,
+                    "amount" => $grandTotal,
+                    "callback_url" => $callbackUrl,
+                    "currency" => "IDR"
                 ),
-                "online_to_offline_info" => array(
-                    "expired_time" => $expiryTime,
-                    "reusable_status" => false,
-                    "info1" => ''
-                ),
-                "alfa_info" => array(
-                    "receipt" => array(
-                        "footer_message" => $this->config->getFooterMessage()
-                    )
+                "payment" => array(
+                    "payment_due_date" => $expiryTime
                 ),
                 "customer" => array(
-                    "name" => $customerName,
-                    "email" => $billingData->getEmail()
+                    "id" => "1",
+                    "name" => trim($customerName),
+                    "email" => $billingData->getEmail(),
+                    "phone" => $order->getShippingAddress()->getTelephone(),
+                    "country" => $billingData->getData('country_id'),
+                    "address" => "-"
                 ),
                 "additional_info" => array (
                     "integration" => array (
                         "name" => "magento-plugin",
                         "version" => "1.4.0"
                     ),
-                    "method" => "Jokul Direct"
+                    "method" => "Jokul Checkout"
                 )
             );
 
-            $requestTarget = "";
-            if ($configCode == 07) {
-                $requestTarget = "/alfa-online-to-offline/v2/payment-code";
-            }
+            $this->logger->info('===== Request controller Checkout GATEWAY ===== request param = ' . json_encode($params, JSON_PRETTY_PRINT));
+            $this->logger->info('===== Request controller Checkout GATEWAY ===== send request');
 
-            $requestTimestamp = date("Y-m-d H:i:s");
-            $requestTimestamp = date(DATE_ISO8601, strtotime($requestTimestamp));
-
-            $signatureParams = array(
-                "clientId" => $clientId,
-                "key" => $sharedKey,
-                "requestTarget" => $requestTarget,
-                "requestId" => $this->helper->guidv4(),
-                "requestTimestamp" => substr($requestTimestamp, 0, 19) . "Z"
-            );
-
-            $this->logger->doku_log('RequestO2O','Jokul - O2O Request Request data : ' . json_encode($params, JSON_PRETTY_PRINT));
-            $this->logger->doku_log('RequestO2O','Jokul - O2O Request Send request to Jokul');
+            $this->logger->info('NILAI PAYMENT CHANNEL ' . $configCode);
 
             $orderStatus = 'FAILED';
             try {
                 $signature = $this->helper->doCreateRequestSignature($signatureParams, $params);
-                $result = $this->helper->doGeneratePaycode($signatureParams, $params, $signature);
+                $result = $this->helper->doGenerateCheckout($signatureParams, $params, $signature);
             } catch (\Exception $e) {
-                $this->logger->doku_log('RequestO2O','Jokul - O2O Request Exception: ' . $e);
+                $this->logger->info('Eception ' . $e);
+                $result['res_response_code'] = "500";
+                $result['res_response_msg'] = "Can't connect to server";
             }
 
+            $this->logger->info('===== Request controller Checkout GATEWAY ===== response payment = ' . json_encode($result, JSON_PRETTY_PRINT));
 
-            if (isset($result['order']['invoice_number'])) {
-                $o2oInfo = isset($result['online_to_offline_info']) ? $result['online_to_offline_info'] : '';
-
-                if ($o2oInfo !== '') {
-                    $this->logger->doku_log('RequestO2O','Jokul - O2O Request Received Success Response from Jokul');
-                    $orderStatus = 'PENDING';
-                    $result['result'] = 'SUCCESS';
-                    $vaNumber = $result['online_to_offline_info']['payment_code'];
-                } elseif (isset($result['error'])) {
-                    $this->logger->doku_log('RequestO2O','Jokul - O2O Request Received Error Response from Jokul');
-                    $result['result'] = 'FAILED';
-                    $result['error_message'] = $result['error']['message'];
-                } else {
-                    $this->logger->doku_log('RequestO2O','Jokul - O2O Request Received Undefined Error from Jokul');
-                    $result['result'] = 'FAILED';
-                    $result['error_message'] = 'Undefined error';
-                }
+            if (isset($result['response']['order']['invoice_number'])) {
+                $orderStatus = 'PENDING';
+                $result['result'] = 'pending';
             } else {
-                $this->logger->doku_log('RequestO2O','Jokul - O2O Request Received Unexpected Error from Jokul');
                 $result['result'] = 'FAILED';
-                $result['error_message'] = 'Unexpected error';
+                $result['errorMessage'] = $result['message'][0];
             }
 
             $params['shared_key'] = $sharedKey;
             $params['response'] = $result;
+            $params['transactiontype'] = 'checkoutpending';
 
             $jsonResult = json_encode(array_merge($params), JSON_PRETTY_PRINT);
+
+            $vaNumber = '';
+            if (isset($result['response']['order']['invoice_number'])) {
+                $vaNumber = $result['response']['order']['invoice_number'];
+            }
 
             $tableName = $this->resourceConnection->getTableName('jokul_transaction');
             $this->resourceConnection->getConnection()->insert($tableName, [
@@ -229,11 +241,11 @@ class RequestO2O extends \Magento\Framework\App\Action\Action
                 'created_at' => 'now()',
                 'updated_at' => 'now()',
                 'doku_grand_total' => $grandTotal,
-                'admin_fee_type' => $config['payment'][$order->getPayment()->getMethod()]['admin_fee_type'],
-                'admin_fee_amount' => !empty($config['payment'][$order->getPayment()->getMethod()]['admin_fee']) ? $config['payment'][$order->getPayment()->getMethod()]['admin_fee'] : 0,
+                'admin_fee_type' => '',
+                'admin_fee_amount' => 0,
                 'admin_fee_trx_amount' => $totalAdminFeeDisc['total_admin_fee'],
-                'discount_type' => $config['payment'][$order->getPayment()->getMethod()]['disc_type'],
-                'discount_amount' => !empty($config['payment'][$order->getPayment()->getMethod()]['disc_amount']) ? $config['payment'][$order->getPayment()->getMethod()]['disc_amount'] : 0,
+                'discount_type' => '',
+                'discount_amount' => 0,
                 'discount_trx_amount' => $totalAdminFeeDisc['total_discount']
             ]);
 
@@ -241,35 +253,27 @@ class RequestO2O extends \Magento\Framework\App\Action\Action
                 ->getStore($order->getStore()->getId())
                 ->getBaseUrl();
 
-            $redirectData['url'] = $base_url . "jokulbackend/service/redirect";
+            $redirectData['url'] = $base_url . "jokulbackend/service/redirectpending";
             $redirectData['invoice_number'] = $order->getIncrementId();
 
-            $redirectSignatureParams = array(
-                'amount' => $grandTotal,
-                'sharedkey' => $sharedKey,
-                'invoice' => $order->getIncrementId(),
-                'status' => $result['result']
-            );
-
-            $redirectSignature = $this->helper->generateRedirectSignature($redirectSignatureParams);
             $redirectData['redirect_signature'] = $redirectSignature;
-            $redirectData['status'] = $result['result'];
+            $redirectData['status'] = 'success';
         } else {
-            $this->logger->doku_log('RequestO2O','Jokul - O2O Request Order not found!');
+            $this->logger->info('===== Request controller Checkout GATEWAY ===== Order not found');
         }
 
-        $this->logger->doku_log('RequestO2O','Jokul - O2O Request End');
+        $this->logger->info('===== Request controller Checkout GATEWAY ===== end');
 
-        if ($result['result'] == 'SUCCESS') {
+        if ($result['message'][0] == 'SUCCESS') {
+            $this->logger->info('===== Print Json '.json_encode($redirectData));
             echo json_encode(array(
-                'err' => false,
-                'response_message' => 'O2O Number Generated',
+                'err' => false, 
+                'response_message' => 'Generate Checkout Success',
                 'result' => $redirectData
             ));
-            $this->logger->doku_log('RequestO2O','Jokul - O2O Request Redirecting to Success Page' . print_r($result, true));
+            $this->logger->info('===== Request controller Checkout Redirecting to Success Page' . $order->getIncrementId());
         } else {
-            $this->logger->doku_log('RequestO2O','Jokul - O2O Request Prepare Order Failed Procedure');
-            $this->logger->doku_log('RequestO2O','Jokul - O2O Request Initiate Restore Cart');
+            $this->logger->info('===== Request controller Checkout GATEWAY Response ===== ' . print_r($result, true));
 
             $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
             $_checkoutSession = $objectManager->create('\Magento\Checkout\Model\Session');
@@ -277,22 +281,16 @@ class RequestO2O extends \Magento\Framework\App\Action\Action
 
             $order = $_checkoutSession->getLastRealOrder();
             $quote = $_quoteFactory->create()->loadByIdWithoutStore($order->getQuoteId());
-            $this->logger->doku_log('RequestO2O','Jokul - O2O Request Get Cart');
             if ($quote->getId()) {
-                $this->logger->doku_log('RequestO2O','Jokul - O2O Request Checking Cart');
                 $quote->setIsActive(1)->setReservedOrderId(null)->save();
                 $_checkoutSession->replaceQuote($quote);
-                $this->logger->doku_log('RequestO2O','Jokul - O2O Request Restoring Cart');
-                $order->cancel()->save();
-                $this->logger->doku_log('RequestO2O','Jokul - O2O Request Cart Restored');
                 echo json_encode(array(
-                    'err' => true,
-                    'response_message' => $result['error_message'],
+                    'err' => false, 
+                    'response_msg' => 'Generate Checkout failed (' . $result['errorMessage'] . ')',
                     'result' => $redirectData
                 ));
             }
-
-            $this->logger->doku_log('RequestO2O','Jokul - O2O Request Show Error Popup: ' . print_r($result, true));
+            
         }
     }
 }

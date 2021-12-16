@@ -29,7 +29,8 @@ class GeneralConfiguration implements ConfigProviderInterface
         'permata_va' => "05",
         'doku_cc' => "06",
         'alfamart' => "07",
-        'bri_va' => "08"
+        'bri_va' => "08",
+        'doku_checkout_merchanthosted' => "09"
     ];
 
     public function __construct(

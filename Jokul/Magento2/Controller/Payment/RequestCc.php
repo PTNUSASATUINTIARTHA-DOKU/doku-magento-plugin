@@ -141,6 +141,7 @@ class RequestCc extends \Magento\Framework\App\Action\Action
             $buffGrandTotal = $grandTotal - $totalAdminFeeDisc['total_discount'];
 
             $grandTotal = $buffGrandTotal;
+
             $order->setGrandTotal($grandTotal);
             $order->save();
             $clientId = $config['payment']['core']['client_id'];
@@ -163,14 +164,7 @@ class RequestCc extends \Magento\Framework\App\Action\Action
                 "requestTimestamp" => substr($requestTimestamp, 0, 19) . "Z"
             );
 
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-            $orderSales = $objectManager->create('Magento\Sales\Model\Order')->loadByIncrementId($order->getRealOrderId());
-            $orderItems = $orderSales->getAllVisibleItems();
-
-            $itemQty = array();
-            foreach ($orderItems as $item) {
-                $itemQty[] = array('name' => $item->getName(), 'price' => number_format($item->getPrice(), 0, '.', ''), 'quantity' => number_format($item->getQtyOrdered(), 0, '.', ''));
-            }
+            $itemQty[] = array('name' => 'grandTotal', 'price' => $grandTotal, 'quantity' => '1');
 
             $wordsParams = array(
                 'amount' => $grandTotal,
@@ -212,7 +206,7 @@ class RequestCc extends \Magento\Framework\App\Action\Action
                     "email" => $billingData->getEmail(),
                     "phone" => $order->getShippingAddress()->getTelephone(),
                     "country" => $billingData->getData('country_id'),
-                    "address" => 'test'
+                    "address" => '-'
                 ),
                 "order" => array(
                     "invoice_number" => $order->getIncrementId(),
@@ -232,14 +226,14 @@ class RequestCc extends \Magento\Framework\App\Action\Action
                         "button_font_color" => $this->config->getCCThemeButton_font_color() != "" ? $this->config->getCCThemeButton_font_color() : "",
                     )
                 ),
-                "additional_info" => array(
-                    "integration" => array(
+                "additional_info" => array (
+                    "integration" => array (
                         "name" => "magento-plugin",
-                        "version" => "1.3.0"
-                    )
+                        "version" => "1.4.0"
+                    ),
+                    "method" => "Jokul Direct"
                 )
             );
-
 
             $this->logger->doku_log('RequestCC','Request controller Credit Card request data : ' . json_encode($params, JSON_PRETTY_PRINT));
             $this->logger->doku_log('RequestCC','Request controller Credit Card send request');
@@ -251,7 +245,6 @@ class RequestCc extends \Magento\Framework\App\Action\Action
                 $result = $this->helper->doRequestCcPaymentForm($signatureParams, $params, $signature);
             } catch (\Exception $e) {
                 $this->logger->doku_log('RequestCC','Eception ' . $e);
-
             }
 
             if (isset($result['credit_card_payment_page'])) {

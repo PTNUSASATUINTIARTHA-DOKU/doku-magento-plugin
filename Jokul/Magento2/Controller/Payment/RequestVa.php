@@ -180,11 +180,12 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                     "name" => $customerName,
                     "email" => $billingData->getEmail()
                 ),
-                "additional_info" => array(
-                    "integration" => array(
+                "additional_info" => array (
+                    "integration" => array (
                         "name" => "magento-plugin",
-                        "version" => "1.3.0"
-                    )
+                        "version" => "1.4.0"
+                    ),
+                    "method" => "Jokul Direct"
                 )
             );
 

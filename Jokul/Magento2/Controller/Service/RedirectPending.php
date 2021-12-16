@@ -9,12 +9,11 @@ use Magento\Framework\App\ResourceConnection;
 use Jokul\Magento2\Helper\Data;
 use Magento\Framework\Data\Form\FormKey\Validator;
 use Jokul\Magento2\Api\TransactionRepositoryInterface;
-
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 
-class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
+class RedirectPending extends \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
 {
 
     protected $order;
@@ -52,26 +51,24 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
     public function execute()
     {
         $path = "";
-        $this->logger->doku_log('Redirect','Jokul - Redirect Controller Start');
+        $this->logger->doku_log('RedirectPending','Jokul - RedirectPending Controller Start');
         $post = $this->getRequest()->getParams();
 
         $postJson = json_encode($post, JSON_PRETTY_PRINT);
 
-        $this->logger->doku_log('Redirect','Jokul - Redirect Controller Looking for the order on the Magento Side');
+        $this->logger->doku_log('RedirectPending','Jokul - RedirectPending Controller Looking for the order on the Magento Side');
 
-        $this->logger->doku_log('Redirect','Redirect Controller  Finding order...');
-        $transactionType = isset($post['TRANSACTIONTYPE']) ? $post['TRANSACTIONTYPE'] : "";
+        $this->logger->doku_log('RedirectPending','RedirectPending Controller  Finding order...');
         $connection = $this->resourceConnection->getConnection();
         $tableName = $this->resourceConnection->getTableName('jokul_transaction');
 
         if (!isset($post['invoice_number'])) {
-            $this->logger->doku_log('Redirect','Jokul - Redirect Controller Invoice Number empty');
+            $this->logger->doku_log('RedirectPending','Jokul - RedirectPending Controller Invoice Number empty');
 
             $path = "checkout/onepage/failure";
             $resultRedirect = $this->resultRedirectFactory->create();
             return $resultRedirect->setPath($path);
         }
-
 
         $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $post['invoice_number'] . "'";
 
@@ -79,7 +76,7 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
         $paymentChannel = $dokuOrder['payment_channel_id'];
 
         if (!isset($dokuOrder['invoice_number'])) {
-            $this->logger->doku_log('Redirect','Jokul - Redirect Controller Invoice Number not found in jokul_transaction table');
+            $this->logger->doku_log('RedirectPending','Jokul - RedirectPending Controller Invoice Number not found in jokul_transaction table');
 
             $path = "";
             $this->messageManager->addError(__('Order not found!'));
@@ -91,30 +88,20 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
         $requestParams = json_decode($dokuOrder['request_params'], true);
         $sharedKey = $requestParams['shared_key'];
         $requestAmount = $requestParams['order']['amount'];
+        $transactionType = isset($requestParams['transactiontype']) ? $requestParams['transactiontype'] : "";
 
         $O2Ochannel = array(07);
         $expiryStoreDate = "";
         $additionalParams = "";
         $vaNumber = "";
         $expiryGmtDate = "";
-        if ($paymentChannel != 06) {
-            if ($transactionType == "checkoutsuccess") {
-                $expiryValue = $requestParams['order']['invoice_number'];
-                $vaNumber = $requestParams['response']['response']['payment']['expired_date'];
-            } else {
-                if (in_array($paymentChannel, $O2Ochannel)) {
-                    $expiryValue = $requestParams['online_to_offline_info']['expired_time'];
-                    $vaNumber = $requestParams['response']['online_to_offline_info']['payment_code'];
-                } else {
-                    $expiryValue = $requestParams['virtual_account_info']['expired_time'];
-                    $vaNumber = $requestParams['response']['virtual_account_info']['virtual_account_number'];
-                }
-            }
-
-            $expiryGmtDate = date('Y-m-d H:i:s', (strtotime('+' . $expiryValue . ' minutes', time())));
-            $expiryStoreDate = $this->timeZone->date(new \DateTime($expiryGmtDate))->format('Y-m-d H:i:s');
-            $additionalParams = " `va_number` = '" . $vaNumber . "', ";
-        }
+        
+        $expiryValue = $requestParams['order']['invoice_number'];
+        $vaNumber = $requestParams['response']['response']['payment']['expired_date'];
+            
+        $expiryGmtDate = date('Y-m-d H:i:s', (strtotime('+' . $expiryValue . ' minutes', time())));
+        $expiryStoreDate = $this->timeZone->date(new \DateTime($expiryGmtDate))->format('Y-m-d H:i:s');
+        $additionalParams = " `va_number` = '" . $vaNumber . "', ";
 
         $order = $this->order->loadByIncrementId($post['invoice_number']);
 
@@ -122,9 +109,9 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
 
             $isSuccessOrder = false;
 
-            $this->logger->doku_log('Redirect','Jokul - Redirect Controller Order found',$order->getIncrementId());
+            $this->logger->doku_log('RedirectPending','Jokul - RedirectPending Controller Order found',$order->getIncrementId());
 
-            $this->logger->doku_log('Redirect','Jokul - Redirect Controller  Checking Redirect Signature',$order->getIncrementId());
+            $this->logger->doku_log('RedirectPending','Jokul - RedirectPending Controller  Checking RedirectPending Signature',$order->getIncrementId());
 
             $redirectSignatureParams = array(
                 'amount' => $requestAmount,
@@ -136,59 +123,39 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
             $redirectSignature = $this->helper->generateRedirectSignature($redirectSignatureParams);
 
             if (strtolower($redirectSignature)  == strtolower($post['redirect_signature'])) {
-                $this->logger->doku_log('Redirect','Jokul - Redirect Controller Redirect Signature match!',$order->getIncrementId());
+                $this->logger->doku_log('RedirectPending','Jokul - RedirectPending Controller RedirectPending Signature match!',$order->getIncrementId());
 
                 if (strtolower($post['status']) == strtolower('success')) {
-                    $this->logger->doku_log('Redirect','Jokul - Redirect Controller Check Order Status',$order->getIncrementId());
+                    $this->logger->doku_log('RedirectPending','Jokul - RedirectPending Controller Check Order Status',$order->getIncrementId());
                     $isSuccessOrder = true;
                     $path = "checkout/onepage/success";
-                    $this->deleteCart();
                 } else {
                     $path = "checkout/cart";
                     $this->messageManager->addWarningMessage('Payment Failed. Please try again or contact our customer service.');
                     $order->cancel()->save();
-                    $this->logger->doku_log('Redirect','Jokul - Redirect Controller Order Status Failed',$order->getIncrementId());
+                    $this->logger->doku_log('RedirectPending','Jokul - RedirectPending Controller Order Status Failed',$order->getIncrementId());
                 }
-
-                $this->logger->doku_log('Redirect','Jokul - Redirect Controller Send Email Notification - Start',$order->getIncrementId());
-
-                $this->helper->sendDokuEmailOrder($order, $vaNumber, $dokuOrder, $isSuccessOrder, $expiryStoreDate);
-
-                $this->logger->doku_log('Redirect','Jokul - Redirect Controller Send Email Notification - End',$order->getIncrementId());
             } else {
                 $path = "";
                 $order->cancel()->save();
                 $this->messageManager->addError(__('Sorry, something went wrong!'));
-                $this->logger->doku_log('Redirect','Jokul - Redirect Controller Redirect Signature not match!',$order->getIncrementId());
+                $this->logger->doku_log('RedirectPending','Jokul - RedirectPending Controller RedirectPending Signature not match!',$order->getIncrementId());
             }
         } else {
             $path = "";
             $this->messageManager->addError(__('Order not found'));
-            $this->logger->doku_log('Redirect','Jokul - Redirect Controller Order not found');
+            $this->logger->doku_log('RedirectPending','Jokul - RedirectPending Controller Order not found');
         }
 
-        $sql = "Update " . $tableName . " SET " . $additionalParams . " `updated_at` = 'now()', `expired_at_gmt` = '" . $expiryGmtDate . "', `expired_at_storetimezone` = '" . $expiryStoreDate . "', `redirect_params` = '" . $postJson . "' where invoice_number = '" . $post['invoice_number'] . "'";
-        $connection->query($sql);
-
-        $this->logger->doku_log('Redirect','Redirect Controller  End');
+        $this->logger->doku_log('RedirectPending','RedirectPending Controller  End');
 
         $this->session->setLastSuccessQuoteId($order->getQuoteId());
         $this->session->setLastOrderId($order->getEntityId());
         $this->session->setLastRealOrderId($order->getEntityId());
 
-        $params = array('invoice' => $order->getIncrementId(), 'result' => $post['status'], 'transaction_type' => $transactionType);
+        $params = array('invoice' => $order->getIncrementId(), 'result' => 'pending', 'transaction_type' => $transactionType);
         $resultRedirect = $this->resultRedirectFactory->create();
         return $resultRedirect->setPath($path, $params);
-    }
-
-    public function deleteCart()
-    {
-
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $cartObject = $objectManager->create('Magento\Checkout\Model\Cart');
-        $cartObject->truncate()->save();
-
-        $this->logger->doku_log('Redirect','delete Cart');
     }
 
     /**

@@ -46,6 +46,10 @@ define(
             {
                 type: 'alfamart',
                 component: 'Jokul_Magento2/js/view/payment/method-renderer/alfamart-merchanthosted-method'
+            },
+            {
+                type: 'doku_checkout_merchanthosted',
+                component: 'Jokul_Magento2/js/view/payment/method-renderer/jokul-checkout-method'
             }
         );
 

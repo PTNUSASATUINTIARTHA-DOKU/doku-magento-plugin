@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<body>
+    <referenceContainer name="order.pending.additional.info">
+        <block class="Jokul\Magento2\Block\Checkout\Onepage\Pending"
+               name="doku.order.pending"
+               template="Jokul_Magento2::order/pending.phtml"
+               after="-">
+        </block>
+    </referenceContainer>
+</body>
