@@ -39,6 +39,10 @@
                 <title>Alfamart</title>
                 <description>Alfamart</description>
             </alfamart>
+            <doku_checkout_merchanthosted>
+                <title>Jokul Checkout</title>
+                <description>Jokul Checkout payment method</description>
+            </doku_checkout_merchanthosted>
         </doku_config>
         <payment>
             <doku_cc>
@@ -121,6 +125,15 @@
                 <footer_message>Place your footer Message here</footer_message>
                 <model>Jokul\Magento2\Model\Payment\Alfamart</model>
             </alfamart>
+            <doku_checkout_merchanthosted>
+                <title>Jokul Checkout</title>
+                <description>Bayar pesanan dengan pembayaran melalui Jokul Checkout</description>
+                <payment_code_prefix>88899</payment_code_prefix>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <group>offline</group>
+                <model>Jokul\Magento2\Model\Payment\CheckOutJokul</model>
+            </doku_checkout_merchanthosted>
         </payment>
     </default>
 </config>

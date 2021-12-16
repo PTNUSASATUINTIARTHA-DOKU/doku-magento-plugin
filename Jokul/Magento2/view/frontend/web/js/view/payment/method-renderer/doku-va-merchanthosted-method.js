@@ -29,6 +29,7 @@ define(
                         showLoader: true,
                         success: function (response) {
                             var dataResponse = $.parseJSON(response);
+                            console.log(JSON.stringify(dataResponse.result))
 
                             if (dataResponse.err == false) {
                                 jQuery.each(dataResponse.result, function (i, val) {

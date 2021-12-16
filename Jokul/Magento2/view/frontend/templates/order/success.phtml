@@ -1,5 +1,17 @@
 <?php $dokuOrderParams = $block->getDokuTransactionDetailParams(); ?>
 
+<head>
+    <script type="text/javascript" src="https://jokul.doku.com/jokul-checkout-js/v1/jokul-checkout-1.0.0.js"></script>
+    <script type='text/javascript'>
+        <?php if (!empty($this->params['transaction_type']) && $this->params['transaction_type'] != 'checkoutsuccess' && $this->params['transaction_type'] != 'cc') : ?>
+            openPopup();
+        <?php endif; ?>
+        function openPopup() {
+            loadJokulCheckout('<?php echo $dokuOrderParams['checkoutUrl'] ?>')
+        }
+    </script>
+</head>
+
 <div role="alert" class="messages">
     <div class="message-warning message warning">
         <?php if (empty($this->params['transaction_type'])) : ?>
@@ -23,18 +35,29 @@
             </div>
         <?php else : ?>
             <div>
+            <?php if (!empty($this->params['transaction_type']) && $this->params['transaction_type'] == 'checkoutpending') : ?>
                 <h3 style="margin-top: 0px !important;">
                     <?php echo __('Your Transaction is '.$this->params['result']); ?></b></p>
                 </h3>
+                <p>
+                    <?php echo __('Payment Channel: %1', $dokuOrderParams['paymentChannel']); ?>
+                </p>
+            <?php else : ?>
+                <h3 style="margin-top: 0px !important;">
+                    <?php echo __('Payment Channel: %1', $dokuOrderParams['paymentChannel']); ?>
+                </h3>
+            <?php endif; ?>
                 <h4>
                     <strong>
                         <?php echo __('Payment Amount: Rp.  %1', $dokuOrderParams['amount']); ?>
                     </strong>
                 </h4>
-                <p>
-                    <?php echo __('Payment Channel: %1', $dokuOrderParams['paymentChannel']); ?>
-                </p>
             </div>
+            <?php if ($this->params['transaction_type'] != 'checkoutsuccess' && $this->params['transaction_type'] != 'cc') : ?>
+                <div style="text-align: center;">
+                    <button style="text-align:center;background-color: red;color: white;" onclick="openPopup()"> Proceed to Payment</button>
+                </div>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 </div>

@@ -60,7 +60,7 @@ class Success extends \Magento\Sales\Block\Order\Totals
         return $this->dokusTransactionOrder;
     }
 
-    public function getDokuTransaction_CC($invoice)
+    public function getDokuTransactionOther($invoice)
     {
 
         if ($this->dokusTransactionOrder === null) {
@@ -78,15 +78,22 @@ class Success extends \Magento\Sales\Block\Order\Totals
     {
 
         $howToPayUrl = '';
+        $checkoutUrl = '';
 
         if (isset($this->params['invoice']) && isset($this->params['transaction_type'])) {
             $this->_order = $this->_orderFactory->create()->loadByIncrementId(
                 $this->params['invoice']
             );
+
             $this->order =  $this->_order;
+            $this->dokusTransactionOrder = $this->getDokuTransaction();
+            $requestParam = json_decode($this->dokusTransactionOrder['request_params'], true);
 
+            if ($this->params['transaction_type'] == 'checkoutpending') {
+                $checkoutUrl =  $requestParam['response']['response']['payment']['url'];
+            }
 
-            $this->dokusTransactionOrder = $this->getDokuTransaction_CC($this->params['invoice']);
+            $this->dokusTransactionOrder = $this->getDokuTransactionOther($this->params['invoice']);
         } else {
             $this->order = $this->getOrder();
             $this->dokusTransactionOrder = $this->getDokuTransaction();
@@ -131,6 +138,7 @@ class Success extends \Magento\Sales\Block\Order\Totals
             'discountValue' => $discountValue,
             'adminFeeValue' => $adminFeeValue,
             'paymentChannel' => $paymentChannelLabel,
+            'checkoutUrl' => $checkoutUrl,
             'howToPayUrl' => $howToPayUrl,
             'expiry' => date('d F Y, H:i', strtotime($this->dokusTransactionOrder['expired_at_storetimezone']))
         ];

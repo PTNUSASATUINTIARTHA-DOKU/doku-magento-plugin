@@ -351,6 +351,22 @@
                         <config_path>payment/alfamart/footer_message</config_path>
                     </field>
                 </group>
+                <group id="doku_checkout_merchanthosted" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Jokul Checkout</label>
+                    <field id="active" translate="label" type="select" sortOrder="201" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Enabled</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/doku_checkout_merchanthosted/active</config_path>
+                    </field>
+                    <field id="title" translate="label" type="text" sortOrder="202" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Title</label>
+                        <config_path>payment/doku_checkout_merchanthosted/title</config_path>
+                    </field>
+                    <field id="description" translate="label" type="text" sortOrder="217" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Description</label>
+                        <config_path>payment/doku_checkout_merchanthosted/description</config_path>
+                    </field>
+                </group>
             </group>
         </section>
     </system>
