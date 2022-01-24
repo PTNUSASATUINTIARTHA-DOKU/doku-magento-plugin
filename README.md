@@ -4,7 +4,7 @@ Jokul makes it easy for you accept payments from various channels. Jokul also hi
 ​
 ## Requirements
 ​
-- Magento v2.3 or higher. This plugin is tested with Magento v2.3.4, v.2.3.6
+- Magento v2.3 or higher. This plugin is tested with Magento v2.3.4, v.2.3.6, v.2.4
 - PHP v7.4.0 or higher
 - MySQL v8.0 or higher
 - Jokul account:
@@ -39,6 +39,8 @@ This `doku_log` is useful to help simplify the process of checking if an issue o
 3. Alfamart O2O
 ​
 - Jokul Checkout
+
+
 ## How to Install
 ​
 1. Download this repo
