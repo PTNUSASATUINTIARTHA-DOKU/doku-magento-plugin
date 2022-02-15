@@ -137,7 +137,38 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
             $requestTimestamp = date("Y-m-d H:i:s");
             $requestTimestamp = date(DATE_ISO8601, strtotime($requestTimestamp));
 
-            $itemQty[] = array('name' => 'grandTotal', 'price' => $grandTotal, 'quantity' => '1');
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $order = $objectManager->create('\Magento\Sales\Model\OrderRepository')->get($order->getId());
+            $orderItems = $order->getAllItems();
+
+            $itemQty = array(); 
+            $discountTotal = 0;
+            //line item
+            foreach ($orderItems as $item) {
+                //$discountTotal += $item->getDiscountAmount();
+                $totalItem = number_format($item->getQtyOrdered(), 0, "", "");
+                $amountItem = number_format($item->getPrice(),0,"","");
+                $discountItem = number_format($item->getDiscountAmount(),0,"","");
+                $totalAmountItem = ($amountItem * $totalItem) - $discountItem;
+                $AmountPerItem = $totalAmountItem / $totalItem;
+                $itemQty[] = array('price' => number_format($AmountPerItem,0,"",""), 'quantity' => number_format($item->getQtyOrdered(), 0, "", ""), 'name' => $item->getName(), 'sku' => $item->getSku(), 'category' => 'uncategorized');
+            }
+            //line shipping
+            if ($order->getShippingAmount() > 0) {
+                $itemQty[] = array('name' => 'Shipping', 'price' => number_format($order->getShippingAmount(),0,"",""), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
+            }
+            
+            //line coupon/discount
+            //if ($discountTotal > 0) {
+            //    $itemQty[] = array('name' => 'Discount', 'price' => number_format($discountTotal,0,"",""), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
+            //}
+
+            //tax
+            $taxTotal = 0;
+            $taxTotal = $order->getTaxAmount();
+            if ($taxTotal > 0) {
+                $itemQty[] = array('name' => 'Tax', 'price' => number_format($taxTotal,0,"",""), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
+            }
 
             $signatureParams = array(
                 "clientId" => $clientId,
@@ -148,7 +179,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
             );
 
             $redirectSignatureParams = array(
-                'amount' => $grandTotal,
+                'amount' => number_format($grandTotal,0,"",""),
                 'sharedkey' => $sharedKey,
                 'invoice' => $order->getIncrementId(),
                 'status' => 'success'
@@ -168,7 +199,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                 "order" => array(
                     "invoice_number" => $order->getIncrementId(),
                     "line_items" => $itemQty,
-                    "amount" => $grandTotal,
+                    "amount" => number_format($grandTotal,0,"",""),
                     "callback_url" => $callbackUrl,
                     "currency" => "IDR"
                 ),
@@ -181,6 +212,9 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                     "email" => $billingData->getEmail(),
                     "phone" => $order->getShippingAddress()->getTelephone(),
                     "country" => $billingData->getData('country_id'),
+                    "postcode" => $billingData->getPostcode(),
+                    "state" => $order->getShippingAddress()->getRegion(),
+                    "city" => $billingData->getCity(),
                     "address" => "-"
                 ),
                 "additional_info" => array (
@@ -240,7 +274,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                 'va_number' => $vaNumber,
                 'created_at' => 'now()',
                 'updated_at' => 'now()',
-                'doku_grand_total' => $grandTotal,
+                'doku_grand_total' => number_format($grandTotal,0,"",""),
                 'admin_fee_type' => '',
                 'admin_fee_amount' => 0,
                 'admin_fee_trx_amount' => $totalAdminFeeDisc['total_admin_fee'],

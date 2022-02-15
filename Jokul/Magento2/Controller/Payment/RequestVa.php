@@ -164,30 +164,59 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 "requestTimestamp" => substr($requestTimestamp, 0, 19) . "Z"
             );
 
-            $params = array(
-                "order" => array(
-                    "invoice_number" => $order->getIncrementId(),
-                    "amount" => $grandTotal
-                ),
-                "virtual_account_info" => array(
-                    "expired_time" => $expiryTime,
-                    "reusable_status" => false,
-                    "info1" => '',
-                    "info2" => '',
-                    "info3" => '',
-                ),
-                "customer" => array(
-                    "name" => $customerName,
-                    "email" => $billingData->getEmail()
-                ),
-                "additional_info" => array (
-                    "integration" => array (
-                        "name" => "magento-plugin",
-                        "version" => "1.4.0"
+            $params = "";
+            if ($configCode == "05") { // permata
+                $params = array(
+                    "order" => array(
+                        "invoice_number" => $order->getIncrementId(),
+                        "amount" => $grandTotal
                     ),
-                    "method" => "Jokul Direct"
-                )
-            );
+                    "virtual_account_info" => array(
+                        "billing_type" => "FIX_BILL",
+                        "expired_time" => $expiryTime,
+                        "reusable_status" => true,
+                        "ref_info" => array (
+                            array(
+                                "ref_name" => "Contact",
+                                "ref_value" => $billingData->getTelephone()
+                            ),
+                            array (
+                                "ref_name" => "Branch",
+                                "ref_value" => $billingData->getRegion()
+                            )
+                        )
+                    ),
+                    "customer" => array(
+                        "name" => $customerName,
+                        "email" => $billingData->getEmail()
+                    )
+                );
+            } else {
+                $params = array(
+                    "order" => array(
+                        "invoice_number" => $order->getIncrementId(),
+                        "amount" => $grandTotal
+                    ),
+                    "virtual_account_info" => array(
+                        "expired_time" => $expiryTime,
+                        "reusable_status" => false,
+                        "info1" => '',
+                        "info2" => '',
+                        "info3" => '',
+                    ),
+                    "customer" => array(
+                        "name" => $customerName,
+                        "email" => $billingData->getEmail()
+                    ),
+                    "additional_info" => array (
+                        "integration" => array (
+                            "name" => "magento-plugin",
+                            "version" => "1.4.0"
+                        ),
+                        "method" => "Jokul Direct"
+                    )
+                );
+            }
 
             $this->logger->doku_log('RequestVa', 'Jokul - VA Request data : ' . json_encode($params, JSON_PRETTY_PRINT), $order->getIncrementId());
 

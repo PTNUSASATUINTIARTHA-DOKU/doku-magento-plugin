@@ -227,6 +227,7 @@ class Data extends AbstractHelper
             $url = $prefixprod . $path;
         }
         $this->logger->doku_log('Data','Jokul - Request URL : ' . $url);
+        $this->logger->doku_log('Data','Jokul - Request Generate Checkout : ' . json_encode($data, JSON_PRETTY_PRINT));
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
