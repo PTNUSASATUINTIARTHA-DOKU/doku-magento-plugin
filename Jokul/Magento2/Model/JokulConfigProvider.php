@@ -47,7 +47,9 @@ class JokulConfigProvider implements ConfigProviderInterface
         return array('payment' => array_merge($this->_generalConfiguration->getConfig()['payment'], $this->getConfig()['payment']));
     }
 
-
+    public function getCheckoutPaymentSharedkey($paymentMethod){
+        return $this->_scopeConfig->getValue('payment/'.$paymentMethod.'/sharedkey', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+    }
 
     public function getPaymentAdminFeeAmount($paymentMethod){
          return $this->_scopeConfig->getValue('payment/'.$paymentMethod.'/admin_fee', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);

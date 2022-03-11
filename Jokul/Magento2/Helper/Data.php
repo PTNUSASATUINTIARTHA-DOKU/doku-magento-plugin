@@ -227,6 +227,7 @@ class Data extends AbstractHelper
             $url = $prefixprod . $path;
         }
         $this->logger->doku_log('Data','Jokul - Request URL : ' . $url);
+        $this->logger->doku_log('Data','Jokul - Request Generate Checkout : ' . json_encode($data, JSON_PRETTY_PRINT));
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -275,6 +276,59 @@ class Data extends AbstractHelper
 
         $signature = base64_encode(hash_hmac('SHA256', htmlspecialchars_decode($signatureComponent), htmlspecialchars_decode($params['key']), True));
         return "HMACSHA256=" . $signature;
+    }
+    
+    public function doCheckStatusRequestSignature($params)
+    {
+        return $this->doEncryptCheckStatus($params);
+    }
+    
+    private function doEncryptCheckStatus($params)
+    {
+        $signatureComponent = "Client-Id:" . $params['clientId'] . "\n" .
+            "Request-Id:" . $params['requestId'] . "\n" .
+            "Request-Timestamp:" . $params['requestTimestamp'] . "\n" .
+            "Request-Target:" . $params['requestTarget'];
+
+        $signature = base64_encode(hash_hmac('SHA256', htmlspecialchars_decode($signatureComponent), htmlspecialchars_decode($params['key']), True));
+        return "HMACSHA256=" . $signature;
+    }
+    
+    public function doCheckStatus($params, $signature)
+    {
+        $prefixdev      = SELF::PREFIX_ENV_DEVELOPMENT;
+        $prefixprod     = SELF::PREFIX_ENV_PRODUCTION;
+        $path           = $params['requestTarget'];
+
+        if ($this->config->getEnvironment() == 'development') {
+            $url = $prefixdev . $path;
+        } else {
+            $url = $prefixprod . $path;
+        }
+        $this->logger->doku_log('Data','Jokul - Request URL : ' . $url);
+
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'Signature:' . $signature,
+            'Request-Id:' . $params['requestId'],
+            'Client-Id:' . $params['clientId'],
+            'Request-Timestamp:' . $params['requestTimestamp'],
+            'Request-Target:' . $params['requestTarget']
+        ));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $responseJson = curl_exec($ch);
+
+        curl_close($ch);
+
+        if (is_string($responseJson)) {
+            $responseJson = json_decode($responseJson, true);
+            $this->logger->doku_log('Data','Jokul - Response  Check Status : ' . json_encode($responseJson, JSON_PRETTY_PRINT));
+            return $responseJson;
+        } else {
+            $this->logger->doku_log('Data','Jokul - Response Check Status : ' . json_encode($responseJson, JSON_PRETTY_PRINT));
+            return $responseJson;
+        }
     }
 
     public function getTotalAdminFeeAndDisc($adminFee, $adminFeeType, $discountAmount, $discountType, $grandTotal)

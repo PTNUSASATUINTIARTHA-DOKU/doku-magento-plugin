@@ -143,6 +143,45 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
                     $isSuccessOrder = true;
                     $path = "checkout/onepage/success";
                     $this->deleteCart();
+                    
+                    if ($paymentChannel == '09') {
+                        try {
+                            $this->logger->doku_log('RedirectPending','Jokul - RedirectPending Controller Check Status',$order->getIncrementId());
+                            $clientId = $requestParams['response']['response']['headers']['client_id'];
+                            $requestTarget = "/orders/v1/status/".$order->getIncrementId();
+                            $requestTimestamp = date("Y-m-d H:i:s");
+                            $requestTimestamp = date(DATE_ISO8601, strtotime($requestTimestamp));
+
+                            $signatureParams = array(
+                                "clientId" => $clientId,
+                                "key" => $sharedKey,
+                                "requestTarget" => $requestTarget,
+                                "requestId" => rand(1, 100000),
+                                "requestTimestamp" => substr($requestTimestamp, 0, 19) . "Z"
+                            );
+
+                            $signature = $this->helper->doCheckStatusRequestSignature($signatureParams);
+                            $result = $this->helper->doCheckStatus($signatureParams, $signature);
+
+                            if (isset($result)) {
+                                if (strtolower($result['acquirer']['id']) == strtolower('OVO')) {
+                                    if (strtolower($result['transaction']['status']) == strtolower('SUCCESS')) {
+                                        $order->setData('state', 'processing');
+                                        $order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
+                                        $order->save();
+                                        $this->logger->doku_log('Check Status','Jokul - Back To Merchant Update transaction to Processing '.$post['invoice_number']);
+                                    } else {
+                                        $order->setData('state', 'canceled');
+                                        $order->setStatus(\Magento\Sales\Model\Order::STATE_CANCELED);
+                                        $order->save();
+                                        $this->logger->doku_log('Check Status','Jokul - Back To Merchant Update transaction to FAILED '. $post['invoice_number']);
+                                    }
+                                }
+                            }
+                        } catch (\Exception $e) {
+                            $this->messageManager->addError(__('Server error'));
+                        }
+                    }
                 } else {
                     $path = "checkout/cart";
                     $this->messageManager->addWarningMessage('Payment Failed. Please try again or contact our customer service.');

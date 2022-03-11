@@ -132,6 +132,7 @@
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
                 <group>offline</group>
+                <default_secret>0</default_secret>
                 <model>Jokul\Magento2\Model\Payment\CheckOutJokul</model>
             </doku_checkout_merchanthosted>
         </payment>

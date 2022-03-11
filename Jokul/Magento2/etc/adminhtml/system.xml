@@ -366,6 +366,18 @@
                         <label>Description</label>
                         <config_path>payment/doku_checkout_merchanthosted/description</config_path>
                     </field>
+                    <field id="clientId" translate="label" type="text" sortOrder="217" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Client-ID</label>
+                        <config_path>payment/doku_checkout_merchanthosted/default_secret</config_path>
+                    </field>
+                    <field id="sharedkey" translate="label" type="text" sortOrder="217" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Shared Key</label>
+                        <config_path>payment/doku_checkout_merchanthosted/default_secret</config_path>
+                    </field>
+                    <field id="mpan" translate="label" type="text" sortOrder="217" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Merchant PAN</label>
+                        <config_path>payment/doku_checkout_merchanthosted/default_secret</config_path>
+                    </field>
                 </group>
             </group>
         </section>
