@@ -10,12 +10,10 @@ use \Jokul\Magento2\Helper\Logger;
 
 class Data extends AbstractHelper
 {
-
     protected $transportBuilder;
     protected $dataObject;
     protected $config;
     protected $logger;
-
     const PREFIX_ENV_DEVELOPMENT = 'https://api-sandbox.doku.com';
     const PREFIX_ENV_PRODUCTION = 'https://api.doku.com';
 
@@ -277,10 +275,62 @@ class Data extends AbstractHelper
         $signature = base64_encode(hash_hmac('SHA256', htmlspecialchars_decode($signatureComponent), htmlspecialchars_decode($params['key']), True));
         return "HMACSHA256=" . $signature;
     }
-
-    public function getTotalAdminFeeAndDisc($adminFee, $adminFeeType, $discountAmount, $discountType, $grandTotal)
+    
+    public function doCheckStatusRequestSignature($params)
     {
+        return $this->doEncryptCheckStatus($params);
+    }
+    
+    private function doEncryptCheckStatus($params)
+    {
+        $signatureComponent = "Client-Id:" . $params['clientId'] . "\n" .
+            "Request-Id:" . $params['requestId'] . "\n" .
+            "Request-Timestamp:" . $params['requestTimestamp'] . "\n" .
+            "Request-Target:" . $params['requestTarget'];
 
+        $signature = base64_encode(hash_hmac('SHA256', htmlspecialchars_decode($signatureComponent), htmlspecialchars_decode($params['key']), True));
+        return "HMACSHA256=" . $signature;
+    }
+    
+    public function doCheckStatus($params, $signature)
+    {
+        $prefixdev      = SELF::PREFIX_ENV_DEVELOPMENT;
+        $prefixprod     = SELF::PREFIX_ENV_PRODUCTION;
+        $path           = $params['requestTarget'];
+
+        if ($this->config->getEnvironment() == 'development') {
+            $url = $prefixdev . $path;
+        } else {
+            $url = $prefixprod . $path;
+        }
+        $this->logger->doku_log('Data','Jokul - Request URL : ' . $url);
+
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'Signature:' . $signature,
+            'Request-Id:' . $params['requestId'],
+            'Client-Id:' . $params['clientId'],
+            'Request-Timestamp:' . $params['requestTimestamp'],
+            'Request-Target:' . $params['requestTarget']
+        ));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $responseJson = curl_exec($ch);
+
+        curl_close($ch);
+
+        if (is_string($responseJson)) {
+            $responseJson = json_decode($responseJson, true);
+            $this->logger->doku_log('Data','Jokul - Response  Check Status : ' . json_encode($responseJson, JSON_PRETTY_PRINT));
+            return $responseJson;
+        } else {
+            $this->logger->doku_log('Data','Jokul - Response Check Status : ' . json_encode($responseJson, JSON_PRETTY_PRINT));
+            return $responseJson;
+        }
+    }
+
+    public function getTotalAdminFeeAndDisc($adminFee, $adminFeeType, $discountAmount, $discountType, $subTotal)
+    {
         $totalAdminFee = 0;
         if (!empty($adminFee)) {
             $multipleFee = 0;
@@ -288,7 +338,7 @@ class Data extends AbstractHelper
                 if ($adminFee < 100 && $adminFee > 0) {
                     $multipleFee = $adminFee / 100;
                 }
-                $totalAdminFee = $grandTotal * $multipleFee;
+                $totalAdminFee = $subTotal * $multipleFee;
             } else {
                 $totalAdminFee = $adminFee;
             }
@@ -301,13 +351,13 @@ class Data extends AbstractHelper
                 if ($discountAmount < 100 && $discountAmount > 0) {
                     $multipleDisc = $discountAmount / 100;
                 }
-                $totalDisc = $grandTotal * $multipleDisc;
+                $totalDisc = $subTotal * $multipleDisc;
             } else {
                 $totalDisc = $discountAmount;
             }
         }
 
-        $total = array('total_admin_fee' => $totalAdminFee, 'total_discount' => $totalDisc);
+        $total = array('total_admin_fee' => ceil($totalAdminFee), 'total_discount' => ceil($totalDisc));
 
         return $total;
     }
@@ -391,5 +441,35 @@ class Data extends AbstractHelper
             $this->logger->doku_log('Data','Request controller Credit Card Response : ' . json_encode($responseJson, JSON_PRETTY_PRINT));
             return $responseJson;
         }
+    }
+
+    public function getAdminFeeType($paymentChannel)
+    {
+        return $this->config->getPaymentAdminFeeType($paymentChannel);
+    }
+
+    public function getAdminFee($paymentChannel)
+    {
+        return $this->config->getPaymentAdminFeeAmount($paymentChannel);
+    }
+
+    public function getDiscountValueType($paymentChannel)
+    {
+        return $this->config->getPaymentDiscountType($paymentChannel);
+    }
+
+    public function getDiscountValue($paymentChannel)
+    {
+        return $this->config->getPaymentDiscountAmount($paymentChannel);
+    }
+
+    public function getStatusSubAccount($paymentChannel)
+    {
+        return $this->config->getPaymentStatusSubAccount($paymentChannel);
+    }
+
+    public function getSubAccountId($paymentChannel)
+    {
+        return $this->config->getPaymentSubAccountId($paymentChannel);
     }
 }

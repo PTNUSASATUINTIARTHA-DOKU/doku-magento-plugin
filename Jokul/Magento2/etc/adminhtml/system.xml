@@ -48,6 +48,23 @@
                     <frontend_model>Jokul\Magento2\Block\System\Config\Form\Field\Attribute</frontend_model>
                     <comment>Set this URL to Jokul Back Office</comment>
                 </field>
+                <field id="qris_url" translate="label" type="text" sortOrder="111" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>QRIS Notification URL</label>
+                    <frontend_model>Jokul\Magento2\Block\System\Config\Form\Field\Attribute</frontend_model>
+                    <comment>Set this URL to QRIS Jokul Back Office</comment>
+                </field>
+                <field id="sub_account_active" translate="label" type="select" sortOrder="112" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Sub Account</label>
+                    <source_model>Jokul\Magento2\Model\Config\Source\EnableSubAccountSelect</source_model>
+                </field>
+                <field id="sub_account_id" translate="label" type="text" sortOrder="113" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>On Behalf Of</label>
+                    <comment>Route to your Jokul Sub Account ID All Transactions will be linked to this account  </comment>
+                    <depends>
+                        <field id="sub_account_active">yes</field>
+                    </depends>
+                    <validate>required-entry</validate>
+                </field>
 
                 <group id="bca_va" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>BCA VA</label>
@@ -351,20 +368,35 @@
                         <config_path>payment/alfamart/footer_message</config_path>
                     </field>
                 </group>
-                <group id="doku_checkout_merchanthosted" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
+                <group id="doku_checkout_merchanthosted" translate="label" type="text" sortOrder="400" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Jokul Checkout</label>
-                    <field id="active" translate="label" type="select" sortOrder="201" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="active" translate="label" type="select" sortOrder="401" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Enabled</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>payment/doku_checkout_merchanthosted/active</config_path>
                     </field>
-                    <field id="title" translate="label" type="text" sortOrder="202" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <field id="title" translate="label" type="text" sortOrder="402" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Title</label>
                         <config_path>payment/doku_checkout_merchanthosted/title</config_path>
                     </field>
-                    <field id="description" translate="label" type="text" sortOrder="217" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <field id="description" translate="label" type="text" sortOrder="403" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Description</label>
                         <config_path>payment/doku_checkout_merchanthosted/description</config_path>
+                    </field>
+                    <field id="qrisCredential" translate="label" type="label" sortOrder="404" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <label>QRIS Credential</label>
+                    </field>
+                    <field id="clientId" translate="label" type="text" sortOrder="405" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Client-ID</label>
+                        <config_path>payment/doku_checkout_merchanthosted/qris_client_id</config_path>
+                    </field>
+                    <field id="sharedkey" translate="label" type="text" sortOrder="406" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Shared Key</label>
+                        <config_path>payment/doku_checkout_merchanthosted/sharedkey</config_path>
+                    </field>
+                    <field id="mpan" translate="label" type="text" sortOrder="407" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Merchant PAN</label>
+                        <config_path>payment/doku_checkout_merchanthosted/mpan</config_path>
                     </field>
                 </group>
             </group>

@@ -10,7 +10,6 @@ class GeneralConfiguration implements ConfigProviderInterface
 {
     protected $log;
     protected $timezoneInterface;
-
     const CLIENT_ID_PRODUCTION_CONFIG_PATH = 'payment/doku_general_config/client_id_production';
     const CLIENT_ID_DEVELOPMENT_CONFIG_PATH = 'payment/doku_general_config/client_id_development';
     const SHARED_KEY_PRODUCTION_CONFIG_PATH = 'payment/doku_general_config/shared_key_production';
@@ -20,6 +19,8 @@ class GeneralConfiguration implements ConfigProviderInterface
     const SENDER_EMAIL_CONFIG_PATH = 'payment/doku_general_config/sender_mail';
     const SENDER_NAME_CONFIG_PATH = 'payment/doku_general_config/sender_name';
     const BCC_EMAIL_CONFIG_PATH = 'payment/doku_general_config/sender_mail_bcc';
+    const SUB_ACCOUNT_STATUS_CONFIG_PATH = 'payment/doku_general_config/sub_account_active';
+    const SUB_ACCOUNT_ID_CONFIG_PATH = 'payment/doku_general_config/sub_account_id';
 
     const REL_PAYMENT_CHANNEL = [
         'mandiri_va' => "01",
@@ -130,6 +131,16 @@ class GeneralConfiguration implements ConfigProviderInterface
     public function getPaymentDiscountType($paymentMethod)
     {
         return $this->scopeConfig->getValue('payment/' . $paymentMethod . '/disc_type', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getPaymentStatusSubAccount($paymentMethod)
+    {
+        return $this->scopeConfig->getValue(SELF::SUB_ACCOUNT_STATUS_CONFIG_PATH, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getPaymentSubAccountId($paymentMethod)
+    {
+        return $this->scopeConfig->getValue(SELF::SUB_ACCOUNT_ID_CONFIG_PATH, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
     }
 
     public function getLabelAdminFeeAndDiscount($adminFee, $adminFeeType, $discount, $discountType)

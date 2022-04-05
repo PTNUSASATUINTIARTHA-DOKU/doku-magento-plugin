@@ -68,7 +68,6 @@ class RequestCc extends \Magento\Framework\App\Action\Action
 
     protected function getOrder()
     {
-
         if (!$this->session->getLastRealOrder()->getIncrementId()) {
 
             $order = $this->order->getCollection()
@@ -91,8 +90,6 @@ class RequestCc extends \Magento\Framework\App\Action\Action
     }
 
     public function keepCart(){
-
-
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $_checkoutSession = $objectManager->create('\Magento\Checkout\Model\Session');
         $_quoteFactory = $objectManager->create('\Magento\Quote\Model\QuoteFactory');
@@ -106,7 +103,6 @@ class RequestCc extends \Magento\Framework\App\Action\Action
     }
     public function execute()
     {
-
         $this->logger->doku_log('RequestCC','Request controller Credit Card Start');
 
         $this->logger->doku_log('RequestCC','Request controller Credit Card Find Order');
@@ -126,21 +122,15 @@ class RequestCc extends \Magento\Framework\App\Action\Action
             $billingData = $order->getBillingAddress();
             $config = $this->config->getAllConfig();
 
-            $realGrandTotal = $order->getGrandTotal();
+            $grandTotal = number_format($order->getGrandTotal(), 0, "", "");
 
             $totalAdminFeeDisc = $this->helper->getTotalAdminFeeAndDisc(
                 $config['payment'][$order->getPayment()->getMethod()]['admin_fee'],
                 $config['payment'][$order->getPayment()->getMethod()]['admin_fee_type'],
                 $config['payment'][$order->getPayment()->getMethod()]['disc_amount'],
                 $config['payment'][$order->getPayment()->getMethod()]['disc_type'],
-                $realGrandTotal
+                $grandTotal
             );
-
-            $grandTotal = $realGrandTotal + $totalAdminFeeDisc['total_admin_fee'];
-
-            $buffGrandTotal = $grandTotal - $totalAdminFeeDisc['total_discount'];
-
-            $grandTotal = $buffGrandTotal;
 
             $order->setGrandTotal($grandTotal);
             $order->save();
@@ -199,41 +189,89 @@ class RequestCc extends \Magento\Framework\App\Action\Action
             $callbackUrl = $base_url . "jokulbackend/service/redirect?" . http_build_query($redirectParamsSuccess);
             $failed_url=$base_url . "jokulbackend/service/redirect?" . http_build_query($redirectParamsFailed);
 
-            $params = array(
-                "customer" => array(
-                    "id" => $this->_customerSession->getCustomer()->getId(),
-                    "name" => $customerName,
-                    "email" => $billingData->getEmail(),
-                    "phone" => $order->getShippingAddress()->getTelephone(),
-                    "country" => $billingData->getData('country_id'),
-                    "address" => '-'
-                ),
-                "order" => array(
-                    "invoice_number" => $order->getIncrementId(),
-                    "line_items" => $itemQty,
-                    "amount" => $grandTotal,
-                    "failed_url" => $failed_url,
-                    "callback_url" => $callbackUrl,
-                    "auto_redirect" => true,
-                    "session_id" => $regId,
-                ),
-                "override_configuration" => array(
-                    "themes" => array(
-                        "language" => $this->config->getCCThemelanguage() != "" ? $this->config->getCCThemelanguage() : "" ,
-                        "background_color" => $this->config->getCCThemeBackground_color() != "" ? $this->config->getCCThemeBackground_color() : "",
-                        "font_color" => $this->config->getCCThemeFont_color() != "" ? $this->config->getCCThemeFont_color() : "",
-                        "button_background_color" => $this->config->getCCThemeButton_background_color() != "" ? $this->config->getCCThemeButton_background_color() : "",
-                        "button_font_color" => $this->config->getCCThemeButton_font_color() != "" ? $this->config->getCCThemeButton_font_color() : "",
-                    )
-                ),
-                "additional_info" => array (
-                    "integration" => array (
-                        "name" => "magento-plugin",
-                        "version" => "1.4.1"
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
+            $productMetadata = $objectManager->get('Magento\Framework\App\ProductMetadataInterface');
+
+            $statusSubAccount = $this->helper->getStatusSubAccount($order->getPayment()->getMethod());
+            if ($statusSubAccount == 'yes') {
+                $subAccountId = $this->helper->getSubAccountId($order->getPayment()->getMethod());
+                $params = array(
+                    "customer" => array(
+                        "id" => $this->_customerSession->getCustomer()->getId(),
+                        "name" => $customerName,
+                        "email" => $billingData->getEmail(),
+                        "phone" => $order->getShippingAddress()->getTelephone(),
+                        "country" => $billingData->getData('country_id'),
+                        "address" => '-'
                     ),
-                    "method" => "Jokul Direct"
-                )
-            );
+                    "order" => array(
+                        "invoice_number" => $order->getIncrementId(),
+                        "line_items" => $itemQty,
+                        "amount" => $grandTotal,
+                        "failed_url" => $failed_url,
+                        "callback_url" => $callbackUrl,
+                        "auto_redirect" => true,
+                        "session_id" => $regId,
+                    ),
+                    "override_configuration" => array(
+                        "themes" => array(
+                            "language" => $this->config->getCCThemelanguage() != "" ? $this->config->getCCThemelanguage() : "" ,
+                            "background_color" => $this->config->getCCThemeBackground_color() != "" ? $this->config->getCCThemeBackground_color() : "",
+                            "font_color" => $this->config->getCCThemeFont_color() != "" ? $this->config->getCCThemeFont_color() : "",
+                            "button_background_color" => $this->config->getCCThemeButton_background_color() != "" ? $this->config->getCCThemeButton_background_color() : "",
+                            "button_font_color" => $this->config->getCCThemeButton_font_color() != "" ? $this->config->getCCThemeButton_font_color() : "",
+                        )
+                    ),
+                    "additional_info" => array (
+                        "integration" => array (
+                            "name" => "magento-plugin",
+                            "version" => "1.4.2",
+                            "cms_version" => $productMetadata->getVersion()
+                        ),
+                        "method" => "Jokul Direct",
+                        "account" => array (
+                            "id" => $subAccountId
+                        )
+                    )
+                );
+            } else {
+                $params = array(
+                    "customer" => array(
+                        "id" => $this->_customerSession->getCustomer()->getId(),
+                        "name" => $customerName,
+                        "email" => $billingData->getEmail(),
+                        "phone" => $order->getShippingAddress()->getTelephone(),
+                        "country" => $billingData->getData('country_id'),
+                        "address" => '-'
+                    ),
+                    "order" => array(
+                        "invoice_number" => $order->getIncrementId(),
+                        "line_items" => $itemQty,
+                        "amount" => $grandTotal,
+                        "failed_url" => $failed_url,
+                        "callback_url" => $callbackUrl,
+                        "auto_redirect" => true,
+                        "session_id" => $regId,
+                    ),
+                    "override_configuration" => array(
+                        "themes" => array(
+                            "language" => $this->config->getCCThemelanguage() != "" ? $this->config->getCCThemelanguage() : "" ,
+                            "background_color" => $this->config->getCCThemeBackground_color() != "" ? $this->config->getCCThemeBackground_color() : "",
+                            "font_color" => $this->config->getCCThemeFont_color() != "" ? $this->config->getCCThemeFont_color() : "",
+                            "button_background_color" => $this->config->getCCThemeButton_background_color() != "" ? $this->config->getCCThemeButton_background_color() : "",
+                            "button_font_color" => $this->config->getCCThemeButton_font_color() != "" ? $this->config->getCCThemeButton_font_color() : "",
+                        )
+                    ),
+                    "additional_info" => array (
+                        "integration" => array (
+                            "name" => "magento-plugin",
+                            "version" => "1.4.2",
+                            "cms_version" => $productMetadata->getVersion()
+                        ),
+                        "method" => "Jokul Direct"
+                    )
+                );
+            }
 
             $this->logger->doku_log('RequestCC','Request controller Credit Card request data : ' . json_encode($params, JSON_PRETTY_PRINT));
             $this->logger->doku_log('RequestCC','Request controller Credit Card send request');

@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
         <doku_general_config>
@@ -132,6 +133,9 @@
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
                 <group>offline</group>
+                <qris_client_id>0</qris_client_id>
+                <sharedkey>0</sharedkey>
+                <mpan>0</mpan>
                 <model>Jokul\Magento2\Model\Payment\CheckOutJokul</model>
             </doku_checkout_merchanthosted>
         </payment>

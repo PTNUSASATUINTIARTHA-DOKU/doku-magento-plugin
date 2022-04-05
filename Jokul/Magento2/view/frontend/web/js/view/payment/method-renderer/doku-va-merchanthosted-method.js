@@ -1,6 +1,3 @@
-/**
- * Copyright © 2016 Doku. All rights reserved.
- */
 define(
         [
             'Magento_Checkout/js/view/payment/default',
@@ -62,8 +59,6 @@ define(
                             });
                         }
                     });
-
-//                window.location = url.build('dokuhosted/payment/request');
                 },
                 getDescription: function(){
                      return window.checkoutConfig.payment.doku_va.description

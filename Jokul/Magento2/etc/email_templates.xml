@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../Email/etc/email_templates.xsd">
     <template id="success_template" label="Success Order Email" file="success_template.html" type="html" module="Jokul_Magento2" area="frontend"/>
     <template id="failed_template" label="Failed Order Email" file="failed_template.html" type="html" module="Jokul_Magento2" area="frontend"/>
