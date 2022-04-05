@@ -1,13 +1,6 @@
 <?php
-/**
- *
- * User: leogent <leogent@gmail.com>
- * Date: 2/10/19
- * Time: 2:36 AM
- */
 
 namespace Jokul\Magento2\Api;
-
 
 interface TransactionRepositoryInterface
 {

@@ -1,0 +1,18 @@
+<!-- ko if: isDisplayed() -->
+<tr class="totals paymentfee excl">
+    <th class="mark" scope="row">
+        <span class="label">Discount</span>
+    </th>
+    <td class="amount">
+        <span class="price" data-bind="text: getJokulPaymentDiscount()"></span>
+    </td>
+</tr>
+<tr class="totals paymentfee incl">
+    <th class="mark" scope="row">
+        <span class="label">Admin Fee</span>
+    </th>
+    <td class="amount">
+        <span class="price" data-bind="text: getJokulPaymentFee()"></span>
+    </td>
+</tr>
+<!-- /ko -->

@@ -6,7 +6,6 @@ use Magento\Framework\Data\Form\Element\AbstractElement;
 
 class Attribute extends \Magento\Config\Block\System\Config\Form\Field
 {
-
     protected function _getElementHtml(AbstractElement $element)
     {
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
@@ -19,6 +18,8 @@ class Attribute extends \Magento\Config\Block\System\Config\Form\Field
             $element->setValue($baseUrl . "jokulbackend/service/notify");
         } else if (stripos($id, 'redirect_url')) {
             $element->setValue($baseUrl . "jokulbackend/service/redirect");
+        } else if (stripos($id, 'qris_url')) {
+            $element->setValue($baseUrl . "jokulbackend/service/qrisnotify");
         }
 
         return $element->getElementHtml();

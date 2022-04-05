@@ -9,14 +9,12 @@ use Magento\Framework\App\ResourceConnection;
 use Jokul\Magento2\Helper\Data;
 use Magento\Framework\Data\Form\FormKey\Validator;
 use Jokul\Magento2\Api\TransactionRepositoryInterface;
-
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 
 class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
 {
-
     protected $order;
     protected $logger;
     protected $session;

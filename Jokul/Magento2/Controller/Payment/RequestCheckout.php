@@ -19,7 +19,6 @@ use \Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 
 class RequestCheckout extends \Magento\Framework\App\Action\Action
 {
-
     protected $_pageFactory;
     protected $session;
     protected $order;
@@ -65,9 +64,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
 
     protected function getOrder()
     {
-
         if (!$this->session->getLastRealOrder()->getIncrementId()) {
-
             $order = $this->order->getCollection()
                 ->addFieldToFilter('quote_id', $this->session->getQuote()->getId())
                 ->getFirstItem();
@@ -110,21 +107,15 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
             $billingData = $order->getBillingAddress();
             $config = $this->config->getAllConfig();
 
-            $realGrandTotal = $order->getGrandTotal();
+            $grandTotal = number_format($order->getGrandTotal(), 0, "", "");
 
             $totalAdminFeeDisc = $this->helper->getTotalAdminFeeAndDisc(
                 $config['payment'][$order->getPayment()->getMethod()]['admin_fee'],
                 $config['payment'][$order->getPayment()->getMethod()]['admin_fee_type'],
                 $config['payment'][$order->getPayment()->getMethod()]['disc_amount'],
                 $config['payment'][$order->getPayment()->getMethod()]['disc_type'],
-                $realGrandTotal
+                $grandTotal
             );
-
-            $grandTotal = $realGrandTotal + $totalAdminFeeDisc['total_admin_fee'];
-
-            $buffGrandTotal = $grandTotal - $totalAdminFeeDisc['total_discount'];
-
-            $grandTotal = $buffGrandTotal;
 
             $clientId = $config['payment']['core']['client_id'];
             $sharedKey = $this->config->getSharedKey();
@@ -157,11 +148,6 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
             if ($order->getShippingAmount() > 0) {
                 $itemQty[] = array('name' => 'Shipping', 'price' => number_format($order->getShippingAmount(),0,"",""), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
             }
-            
-            //line coupon/discount
-            //if ($discountTotal > 0) {
-            //    $itemQty[] = array('name' => 'Discount', 'price' => number_format($discountTotal,0,"",""), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
-            //}
 
             //tax
             $taxTotal = 0;
@@ -195,36 +181,79 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
             $base_url = $this->storeManagerInterface->getStore($order->getStore()->getId())->getBaseUrl();
             $callbackUrl = $base_url . "jokulbackend/service/redirect?" . http_build_query($redirectParamsSuccess);
 
-            $params = array(
-                "order" => array(
-                    "invoice_number" => $order->getIncrementId(),
-                    "line_items" => $itemQty,
-                    "amount" => number_format($grandTotal,0,"",""),
-                    "callback_url" => $callbackUrl,
-                    "currency" => "IDR"
-                ),
-                "payment" => array(
-                    "payment_due_date" => $expiryTime
-                ),
-                "customer" => array(
-                    "id" => "1",
-                    "name" => trim($customerName),
-                    "email" => $billingData->getEmail(),
-                    "phone" => $order->getShippingAddress()->getTelephone(),
-                    "country" => $billingData->getData('country_id'),
-                    "postcode" => $billingData->getPostcode(),
-                    "state" => $order->getShippingAddress()->getRegion(),
-                    "city" => $billingData->getCity(),
-                    "address" => "-"
-                ),
-                "additional_info" => array (
-                    "integration" => array (
-                        "name" => "magento-plugin",
-                        "version" => "1.4.1"
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
+            $productMetadata = $objectManager->get('Magento\Framework\App\ProductMetadataInterface');
+
+            $statusSubAccount = $this->helper->getStatusSubAccount($order->getPayment()->getMethod());
+            if ($statusSubAccount == 'yes') {
+                $subAccountId = $this->helper->getSubAccountId($order->getPayment()->getMethod());
+                $params = array(
+                    "order" => array(
+                        "invoice_number" => $order->getIncrementId(),
+                        "line_items" => $itemQty,
+                        "amount" => number_format($grandTotal,0,"",""),
+                        "callback_url" => $callbackUrl,
+                        "currency" => "IDR"
                     ),
-                    "method" => "Jokul Checkout"
-                )
-            );
+                    "payment" => array(
+                        "payment_due_date" => $expiryTime
+                    ),
+                    "customer" => array(
+                        "id" => "1",
+                        "name" => trim($customerName),
+                        "email" => $billingData->getEmail(),
+                        "phone" => $order->getShippingAddress()->getTelephone(),
+                        "country" => $billingData->getData('country_id'),
+                        "postcode" => $billingData->getPostcode(),
+                        "state" => $order->getShippingAddress()->getRegion(),
+                        "city" => $billingData->getCity(),
+                        "address" => "-"
+                    ),
+                    "additional_info" => array (
+                        "integration" => array (
+                            "name" => "magento-plugin",
+                            "version" => "1.4.2",
+                            "cms_version" => $productMetadata->getVersion()
+                        ),
+                        "method" => "Jokul Checkout",
+                        "account" => array (
+                            "id" => $subAccountId
+                        )
+                    )
+                );
+            } else {
+                $params = array(
+                    "order" => array(
+                        "invoice_number" => $order->getIncrementId(),
+                        "line_items" => $itemQty,
+                        "amount" => number_format($grandTotal,0,"",""),
+                        "callback_url" => $callbackUrl,
+                        "currency" => "IDR"
+                    ),
+                    "payment" => array(
+                        "payment_due_date" => $expiryTime
+                    ),
+                    "customer" => array(
+                        "id" => "1",
+                        "name" => trim($customerName),
+                        "email" => $billingData->getEmail(),
+                        "phone" => $order->getShippingAddress()->getTelephone(),
+                        "country" => $billingData->getData('country_id'),
+                        "postcode" => $billingData->getPostcode(),
+                        "state" => $order->getShippingAddress()->getRegion(),
+                        "city" => $billingData->getCity(),
+                        "address" => "-"
+                    ),
+                    "additional_info" => array (
+                        "integration" => array (
+                            "name" => "magento-plugin",
+                            "version" => "1.4.2",
+                            "cms_version" => $productMetadata->getVersion()
+                        ),
+                        "method" => "Jokul Checkout"
+                    )
+                );
+            }
 
             $this->logger->info('===== Request controller Checkout GATEWAY ===== request param = ' . json_encode($params, JSON_PRETTY_PRINT));
             $this->logger->info('===== Request controller Checkout GATEWAY ===== send request');

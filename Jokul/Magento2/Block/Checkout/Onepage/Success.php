@@ -48,7 +48,6 @@ class Success extends \Magento\Sales\Block\Order\Totals
 
     public function getDokuTransaction()
     {
-
         if ($this->dokusTransactionOrder === null) {
             $connection = $this->resourceConnection->getConnection();
             $tableName = $this->resourceConnection->getTableName('jokul_transaction');
@@ -62,7 +61,6 @@ class Success extends \Magento\Sales\Block\Order\Totals
 
     public function getDokuTransactionOther($invoice)
     {
-
         if ($this->dokusTransactionOrder === null) {
             $connection = $this->resourceConnection->getConnection();
             $tableName = $this->resourceConnection->getTableName('jokul_transaction');
@@ -76,7 +74,6 @@ class Success extends \Magento\Sales\Block\Order\Totals
 
     public function getDokuTransactionDetailParams()
     {
-
         $howToPayUrl = '';
         $checkoutUrl = '';
 

@@ -1,6 +1,3 @@
-/**
- * Copyright © 2016 Doku. All rights reserved.
- */
 define(
         [
             'Magento_Checkout/js/view/payment/default',

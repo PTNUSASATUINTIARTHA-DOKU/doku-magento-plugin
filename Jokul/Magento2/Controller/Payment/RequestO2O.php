@@ -18,7 +18,6 @@ use \Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 
 class RequestO2O extends \Magento\Framework\App\Action\Action
 {
-
     protected $_pageFactory;
     protected $session;
     protected $order;
@@ -109,56 +108,90 @@ class RequestO2O extends \Magento\Framework\App\Action\Action
             $billingData = $order->getBillingAddress();
             $config = $this->config->getAllConfig();
 
-            $realGrandTotal = $order->getGrandTotal();
+            $grandTotal = number_format($order->getGrandTotal(), 0, "", "");
 
             $totalAdminFeeDisc = $this->helper->getTotalAdminFeeAndDisc(
                 $config['payment'][$order->getPayment()->getMethod()]['admin_fee'],
                 $config['payment'][$order->getPayment()->getMethod()]['admin_fee_type'],
                 $config['payment'][$order->getPayment()->getMethod()]['disc_amount'],
                 $config['payment'][$order->getPayment()->getMethod()]['disc_type'],
-                $realGrandTotal
+                $grandTotal
             );
 
-            $grandTotal = $realGrandTotal + $totalAdminFeeDisc['total_admin_fee'];
-
-            $buffGrandTotal = $grandTotal - $totalAdminFeeDisc['total_discount'];
-
-            $grandTotal = $buffGrandTotal;
             $order->setGrandTotal($grandTotal);
             $order->save();
             $clientId = $config['payment']['core']['client_id'];
             $sharedKey = $this->config->getSharedKey();
             $expiryTime = isset($config['payment']['core']['expiry']) && (int) $config['payment']['core']['expiry'] != 0 ? $config['payment']['core']['expiry'] : 60;
-
             $customerName = trim($billingData->getFirstname() . " " . $billingData->getLastname());
 
-            $params = array(
-                "order" => array(
-                    "invoice_number" => $order->getIncrementId(),
-                    "amount" => $grandTotal
-                ),
-                "online_to_offline_info" => array(
-                    "expired_time" => $expiryTime,
-                    "reusable_status" => false,
-                    "info1" => ''
-                ),
-                "alfa_info" => array(
-                    "receipt" => array(
-                        "footer_message" => $this->config->getFooterMessage()
-                    )
-                ),
-                "customer" => array(
-                    "name" => $customerName,
-                    "email" => $billingData->getEmail()
-                ),
-                "additional_info" => array (
-                    "integration" => array (
-                        "name" => "magento-plugin",
-                        "version" => "1.4.1"
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
+            $productMetadata = $objectManager->get('Magento\Framework\App\ProductMetadataInterface'); 
+
+            $statusSubAccount = $this->helper->getStatusSubAccount($order->getPayment()->getMethod());
+            if ($statusSubAccount == 'yes') {
+                $subAccountId = $this->helper->getSubAccountId($order->getPayment()->getMethod());
+                $params = array(
+                    "order" => array(
+                        "invoice_number" => $order->getIncrementId(),
+                        "amount" => $grandTotal
                     ),
-                    "method" => "Jokul Direct"
-                )
-            );
+                    "online_to_offline_info" => array(
+                        "expired_time" => $expiryTime,
+                        "reusable_status" => false,
+                        "info1" => ''
+                    ),
+                    "alfa_info" => array(
+                        "receipt" => array(
+                            "footer_message" => $this->config->getFooterMessage()
+                        )
+                    ),
+                    "customer" => array(
+                        "name" => $customerName,
+                        "email" => $billingData->getEmail()
+                    ),
+                    "additional_info" => array (
+                        "integration" => array (
+                            "name" => "magento-plugin",
+                            "version" => "1.4.2",
+                            "cms_version" => $productMetadata->getVersion()
+                        ),
+                        "method" => "Jokul Direct",
+                        "account" => array (
+                            "id" => $subAccountId
+                        )
+                    )
+                );
+            } else {
+                $params = array(
+                    "order" => array(
+                        "invoice_number" => $order->getIncrementId(),
+                        "amount" => $grandTotal
+                    ),
+                    "online_to_offline_info" => array(
+                        "expired_time" => $expiryTime,
+                        "reusable_status" => false,
+                        "info1" => ''
+                    ),
+                    "alfa_info" => array(
+                        "receipt" => array(
+                            "footer_message" => $this->config->getFooterMessage()
+                        )
+                    ),
+                    "customer" => array(
+                        "name" => $customerName,
+                        "email" => $billingData->getEmail()
+                    ),
+                    "additional_info" => array (
+                        "integration" => array (
+                            "name" => "magento-plugin",
+                            "version" => "1.4.2",
+                            "cms_version" => $productMetadata->getVersion()
+                        ),
+                        "method" => "Jokul Direct"
+                    )
+                );
+            }
 
             $requestTarget = "";
             if ($configCode == 07) {

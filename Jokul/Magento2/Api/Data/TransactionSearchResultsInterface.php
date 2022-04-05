@@ -1,10 +1,4 @@
 <?php
-/**
- *
- * User: leogent <leogent@gmail.com>
- * Date: 2/10/19
- * Time: 3:23 AM
- */
 
 namespace Jokul\Magento2\Api\Data;
 

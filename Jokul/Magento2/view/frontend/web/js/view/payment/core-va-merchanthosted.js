@@ -1,6 +1,3 @@
-/**
- * Copyright © 2016 Doku. All rights reserved.
- */
 define(
     [
         'uiComponent',
@@ -52,8 +49,6 @@ define(
                 component: 'Jokul_Magento2/js/view/payment/method-renderer/jokul-checkout-method'
             }
         );
-
-        /** Add view logic here if needed */
 
         return Component.extend({});
     }

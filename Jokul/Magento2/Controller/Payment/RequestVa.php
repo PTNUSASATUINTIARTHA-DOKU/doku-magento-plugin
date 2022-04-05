@@ -18,7 +18,6 @@ use \Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 
 class RequestVa extends \Magento\Framework\App\Action\Action
 {
-
     protected $_pageFactory;
     protected $session;
     protected $order;
@@ -88,7 +87,6 @@ class RequestVa extends \Magento\Framework\App\Action\Action
 
     public function execute()
     {
-
         $result = array();
         $redirectData = array();
 
@@ -103,22 +101,17 @@ class RequestVa extends \Magento\Framework\App\Action\Action
             $billingData = $order->getBillingAddress();
             $config = $this->config->getAllConfig();
 
-            $realGrandTotal = $order->getGrandTotal();
+            $grandTotal = number_format($order->getGrandTotal(), 0, "", "");
+
+            $statusSubAccount = $this->helper->getStatusSubAccount($order->getPayment()->getMethod());
 
             $totalAdminFeeDisc = $this->helper->getTotalAdminFeeAndDisc(
                 $config['payment'][$order->getPayment()->getMethod()]['admin_fee'],
                 $config['payment'][$order->getPayment()->getMethod()]['admin_fee_type'],
                 $config['payment'][$order->getPayment()->getMethod()]['disc_amount'],
                 $config['payment'][$order->getPayment()->getMethod()]['disc_type'],
-                $realGrandTotal
+                $grandTotal
             );
-
-            $grandTotal = $realGrandTotal + $totalAdminFeeDisc['total_admin_fee'];
-
-            $buffGrandTotal = $grandTotal - $totalAdminFeeDisc['total_discount'];
-
-            $grandTotal = $buffGrandTotal;
-
 
             $order->setGrandTotal($grandTotal);
             $order->save();
@@ -164,6 +157,9 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                 "requestTimestamp" => substr($requestTimestamp, 0, 19) . "Z"
             );
 
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
+            $productMetadata = $objectManager->get('Magento\Framework\App\ProductMetadataInterface'); 
+
             $params = "";
             if ($configCode == "05") { // permata
                 $params = array(
@@ -192,30 +188,63 @@ class RequestVa extends \Magento\Framework\App\Action\Action
                     )
                 );
             } else {
-                $params = array(
-                    "order" => array(
-                        "invoice_number" => $order->getIncrementId(),
-                        "amount" => $grandTotal
-                    ),
-                    "virtual_account_info" => array(
-                        "expired_time" => $expiryTime,
-                        "reusable_status" => false,
-                        "info1" => '',
-                        "info2" => '',
-                        "info3" => '',
-                    ),
-                    "customer" => array(
-                        "name" => $customerName,
-                        "email" => $billingData->getEmail()
-                    ),
-                    "additional_info" => array (
-                        "integration" => array (
-                            "name" => "magento-plugin",
-                            "version" => "1.4.1"
+                if ($statusSubAccount == 'yes') {
+                    $subAccountId = $this->helper->getSubAccountId($order->getPayment()->getMethod());
+                    $params = array(
+                        "order" => array(
+                            "invoice_number" => $order->getIncrementId(),
+                            "amount" => $grandTotal
                         ),
-                        "method" => "Jokul Direct"
-                    )
-                );
+                        "virtual_account_info" => array(
+                            "expired_time" => $expiryTime,
+                            "reusable_status" => false,
+                            "info1" => '',
+                            "info2" => '',
+                            "info3" => '',
+                        ),
+                        "customer" => array(
+                            "name" => $customerName,
+                            "email" => $billingData->getEmail()
+                        ),
+                        "additional_info" => array (
+                            "integration" => array (
+                                "name" => "magento-plugin",
+                                "version" => "1.4.2",
+                                "cms_version" => $productMetadata->getVersion()
+                            ),
+                            "method" => "Jokul Direct",
+                            "account" => array (
+                                "id" => $subAccountId
+                            )
+                        )
+                    );
+                } else {
+                    $params = array(
+                        "order" => array(
+                            "invoice_number" => $order->getIncrementId(),
+                            "amount" => $grandTotal
+                        ),
+                        "virtual_account_info" => array(
+                            "expired_time" => $expiryTime,
+                            "reusable_status" => false,
+                            "info1" => '',
+                            "info2" => '',
+                            "info3" => '',
+                        ),
+                        "customer" => array(
+                            "name" => $customerName,
+                            "email" => $billingData->getEmail()
+                        ),
+                        "additional_info" => array (
+                            "integration" => array (
+                                "name" => "magento-plugin",
+                                "version" => "1.4.2",
+                                "cms_version" => $productMetadata->getVersion()
+                            ),
+                            "method" => "Jokul Direct"
+                        )
+                    );
+                }
             }
 
             $this->logger->doku_log('RequestVa', 'Jokul - VA Request data : ' . json_encode($params, JSON_PRETTY_PRINT), $order->getIncrementId());
@@ -227,7 +256,6 @@ class RequestVa extends \Magento\Framework\App\Action\Action
             } catch (\Exception $e) {
                 $this->logger->doku_log('RequestVa', 'Jokul - VA Request Controller Exception: ' . $e);
             }
-
 
             if (isset($result['order']['invoice_number'])) {
                 $virtualAccountInfo = isset($result['virtual_account_info']) ? $result['virtual_account_info'] : '';

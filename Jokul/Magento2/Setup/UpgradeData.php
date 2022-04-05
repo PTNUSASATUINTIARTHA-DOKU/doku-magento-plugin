@@ -1,10 +1,4 @@
 <?php
-/**
- *
- * User: leogent <leogent@gmail.com>
- * Date: 5/26/19
- * Time: 11:53 AM
- */
 
 namespace Jokul\Magento2\Setup;
 
@@ -19,14 +13,10 @@ use Magento\Sales\Model\Order\StatusFactory;
 use Magento\Sales\Model\ResourceModel\Order\Status as StatusResource;
 use Magento\Sales\Model\ResourceModel\Order\StatusFactory as StatusResourceFactory;
 
-
 class UpgradeData implements UpgradeDataInterface
 {
-
     const ORDER_STATUS_CHALLENGE_CODE = 'challenge';
-
     const ORDER_STATUS_CHALLENGE_LABEL = 'Challenge';
-
 
     /**
      * Status Factory
@@ -94,5 +84,4 @@ class UpgradeData implements UpgradeDataInterface
 
         $setup->endSetup();
     }
-
 }

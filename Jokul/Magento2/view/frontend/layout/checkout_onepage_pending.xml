@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+
 <body>
     <referenceContainer name="order.pending.additional.info">
         <block class="Jokul\Magento2\Block\Checkout\Onepage\Pending"
