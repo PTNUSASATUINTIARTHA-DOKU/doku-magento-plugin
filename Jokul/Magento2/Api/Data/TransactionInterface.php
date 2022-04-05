@@ -1,20 +1,9 @@
 <?php
-/**
- *
- * User: leogent <leogent@gmail.com>
- * Date: 2/10/19
- * Time: 2:37 AM
- */
 
 namespace Jokul\Magento2\Api\Data;
 
-
 interface TransactionInterface
 {
-
-    /**#@+
-     * Constants for keys of data array. Identical to the name of the getter in snake case
-     */
     const ID      = 'id';
     const STORE_ID = 'store_id';
     const QUOTE_ID = 'quote_id';
@@ -40,6 +29,4 @@ interface TransactionInterface
     const EXPIRED_AT_STORETIMEZONE = 'expired_at_storetimezone';
     const DOKU_GRAND_TOTAL = 'doku_grand_total';
     const CUSTOMER_EMAIL = 'customer_email';
-
-
 }

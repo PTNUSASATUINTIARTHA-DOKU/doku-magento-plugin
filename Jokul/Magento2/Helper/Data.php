@@ -10,12 +10,10 @@ use \Jokul\Magento2\Helper\Logger;
 
 class Data extends AbstractHelper
 {
-
     protected $transportBuilder;
     protected $dataObject;
     protected $config;
     protected $logger;
-
     const PREFIX_ENV_DEVELOPMENT = 'https://api-sandbox.doku.com';
     const PREFIX_ENV_PRODUCTION = 'https://api.doku.com';
 
@@ -331,9 +329,8 @@ class Data extends AbstractHelper
         }
     }
 
-    public function getTotalAdminFeeAndDisc($adminFee, $adminFeeType, $discountAmount, $discountType, $grandTotal)
+    public function getTotalAdminFeeAndDisc($adminFee, $adminFeeType, $discountAmount, $discountType, $subTotal)
     {
-
         $totalAdminFee = 0;
         if (!empty($adminFee)) {
             $multipleFee = 0;
@@ -341,7 +338,7 @@ class Data extends AbstractHelper
                 if ($adminFee < 100 && $adminFee > 0) {
                     $multipleFee = $adminFee / 100;
                 }
-                $totalAdminFee = $grandTotal * $multipleFee;
+                $totalAdminFee = $subTotal * $multipleFee;
             } else {
                 $totalAdminFee = $adminFee;
             }
@@ -354,13 +351,13 @@ class Data extends AbstractHelper
                 if ($discountAmount < 100 && $discountAmount > 0) {
                     $multipleDisc = $discountAmount / 100;
                 }
-                $totalDisc = $grandTotal * $multipleDisc;
+                $totalDisc = $subTotal * $multipleDisc;
             } else {
                 $totalDisc = $discountAmount;
             }
         }
 
-        $total = array('total_admin_fee' => $totalAdminFee, 'total_discount' => $totalDisc);
+        $total = array('total_admin_fee' => ceil($totalAdminFee), 'total_discount' => ceil($totalDisc));
 
         return $total;
     }
@@ -444,5 +441,35 @@ class Data extends AbstractHelper
             $this->logger->doku_log('Data','Request controller Credit Card Response : ' . json_encode($responseJson, JSON_PRETTY_PRINT));
             return $responseJson;
         }
+    }
+
+    public function getAdminFeeType($paymentChannel)
+    {
+        return $this->config->getPaymentAdminFeeType($paymentChannel);
+    }
+
+    public function getAdminFee($paymentChannel)
+    {
+        return $this->config->getPaymentAdminFeeAmount($paymentChannel);
+    }
+
+    public function getDiscountValueType($paymentChannel)
+    {
+        return $this->config->getPaymentDiscountType($paymentChannel);
+    }
+
+    public function getDiscountValue($paymentChannel)
+    {
+        return $this->config->getPaymentDiscountAmount($paymentChannel);
+    }
+
+    public function getStatusSubAccount($paymentChannel)
+    {
+        return $this->config->getPaymentStatusSubAccount($paymentChannel);
+    }
+
+    public function getSubAccountId($paymentChannel)
+    {
+        return $this->config->getPaymentSubAccountId($paymentChannel);
     }
 }

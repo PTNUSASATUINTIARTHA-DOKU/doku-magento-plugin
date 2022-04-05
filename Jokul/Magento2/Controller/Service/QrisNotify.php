@@ -19,9 +19,7 @@ use Magento\Framework\App\RequestInterface;
 
 class QrisNotify extends \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
 {
-
     const ORDER_STATUS_CHALLENGE = 'challenge';
-
     protected $resourceConnection;
     protected $order;
     protected $generalConfiguration;
@@ -95,11 +93,13 @@ class QrisNotify extends \Magento\Framework\App\Action\Action implements CsrfAwa
                     $order->setData('state', 'processing');
                     $order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
                     $order->save();
+                    echo "SUCCESS";
                     $this->logger->doku_log('Qris Notify','Jokul - Update transaction to Processing '.$_POST['TRANSACTIONID']);
                 } else {
                     $order->setData('state', 'canceled');
                     $order->setStatus(\Magento\Sales\Model\Order::STATE_CANCELED);
                     $order->save();
+                    echo "SUCCESS";
                     $this->logger->doku_log('Qris Notify','Jokul - Update transaction to FAILED '. $_POST['TRANSACTIONID']);
                 }
             } else {

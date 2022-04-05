@@ -1,14 +1,11 @@
 <?php
 
-
 namespace Jokul\Magento2\Helper;
-
 
 class Logger
 {
     function doku_log($class, $log_msg, $invoiceNumber = "")
     {
-
         $log_filename = "doku_log";
         $log_header = date(DATE_ATOM, time()) . ' ' . $class . '---> ' . $invoiceNumber .' ';
         if (!file_exists($log_filename)) {

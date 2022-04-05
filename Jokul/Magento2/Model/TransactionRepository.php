@@ -1,10 +1,4 @@
 <?php
-/**
- *
- * User: leogent <leogent@gmail.com>
- * Date: 2/10/19
- * Time: 3:18 AM
- */
 
 namespace Jokul\Magento2\Model;
 
@@ -19,7 +13,6 @@ use \Magento\Framework\Exception\CouldNotDeleteException;
 
 class TransactionRepository implements TransactionRepositoryInterface
 {
-
     public function __construct(
         ResourceTransaction $resource,
         TransactionFactory $transactionFactory,
@@ -76,5 +69,4 @@ class TransactionRepository implements TransactionRepositoryInterface
     {
         return $this->delete($this->getById($id));
     }
-
 }

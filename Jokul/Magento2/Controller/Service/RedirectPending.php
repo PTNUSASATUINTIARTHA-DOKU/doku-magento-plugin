@@ -15,7 +15,6 @@ use Magento\Framework\App\RequestInterface;
 
 class RedirectPending extends \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
 {
-
     protected $order;
     protected $logger;
     protected $session;
@@ -91,18 +90,6 @@ class RedirectPending extends \Magento\Framework\App\Action\Action implements Cs
         $transactionType = isset($requestParams['transactiontype']) ? $requestParams['transactiontype'] : "";
 
         $O2Ochannel = array(07);
-        $expiryStoreDate = "";
-        $additionalParams = "";
-        $vaNumber = "";
-        $expiryGmtDate = "";
-        
-        $expiryValue = $requestParams['order']['invoice_number'];
-        $vaNumber = $requestParams['response']['response']['payment']['expired_date'];
-            
-        $expiryGmtDate = date('Y-m-d H:i:s', (strtotime('+' . $expiryValue . ' minutes', time())));
-        $expiryStoreDate = $this->timeZone->date(new \DateTime($expiryGmtDate))->format('Y-m-d H:i:s');
-        $additionalParams = " `va_number` = '" . $vaNumber . "', ";
-
         $order = $this->order->loadByIncrementId($post['invoice_number']);
 
         if ($order->getEntityId()) {
