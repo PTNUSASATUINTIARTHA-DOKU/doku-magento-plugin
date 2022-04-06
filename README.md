@@ -39,6 +39,7 @@ This `doku_log` is useful to help simplify the process of checking if an issue o
 3. Alfamart O2O
 ​
 - Jokul Checkout
+Easily embed our well-crafted yet customizable Jokul payment page for your website. With a single integration, you can start accepting payments on your web. With a single integration, Jokul Checkout allows you to accept payments from various Jokul payment channels. 
 
 
 ## How to Install
@@ -64,7 +65,7 @@ This `doku_log` is useful to help simplify the process of checking if an issue o
 5. Dropdown the arrow icon to see the details
 6. Here is the fileds that you required to set:
 ​
-    ![General Configuration](https://i.ibb.co/qyCfkXR/Screen-Shot-2021-03-25-at-01-40-53.png)
+    ![General Configuration](https://i.ibb.co/vV61CVZ/screencapture-sandboxenv-devmagento-admin123-admin-system-config-edit-section-payment-key-522ef14376.png)
     
     - **Production Client ID**: Client ID you retrieved from the Production environment Jokul Back Office
     - **Sandbox Client ID**: Client ID you retrieved from the Sandbox environment Jokul Back Office
@@ -76,6 +77,9 @@ This `doku_log` is useful to help simplify the process of checking if an issue o
     - **Email Sender Name**: You can fill this coloumn with your name. This will later be used as info to send notifications to your customers
     - **BCC Email Adress**: You can fill this coloumn other email adress. This will later be used to send notifications to your customers
     - **Notification URL**: Copy this URL and paste the URL into the Jokul Back Office. Learn more about how to setup Notification URL [here](https://jokul.doku.com/docs/docs/after-payment/setup-notification-url)
+    **QRIS Notification URL** : Copy this URL and and contact our support team to help paste in QRIS Backoffice. This channel only support if youre enabling Jokul Checkout as a payment method.
+    - **Email Notifications** : You can activated the feature send emails for VA and O2O channels. This email contains how to pay for the VA or Paycode.
+    - **Sub Account Feature** : This feature helps you to routing your payment into your Sub Account ID. You can see the details for payment flow if youre using this feature [here](https://jokul.doku.com/docs/docs/jokul-sub-account/jokul-sub-account-overview)
 7. Click Save Config button
 8. Go Back to Payments Tab
 9. Now your customer should be able to see the payment channels and you start receiving payments
@@ -142,3 +146,15 @@ You can also edit how the Alfamart O2O channels will be shown to your customers 
 - **Admin Fee**: Fill in the amount of admin fee you provide. Input number only. For Percentage Type, the number is `0-100`
 - **Admin Fee Type**: Select the type of admin fee. Options: Fixed amount, Percentage
 - **Footer Message**: Input the footer message. This title will be visible in payment receipt paper
+
+### Jokul Checkout Configuration
+
+![Jokul Checkout Configuration](https://i.ibb.co/7XGSJqF/Screen-Shot-2022-04-06-at-11-07-30.png)
+
+To show the Jokul Checkout options to your customers, simply toggle the channel that you wish to show. Jokul Checkout allows you to accept payments from various Jokul payment channels. You can enable or disable the payment channel that you want to show in your store view in Jokul Backoffice Configuration.
+
+![Jokul Checkout Configuration Details](https://i.ibb.co/9vpJjZq/Screen-Shot-2022-04-06-at-11-15-06.png)
+
+You can also click Manage to edit how the Jokul Checkout channels will be shown to your customers by clicking the Manage button. 
+Below you can update the QRIS Credential that youre already get from our Support Team.
+
