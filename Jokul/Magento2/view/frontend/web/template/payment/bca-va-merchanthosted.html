@@ -9,7 +9,9 @@
 
     <div class="payment-method-content rk1">
         <div data-bind="html: getDescription()"></div><br>
-        <form id="bca-va-merchanthosted" action="" method="post"></form>
+        <form id="bca-va-merchanthosted" action="" method="post">
+            <button type="submit" id="submitDataBca" name="submitDataBca" style="display:none;"></button>
+        </form>
         <div class="payment-method-billing-address">
             <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->
             <!-- ko template: getTemplate() --><!-- /ko -->

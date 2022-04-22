@@ -134,9 +134,8 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
 
             $itemQty = array(); 
             $discountTotal = 0;
-            //line item
+        
             foreach ($orderItems as $item) {
-                //$discountTotal += $item->getDiscountAmount();
                 $totalItem = number_format($item->getQtyOrdered(), 0, "", "");
                 $amountItem = number_format($item->getPrice(),0,"","");
                 $discountItem = number_format($item->getDiscountAmount(),0,"","");
@@ -144,16 +143,15 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                 $AmountPerItem = $totalAmountItem / $totalItem;
                 $itemQty[] = array('price' => number_format($AmountPerItem,0,"",""), 'quantity' => number_format($item->getQtyOrdered(), 0, "", ""), 'name' => $item->getName(), 'sku' => $item->getSku(), 'category' => 'uncategorized');
             }
-            //line shipping
+            
             if ($order->getShippingAmount() > 0) {
-                $itemQty[] = array('name' => 'Shipping', 'price' => number_format($order->getShippingAmount(),0,"",""), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
+                $itemQty[] = array('name' => 'Shipping', 'price' => number_format($order->getShippingAmount(),0,"",""), 'quantity' => '1', 'sku' => '01', 'category' => 'uncategorized');
             }
 
-            //tax
             $taxTotal = 0;
             $taxTotal = $order->getTaxAmount();
             if ($taxTotal > 0) {
-                $itemQty[] = array('name' => 'Tax', 'price' => number_format($taxTotal,0,"",""), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
+                $itemQty[] = array('name' => 'Tax', 'price' => number_format($taxTotal,0,"",""), 'quantity' => '1', 'sku' => '02', 'category' => 'uncategorized');
             }
 
             $signatureParams = array(
@@ -180,9 +178,16 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
 
             $base_url = $this->storeManagerInterface->getStore($order->getStore()->getId())->getBaseUrl();
             $callbackUrl = $base_url . "jokulbackend/service/redirect?" . http_build_query($redirectParamsSuccess);
-
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
             $productMetadata = $objectManager->get('Magento\Framework\App\ProductMetadataInterface');
+
+            $customerSession = $objectManager->get('Magento\Customer\Model\Session');
+            $customerId = "";
+            $phone = preg_replace('/[^0-9]/', '', $order->getShippingAddress()->getTelephone());
+            if($customerSession->isLoggedIn()) {
+                $customerId = $customerSession->getCustomer()->getId();
+            } else {
+                $customerId = $phone;
+            }
 
             $statusSubAccount = $this->helper->getStatusSubAccount($order->getPayment()->getMethod());
             if ($statusSubAccount == 'yes') {
@@ -199,20 +204,20 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "payment_due_date" => $expiryTime
                     ),
                     "customer" => array(
-                        "id" => "1",
+                        "id" => $customerId,
                         "name" => trim($customerName),
                         "email" => $billingData->getEmail(),
-                        "phone" => $order->getShippingAddress()->getTelephone(),
+                        "phone" => $phone,
                         "country" => $billingData->getData('country_id'),
                         "postcode" => $billingData->getPostcode(),
-                        "state" => $order->getShippingAddress()->getRegion(),
+                        "state" => !empty($order->getShippingAddress()->getRegion()) ? $order->getShippingAddress()->getRegion() : "-",
                         "city" => $billingData->getCity(),
-                        "address" => "-"
+                        "address" => $billingData->getData('street')
                     ),
                     "additional_info" => array (
                         "integration" => array (
                             "name" => "magento-plugin",
-                            "version" => "1.4.2",
+                            "version" => "1.4.3",
                             "cms_version" => $productMetadata->getVersion()
                         ),
                         "method" => "Jokul Checkout",
@@ -234,20 +239,20 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "payment_due_date" => $expiryTime
                     ),
                     "customer" => array(
-                        "id" => "1",
+                        "id" => $customerId,
                         "name" => trim($customerName),
                         "email" => $billingData->getEmail(),
-                        "phone" => $order->getShippingAddress()->getTelephone(),
+                        "phone" => $phone,
                         "country" => $billingData->getData('country_id'),
                         "postcode" => $billingData->getPostcode(),
-                        "state" => $order->getShippingAddress()->getRegion(),
+                        "state" => !empty($order->getShippingAddress()->getRegion()) ? $order->getShippingAddress()->getRegion() : "-",
                         "city" => $billingData->getCity(),
-                        "address" => "-"
+                        "address" => $billingData->getData('street')
                     ),
                     "additional_info" => array (
                         "integration" => array (
                             "name" => "magento-plugin",
-                            "version" => "1.4.2",
+                            "version" => "1.4.3",
                             "cms_version" => $productMetadata->getVersion()
                         ),
                         "method" => "Jokul Checkout"
@@ -338,7 +343,6 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
         } else {
             $this->logger->info('===== Request controller Checkout GATEWAY Response ===== ' . print_r($result, true));
 
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
             $_checkoutSession = $objectManager->create('\Magento\Checkout\Model\Session');
             $_quoteFactory = $objectManager->create('\Magento\Quote\Model\QuoteFactory');
 

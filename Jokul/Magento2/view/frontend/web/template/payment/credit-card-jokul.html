@@ -9,7 +9,9 @@
 
     <div class="payment-method-content rk1">
         <div data-bind="html: getDescription()"></div><br>
-        <form id="credit-card-jokul" action="" method="post"></form>
+        <form id="credit-card-jokul" action="" method="post">
+            <button type="submit" id="submitDataCc" name="submitDataCc" style="display:none;"></button>
+        </form>
         <div class="payment-method-billing-address">
             <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->
             <!-- ko template: getTemplate() --><!-- /ko -->

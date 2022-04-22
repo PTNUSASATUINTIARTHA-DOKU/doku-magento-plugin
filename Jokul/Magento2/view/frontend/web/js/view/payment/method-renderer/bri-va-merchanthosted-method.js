@@ -34,8 +34,8 @@ define(
                                     } else {
                                         $("#bri-va-merchanthosted").attr("action", val);
                                     }
-                                    $("#bri-va-merchanthosted").submit();
                                 });
+                                jQuery(function(){ jQuery('#submitDataBri').trigger('click'); });
                             } else {
                                 alert({
                                     title: 'Something went wrong!',

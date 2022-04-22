@@ -12,6 +12,8 @@ use Jokul\Magento2\Api\TransactionRepositoryInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
+use \Magento\Sales\Model\Service\InvoiceService;
+use Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface;
 
 class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
 {
@@ -23,6 +25,8 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
     protected $timeZone;
     protected $formKeyValidator;
     protected $transactionRepository;
+    protected $invoiceService;
+    protected $builderInterface;
 
     public function __construct(
         Order $order,
@@ -30,6 +34,8 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
         Session $session,
         ResourceConnection $resourceConnection,
         Data $helper,
+        BuilderInterface $_builderInterface,
+        InvoiceService $_invoiceService,
         \Magento\Framework\App\Action\Context $context,
         \Magento\Framework\Stdlib\DateTime\TimezoneInterface $timeZone,
         Validator $formKeyValidator,
@@ -39,8 +45,10 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
         $this->order = $order;
         $this->logger = $logger;
         $this->session = $session;
+        $this->invoiceService = $_invoiceService;
         $this->resourceConnection = $resourceConnection;
         $this->helper = $helper;
+        $this->builderInterface = $_builderInterface;
         $this->timeZone = $timeZone;
         $this->formKeyValidator = $formKeyValidator;
         $this->transactionRepository = $transactionRepository;
@@ -69,7 +77,6 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
             $resultRedirect = $this->resultRedirectFactory->create();
             return $resultRedirect->setPath($path);
         }
-
 
         $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $post['invoice_number'] . "'";
 
@@ -140,11 +147,10 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
                     $this->logger->doku_log('Redirect','Jokul - Redirect Controller Check Order Status',$order->getIncrementId());
                     $isSuccessOrder = true;
                     $path = "checkout/onepage/success";
-                    $this->deleteCart();
                     
                     if ($paymentChannel == '09') {
                         try {
-                            $this->logger->doku_log('RedirectPending','Jokul - RedirectPending Controller Check Status',$order->getIncrementId());
+                            $this->logger->doku_log('Redirect','Jokul - RedirectPending Controller Check Status',$order->getIncrementId());
                             $clientId = $requestParams['response']['response']['headers']['client_id'];
                             $requestTarget = "/orders/v1/status/".$order->getIncrementId();
                             $requestTimestamp = date("Y-m-d H:i:s");
@@ -162,17 +168,63 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
                             $result = $this->helper->doCheckStatus($signatureParams, $signature);
 
                             if (isset($result)) {
-                                if (strtolower($result['acquirer']['id']) == strtolower('OVO')) {
-                                    if (strtolower($result['transaction']['status']) == strtolower('SUCCESS')) {
-                                        $order->setData('state', 'processing');
-                                        $order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
-                                        $order->save();
-                                        $this->logger->doku_log('Check Status','Jokul - Back To Merchant Update transaction to Processing '.$post['invoice_number']);
-                                    } else {
-                                        $order->setData('state', 'canceled');
-                                        $order->setStatus(\Magento\Sales\Model\Order::STATE_CANCELED);
-                                        $order->save();
-                                        $this->logger->doku_log('Check Status','Jokul - Back To Merchant Update transaction to FAILED '. $post['invoice_number']);
+                                if (!isset($result['error'])) {
+                                    if (strtolower($result['acquirer']['id']) == strtolower('OVO')) {
+                                        if ($order->canInvoice() && !$order->hasInvoices()) {
+                                            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+                                            $invoice = $this->invoiceService->prepareInvoice($order);
+                                            $invoice->setTotalPaid($order->getGrandTotal());
+                                            $invoice->register();
+                            
+                                            $payment = $order->getPayment();
+                                            $payment->setLastTransactionId($post['invoice_number']);
+                                            $payment->setTransactionId($post['invoice_number']);
+                                            $payment->setAdditionalInformation([\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS => $_POST]);
+                                            $message = __(json_encode($_POST, JSON_PRETTY_PRINT));
+                                            $trans = $this->builderInterface;
+                            
+                                            $transaction = $trans->setPayment($payment)
+                                                ->setOrder($order)
+                                                ->setTransactionId($post['invoice_number'])
+                                                ->setAdditionalInformation([\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS => $_POST])
+                                                ->setFailSafe(true)
+                                                ->build(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_ORDER);;
+                                            $payment->addTransactionCommentsToOrder($transaction, $message);
+                                            $payment->save();
+                                            $transaction->save();
+
+                                            if (strtolower($result['transaction']['status']) == strtolower('SUCCESS')) {
+                                                $invoice->pay();
+                                                $invoice->save();
+                                                $transactionSave = $objectManager->create(
+                                                    'Magento\Framework\DB\Transaction'
+                                                )->addObject(
+                                                    $invoice
+                                                )->addObject(
+                                                    $invoice->getOrder()
+                                                );
+                                                $transactionSave->save();
+
+                                                $order->setData('state', 'processing');
+                                                $order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
+                                                $order->save();
+
+                                                if ($invoice && !$invoice->getEmailSent()) {
+                                                    $invoiceSender = $objectManager->get('Magento\Sales\Model\Order\Email\Sender\InvoiceSender');
+                                                    $invoiceSender->send($invoice);
+                                                    $order->addRelatedObject($invoice);
+                                                    $order->addStatusHistoryComment(__('Your Invoice for Order ID #%1.', $post['invoice_number']))
+                                                        ->setIsCustomerNotified(true);
+                                                }
+                                                
+                                                $this->logger->doku_log('Check Status','Jokul - Back To Merchant Update transaction to Processing '.$post['invoice_number']);
+                                            } else {
+                                                $order->setData('state', 'canceled');
+                                                $order->setStatus(\Magento\Sales\Model\Order::STATE_CANCELED);
+                                                $order->save();
+                                                $this->logger->doku_log('Check Status','Jokul - Back To Merchant Update transaction to FAILED '. $post['invoice_number']);
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -180,6 +232,7 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
                             $this->messageManager->addError(__('Server error'));
                         }
                     }
+                    $this->deleteCart();
                 } else {
                     $path = "checkout/cart";
                     $this->messageManager->addWarningMessage('Payment Failed. Please try again or contact our customer service.');

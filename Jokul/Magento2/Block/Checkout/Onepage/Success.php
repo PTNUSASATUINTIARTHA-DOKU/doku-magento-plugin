@@ -13,12 +13,18 @@ class Success extends \Magento\Sales\Block\Order\Totals
     public $params;
     private $order;
 
+    /**
+     * @var \Magento\Sales\Model\Order\Config
+     */
+    protected $_orderConfig;
+
     public function __construct(
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Framework\View\Element\Template\Context $context,
         \Magento\Framework\Registry $registry,
+        \Magento\Sales\Model\Order\Config $orderConfig,
         \Magento\Framework\App\ResourceConnection $resourceConnection,
         array $data = []
     ) {
@@ -29,6 +35,7 @@ class Success extends \Magento\Sales\Block\Order\Totals
         $this->_orderFactory = $orderFactory;
         $this->resourceConnection = $resourceConnection;
         $this->order = $this->_order;
+        $this->_orderConfig = $orderConfig;
     }
 
     public function getOrder()
@@ -70,6 +77,12 @@ class Success extends \Magento\Sales\Block\Order\Totals
         }
 
         return $this->dokusTransactionOrder;
+    }
+
+    public function getPrintUrl()
+    {
+        $this->order = $this->getOrder();
+        return $this->getUrl('sales/order/print', array('order_id' => $this->order->getId()));
     }
 
     public function getDokuTransactionDetailParams()

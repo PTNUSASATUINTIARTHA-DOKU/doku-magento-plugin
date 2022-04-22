@@ -35,8 +35,8 @@ define(
                                     } else {
                                         $("#doku-va-merchanthosted").attr("action", val);
                                     }
-                                    $("#doku-va-merchanthosted").submit();
                                 });
+                                jQuery(function(){ jQuery('#submitDataDokuVa').trigger('click'); });
                             } else {
                                 alert({
                                     title: 'Something went wrong!',
