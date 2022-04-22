@@ -34,8 +34,8 @@ define(
                                     } else {
                                         $("#mandiri-va-merchanthosted").attr("action", val);
                                     }
-                                    $("#mandiri-va-merchanthosted").submit();
                                 });
+                                jQuery(function(){ jQuery('#submitDataMandiri').trigger('click'); });
                             } else {
                                 alert({
                                     title: 'Something went wrong!',

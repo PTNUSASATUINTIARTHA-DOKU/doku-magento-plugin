@@ -10,10 +10,6 @@ use Psr\Log\LoggerInterface;
 
 class CalculationService implements CalculatorInterface
 {
-    /**
-     * @var CalculatorFactory
-     */
-    protected $factory;
 
     /**
      * @var FeeHelper
@@ -27,13 +23,11 @@ class CalculationService implements CalculatorInterface
 
     /**
      * CalculationService constructor.
-     * @param CalculatorFactory $factory
      * @param FeeHelper $helper
      * @param LoggerInterface $logger
      */
-    public function __construct(CalculatorFactory $factory, FeeHelper $helper, LoggerInterface $logger)
+    public function __construct(FeeHelper $helper, LoggerInterface $logger)
     {
-        $this->factory = $factory;
         $this->helper = $helper;
         $this->logger = $logger;
     }

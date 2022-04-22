@@ -34,8 +34,8 @@ define(
                                     } else {
                                         $("#mandiri-syariah-va-merchanthosted").attr("action", val);
                                     }
-                                    $("#mandiri-syariah-va-merchanthosted").submit();
                                 });
+                                jQuery(function(){ jQuery('#submitDataMandiriSyariah').trigger('click'); });
                             } else {
                                 alert({
                                     title: 'Something went wrong!',

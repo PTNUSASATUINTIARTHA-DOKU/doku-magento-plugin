@@ -191,18 +191,26 @@ class RequestCc extends \Magento\Framework\App\Action\Action
 
             $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
             $productMetadata = $objectManager->get('Magento\Framework\App\ProductMetadataInterface');
-
             $statusSubAccount = $this->helper->getStatusSubAccount($order->getPayment()->getMethod());
+            $customerSession = $objectManager->get('Magento\Customer\Model\Session');
+            $customerId = "";
+            $phone = preg_replace('/[^0-9]/', '', $order->getShippingAddress()->getTelephone());
+            if($customerSession->isLoggedIn()) {
+                $customerId = $customerSession->getCustomer()->getId();
+            } else {
+                $customerId = $phone;
+            }
+            
             if ($statusSubAccount == 'yes') {
                 $subAccountId = $this->helper->getSubAccountId($order->getPayment()->getMethod());
                 $params = array(
                     "customer" => array(
-                        "id" => $this->_customerSession->getCustomer()->getId(),
+                        "id" => $customerId,
                         "name" => $customerName,
                         "email" => $billingData->getEmail(),
-                        "phone" => $order->getShippingAddress()->getTelephone(),
+                        "phone" => $phone,
                         "country" => $billingData->getData('country_id'),
-                        "address" => '-'
+                        "address" => $billingData->getData('street')
                     ),
                     "order" => array(
                         "invoice_number" => $order->getIncrementId(),
@@ -225,7 +233,7 @@ class RequestCc extends \Magento\Framework\App\Action\Action
                     "additional_info" => array (
                         "integration" => array (
                             "name" => "magento-plugin",
-                            "version" => "1.4.2",
+                            "version" => "1.4.3",
                             "cms_version" => $productMetadata->getVersion()
                         ),
                         "method" => "Jokul Direct",
@@ -237,12 +245,12 @@ class RequestCc extends \Magento\Framework\App\Action\Action
             } else {
                 $params = array(
                     "customer" => array(
-                        "id" => $this->_customerSession->getCustomer()->getId(),
+                        "id" => $customerId,
                         "name" => $customerName,
                         "email" => $billingData->getEmail(),
-                        "phone" => $order->getShippingAddress()->getTelephone(),
+                        "phone" => $phone,
                         "country" => $billingData->getData('country_id'),
-                        "address" => '-'
+                        "address" => $billingData->getData('street')
                     ),
                     "order" => array(
                         "invoice_number" => $order->getIncrementId(),
@@ -265,7 +273,7 @@ class RequestCc extends \Magento\Framework\App\Action\Action
                     "additional_info" => array (
                         "integration" => array (
                             "name" => "magento-plugin",
-                            "version" => "1.4.2",
+                            "version" => "1.4.3",
                             "cms_version" => $productMetadata->getVersion()
                         ),
                         "method" => "Jokul Direct"

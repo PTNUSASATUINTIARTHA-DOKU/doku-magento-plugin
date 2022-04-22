@@ -88,24 +88,67 @@ class QrisNotify extends \Magento\Framework\App\Action\Action implements CsrfAwa
             $this->logger->doku_log('Qris Notify','Validated Words Qris Current : ' . $validateWord);
             $this->logger->doku_log('Qris Notify','Words Qris Expected : ' . $_POST['WORDS']);
 
-            if ($validateWord == $_POST['WORDS']) {
-                if (strtolower($_POST['TXNSTATUS']) == strtolower('S')) {
-                    $order->setData('state', 'processing');
-                    $order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
-                    $order->save();
-                    echo "SUCCESS";
-                    $this->logger->doku_log('Qris Notify','Jokul - Update transaction to Processing '.$_POST['TRANSACTIONID']);
-                } else {
-                    $order->setData('state', 'canceled');
-                    $order->setStatus(\Magento\Sales\Model\Order::STATE_CANCELED);
-                    $order->save();
-                    echo "SUCCESS";
-                    $this->logger->doku_log('Qris Notify','Jokul - Update transaction to FAILED '. $_POST['TRANSACTIONID']);
-                }
-            } else {
-                $this->logger->doku_log('Qris Notify','Words Not Match '. $_POST['TRANSACTIONID']);
-            }
+            if ($order->canInvoice() && !$order->hasInvoices()) {
+                $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+                $invoice = $this->invoiceService->prepareInvoice($order);
+                $invoice->setTotalPaid($order->getGrandTotal());
+                $invoice->register();
 
+                $payment = $order->getPayment();
+                $payment->setLastTransactionId($_POST['TRANSACTIONID']);
+                $payment->setTransactionId($_POST['TRANSACTIONID']);
+                $payment->setAdditionalInformation([\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS => $_POST]);
+                $message = __(json_encode($_POST, JSON_PRETTY_PRINT));
+                $trans = $this->builderInterface;
+
+                $transaction = $trans->setPayment($payment)
+                    ->setOrder($order)
+                    ->setTransactionId($_POST['TRANSACTIONID'])
+                    ->setAdditionalInformation([\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS => $_POST])
+                    ->setFailSafe(true)
+                    ->build(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_ORDER);;
+                $payment->addTransactionCommentsToOrder($transaction, $message);
+                $payment->save();
+                $transaction->save();
+
+                if ($validateWord == $_POST['WORDS']) {
+                    if (strtolower($_POST['TXNSTATUS']) == strtolower('S')) {
+                        $invoice->pay();
+                        $invoice->save();
+                        $transactionSave = $objectManager->create(
+                            'Magento\Framework\DB\Transaction'
+                        )->addObject(
+                            $invoice
+                        )->addObject(
+                            $invoice->getOrder()
+                        );
+                        $transactionSave->save();
+
+                        $order->setData('state', 'processing');
+                        $order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
+                        $order->save();
+                        echo "SUCCESS";
+
+                        if ($invoice && !$invoice->getEmailSent()) {
+                            $invoiceSender = $objectManager->get('Magento\Sales\Model\Order\Email\Sender\InvoiceSender');
+                            $invoiceSender->send($invoice);
+                            $order->addRelatedObject($invoice);
+                            $order->addStatusHistoryComment(__('Your Invoice for Order ID #%1.', $_POST['TRANSACTIONID']))
+                                ->setIsCustomerNotified(true);
+                        }
+
+                        $this->logger->doku_log('Qris Notify','Jokul - Update transaction to Processing '.$_POST['TRANSACTIONID']);
+                    } else {
+                        $order->setData('state', 'canceled');
+                        $order->setStatus(\Magento\Sales\Model\Order::STATE_CANCELED);
+                        $order->save();
+                        echo "SUCCESS";
+                        $this->logger->doku_log('Qris Notify','Jokul - Update transaction to FAILED '. $_POST['TRANSACTIONID']);
+                    }
+                } else {
+                    $this->logger->doku_log('Qris Notify','Words Not Match '. $_POST['TRANSACTIONID']);
+                }
+            }
         } catch (\Exception $e) {
             $this->logger->doku_log('Notify','Jokul - Notification Controller Error reason: ' . $e->getMessage());
             $this->logger->doku_log('Notify','Jokul - Notification Controller End');

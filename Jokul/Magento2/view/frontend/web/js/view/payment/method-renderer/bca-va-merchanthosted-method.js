@@ -34,8 +34,8 @@ define(
                                     } else {
                                         $("#bca-va-merchanthosted").attr("action", val);
                                     }
-                                    $("#bca-va-merchanthosted").submit();
                                 });
+                                jQuery(function(){ jQuery('#submitDataBca').trigger('click'); });
                             } else {
                                 alert({
                                     title: 'Something went wrong!',

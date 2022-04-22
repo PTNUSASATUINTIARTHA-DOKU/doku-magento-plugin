@@ -35,8 +35,8 @@ define(
                                     } else {
                                         $("#doku-checkout-jokul").attr("action", val);
                                     }
-                                    $("#doku-checkout-jokul").submit();
                                 });
+                                jQuery(function(){ jQuery('#submitDataCheckout').trigger('click'); });
                             } else {
                                 alert({
                                     title: 'Payment error!',

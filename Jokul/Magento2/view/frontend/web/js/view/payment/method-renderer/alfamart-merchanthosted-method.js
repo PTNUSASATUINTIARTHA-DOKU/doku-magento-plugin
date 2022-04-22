@@ -34,8 +34,8 @@ define(
                                     } else {
                                         $("#alfamart-merchanthosted").attr("action", val);
                                     }
-                                    $("#alfamart-merchanthosted").submit();
                                 });
+                                jQuery(function(){ jQuery('#submitDataAlfa').trigger('click'); });
                             } else {
                                 alert({
                                     title: 'Something went wrong!',

@@ -34,8 +34,8 @@ define(
                                     } else {
                                         $("#permata-va-merchanthosted").attr("action", val);
                                     }
-                                    $("#permata-va-merchanthosted").submit();
                                 });
+                                jQuery(function(){ jQuery('#submitDataPermata').trigger('click'); });
                             } else {
                                 alert({
                                     title: 'Something went wrong!',
