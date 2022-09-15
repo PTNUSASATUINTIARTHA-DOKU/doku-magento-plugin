@@ -4,8 +4,8 @@ Jokul makes it easy for you accept payments from various channels. Jokul also hi
 ​
 ## Requirements
 ​
-- Magento v2.3 or higher. This plugin is tested with Magento v2.3.4, v.2.3.6, v.2.4
-- PHP v7.4.0 or higher
+- Magento v2.3 or higher. This plugin is tested with Magento v2.3.4, v.2.3.6, v.2.4.0, v.2.4.1
+- PHP v7.4.0 or higher. 
 - MySQL v8.0 or higher
 - Jokul account:
     - For testing purpose, please register to the Sandbox environment and retrieve the Client ID & Secret Key. Learn more about the sandbox environment [here](https://jokul.doku.com/docs/docs/getting-started/explore-sandbox)
