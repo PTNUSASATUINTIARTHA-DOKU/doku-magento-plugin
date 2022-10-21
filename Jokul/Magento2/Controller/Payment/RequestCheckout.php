@@ -16,6 +16,7 @@ use Magento\Framework\App\Request\Http;
 use Jokul\Magento2\Model\GeneralConfiguration;
 use \Magento\Store\Model\StoreManagerInterface;
 use \Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+use \Magento\Catalog\Api\ProductRepositoryInterface;
 
 class RequestCheckout extends \Magento\Framework\App\Action\Action
 {
@@ -31,6 +32,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
     protected $generalConfiguration;
     protected $storeManagerInterface;
     protected $_timezoneInterface;
+    protected $productRepository;
 
     public function __construct(
         Session $session,
@@ -45,7 +47,8 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
         Http $httpRequest,
         GeneralConfiguration $_generalConfiguration,
         StoreManagerInterface $_storeManagerInterface,
-        TimezoneInterface $timezoneInterface
+        TimezoneInterface $timezoneInterface,
+        ProductRepositoryInterface $productRepository
     ) {
         $this->session = $session;
         $this->logger = $loggerInterface;
@@ -59,6 +62,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
         $this->generalConfiguration = $_generalConfiguration;
         $this->storeManagerInterface = $_storeManagerInterface;
         $this->_timezoneInterface = $timezoneInterface;
+        $this->productRepository = $productRepository;
         return parent::__construct($context);
     }
 
@@ -135,23 +139,47 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
             $itemQty = array(); 
             $discountTotal = 0;
         
+            $pattern = "/[^A-Za-z0-9? .,_-]/";
+        
             foreach ($orderItems as $item) {
                 $totalItem = number_format($item->getQtyOrdered(), 0, "", "");
                 $amountItem = number_format($item->getPrice(),0,"","");
                 $discountItem = number_format($item->getDiscountAmount(),0,"","");
                 $totalAmountItem = ($amountItem * $totalItem) - $discountItem;
                 $AmountPerItem = $totalAmountItem / $totalItem;
-                $itemQty[] = array('price' => number_format($AmountPerItem,0,"",""), 'quantity' => number_format($item->getQtyOrdered(), 0, "", ""), 'name' => $item->getName(), 'sku' => $item->getSku(), 'category' => 'uncategorized');
+                $product = $this->productRepository->get($item->getSku());
+                $itemQty[] = array(
+                    'price' => number_format($AmountPerItem,0,"",""), 
+                    'quantity' => number_format($item->getQtyOrdered(), 0, "", ""), 
+                    'name' => preg_replace($pattern, "", $item->getName()), 
+                    'sku' => $item->getSku(), 
+                    'category' => 'uncategorized',
+                    'url' => $product->getProductUrl()
+                );
             }
             
             if ($order->getShippingAmount() > 0) {
-                $itemQty[] = array('name' => 'Shipping', 'price' => number_format($order->getShippingAmount(),0,"",""), 'quantity' => '1', 'sku' => '01', 'category' => 'uncategorized');
+                $itemQty[] = array(
+                    'name' => 'Shipping', 
+                    'price' => number_format($order->getShippingAmount(),0,"",""), 
+                    'quantity' => '1', 
+                    'sku' => '01', 
+                    'category' => 'uncategorized',
+                    'url' => 'http://www.doku.com/'
+                );
             }
 
             $taxTotal = 0;
             $taxTotal = $order->getTaxAmount();
             if ($taxTotal > 0) {
-                $itemQty[] = array('name' => 'Tax', 'price' => number_format($taxTotal,0,"",""), 'quantity' => '1', 'sku' => '02', 'category' => 'uncategorized');
+                $itemQty[] = array(
+                    'name' => 'Tax', 
+                    'price' => number_format($taxTotal,0,"",""), 
+                    'quantity' => '1', 
+                    'sku' => '02', 
+                    'category' => 'uncategorized',
+                    'url' => 'http://www.doku.com/'
+                );
             }
 
             $signatureParams = array(
@@ -179,6 +207,10 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
             $base_url = $this->storeManagerInterface->getStore($order->getStore()->getId())->getBaseUrl();
             $callbackUrl = $base_url . "jokulbackend/service/redirect?" . http_build_query($redirectParamsSuccess);
             $productMetadata = $objectManager->get('Magento\Framework\App\ProductMetadataInterface');
+            $autoRedirect = $this->config->getAutoRedirect();
+            $shippingAddress = $order->getShippingAddress();
+            $street = $shippingAddress->getStreet();
+            $streetAddress = !empty($street[0]) ? $street[0] : $street[1];
 
             $customerSession = $objectManager->get('Magento\Customer\Model\Session');
             $customerId = "";
@@ -190,10 +222,19 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
             }
 
             $statusSubAccount = $this->helper->getStatusSubAccount($order->getPayment()->getMethod());
+            $patternAddress = "/[^A-Za-z0-9? .-\/+,=_:@]/";
             if ($statusSubAccount == 'yes') {
                 $subAccountId = $this->helper->getSubAccountId($order->getPayment()->getMethod());
                 $params = array(
-                    "order" => array(
+                    "order" => $autoRedirect === '1' ? array(
+                        "invoice_number" => $order->getIncrementId(),
+                        "line_items" => $itemQty,
+                        "amount" => number_format($grandTotal,0,"",""),
+                        "callback_url" => $callbackUrl,
+                        "currency" => "IDR",
+                        "auto_redirect" => true,
+                        "disable_retry_payment" => true
+                    ): array(
                         "invoice_number" => $order->getIncrementId(),
                         "line_items" => $itemQty,
                         "amount" => number_format($grandTotal,0,"",""),
@@ -212,7 +253,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "postcode" => $billingData->getPostcode(),
                         "state" => !empty($order->getShippingAddress()->getRegion()) ? $order->getShippingAddress()->getRegion() : "-",
                         "city" => $billingData->getCity(),
-                        "address" => $billingData->getData('street')
+                        "address" => preg_replace($patternAddress, "", $billingData->getData('street'))
                     ),
                     "additional_info" => array (
                         "integration" => array (
@@ -221,14 +262,31 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                             "cms_version" => $productMetadata->getVersion()
                         ),
                         "method" => "Jokul Checkout",
+                        "doku_wallet_notify_url" => $base_url."jokulbackend/service/notify",
                         "account" => array (
                             "id" => $subAccountId
                         )
+                    ),
+                    "shipping_address" => array(
+                        "first_name" => $shippingAddress->getFirstName(),
+                        "address" => preg_replace($patternAddress, "", $streetAddress),
+                        "city" => $shippingAddress->getCity(),
+                        "postal_code" => $shippingAddress->getPostcode(),
+                        "phone" => $shippingAddress->getTelephone(),
+                        "country_code" => $shippingAddress->getCountryId()
                     )
                 );
             } else {
                 $params = array(
-                    "order" => array(
+                    "order" => $autoRedirect === '1' ? array(
+                        "invoice_number" => $order->getIncrementId(),
+                        "line_items" => $itemQty,
+                        "amount" => number_format($grandTotal,0,"",""),
+                        "callback_url" => $callbackUrl,
+                        "currency" => "IDR",
+                        "auto_redirect" => true,
+                        "disable_retry_payment" => true
+                    ): array(
                         "invoice_number" => $order->getIncrementId(),
                         "line_items" => $itemQty,
                         "amount" => number_format($grandTotal,0,"",""),
@@ -247,7 +305,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "postcode" => $billingData->getPostcode(),
                         "state" => !empty($order->getShippingAddress()->getRegion()) ? $order->getShippingAddress()->getRegion() : "-",
                         "city" => $billingData->getCity(),
-                        "address" => $billingData->getData('street')
+                        "address" => preg_replace($patternAddress, "", $billingData->getData('street'))
                     ),
                     "additional_info" => array (
                         "integration" => array (
@@ -255,7 +313,16 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                             "version" => "1.4.3",
                             "cms_version" => $productMetadata->getVersion()
                         ),
-                        "method" => "Jokul Checkout"
+                        "method" => "Jokul Checkout",
+                        "doku_wallet_notify_url" => $base_url."jokulbackend/service/notify"
+                    ),
+                    "shipping_address" => array(
+                        "first_name" => $shippingAddress->getFirstName(),
+                        "address" => preg_replace($patternAddress, "", $streetAddress),
+                        "city" => $shippingAddress->getCity(),
+                        "postal_code" => $shippingAddress->getPostcode(),
+                        "phone" => $shippingAddress->getTelephone(),
+                        "country_code" => $shippingAddress->getCountryId()
                     )
                 );
             }

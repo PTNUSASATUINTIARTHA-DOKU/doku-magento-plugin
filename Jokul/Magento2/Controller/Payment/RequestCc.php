@@ -154,7 +154,31 @@ class RequestCc extends \Magento\Framework\App\Action\Action
                 "requestTimestamp" => substr($requestTimestamp, 0, 19) . "Z"
             );
 
-            $itemQty[] = array('name' => 'grandTotal', 'price' => $grandTotal, 'quantity' => '1');
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $order = $objectManager->create('\Magento\Sales\Model\OrderRepository')->get($order->getId());
+            $orderItems = $order->getAllItems();
+            
+            $itemQty = array(); 
+            $pattern = "/[^A-Za-z0-9? .,_-]/";
+            
+            foreach ($orderItems as $item) {
+                $totalItem = number_format($item->getQtyOrdered(), 0, "", "");
+                $amountItem = number_format($item->getPrice(),0,"","");
+                $discountItem = number_format($item->getDiscountAmount(),0,"","");
+                $totalAmountItem = ($amountItem * $totalItem) - $discountItem;
+                $AmountPerItem = $totalAmountItem / $totalItem;
+                $itemQty[] = array('price' => number_format($AmountPerItem,0,"",""), 'quantity' => number_format($item->getQtyOrdered(), 0, "", ""), 'name' => preg_replace($pattern, "", $item->getName()), 'sku' => $item->getSku(), 'category' => 'uncategorized');
+            }
+            
+            if ($order->getShippingAmount() > 0) {
+                $itemQty[] = array('name' => 'Shipping', 'price' => number_format($order->getShippingAmount(),0,"",""), 'quantity' => '1', 'sku' => '01', 'category' => 'uncategorized');
+            }
+
+            $taxTotal = 0;
+            $taxTotal = $order->getTaxAmount();
+            if ($taxTotal > 0) {
+                $itemQty[] = array('name' => 'Tax', 'price' => number_format($taxTotal,0,"",""), 'quantity' => '1', 'sku' => '02', 'category' => 'uncategorized');
+            }
 
             $wordsParams = array(
                 'amount' => $grandTotal,
@@ -179,15 +203,9 @@ class RequestCc extends \Magento\Framework\App\Action\Action
             $redirectParamsSuccess['status'] = 'success';
             $redirectParamsSuccess['TRANSACTIONTYPE'] = 'cc';
 
-            $redirectParamsFailed['invoice_number'] = $order->getIncrementId();
-            $redirectParamsFailed['redirect_signature'] = $redirectWordsfailed;
-
-            $redirectParamsFailed['status'] = 'failed';
-            $redirectParamsFailed['TRANSACTIONTYPE'] = 'cc';
 
             $base_url = $this->storeManagerInterface->getStore($order->getStore()->getId())->getBaseUrl();
-            $callbackUrl = $base_url . "jokulbackend/service/redirect?" . http_build_query($redirectParamsSuccess);
-            $failed_url=$base_url . "jokulbackend/service/redirect?" . http_build_query($redirectParamsFailed);
+            $callbackUrl = $base_url . "jokulbackend/service/redirectcc?" . http_build_query($redirectParamsSuccess);
 
             $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
             $productMetadata = $objectManager->get('Magento\Framework\App\ProductMetadataInterface');
@@ -201,6 +219,7 @@ class RequestCc extends \Magento\Framework\App\Action\Action
                 $customerId = $phone;
             }
             
+            $patternAddress = "/[^A-Za-z0-9? .-\/+,=_:@]/";
             if ($statusSubAccount == 'yes') {
                 $subAccountId = $this->helper->getSubAccountId($order->getPayment()->getMethod());
                 $params = array(
@@ -210,13 +229,12 @@ class RequestCc extends \Magento\Framework\App\Action\Action
                         "email" => $billingData->getEmail(),
                         "phone" => $phone,
                         "country" => $billingData->getData('country_id'),
-                        "address" => $billingData->getData('street')
+                        "address" => preg_replace($patternAddress, "", $billingData->getData('street'))
                     ),
                     "order" => array(
                         "invoice_number" => $order->getIncrementId(),
                         "line_items" => $itemQty,
                         "amount" => $grandTotal,
-                        "failed_url" => $failed_url,
                         "callback_url" => $callbackUrl,
                         "auto_redirect" => true,
                         "session_id" => $regId,
@@ -250,13 +268,12 @@ class RequestCc extends \Magento\Framework\App\Action\Action
                         "email" => $billingData->getEmail(),
                         "phone" => $phone,
                         "country" => $billingData->getData('country_id'),
-                        "address" => $billingData->getData('street')
+                        "address" => preg_replace($patternAddress, "", $billingData->getData('street'))
                     ),
                     "order" => array(
                         "invoice_number" => $order->getIncrementId(),
                         "line_items" => $itemQty,
                         "amount" => $grandTotal,
-                        "failed_url" => $failed_url,
                         "callback_url" => $callbackUrl,
                         "auto_redirect" => true,
                         "session_id" => $regId,
