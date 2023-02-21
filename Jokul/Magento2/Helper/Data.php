@@ -63,7 +63,7 @@ class Data extends AbstractHelper
 
     public function sendDokuEmailOrder($order, $vaNumber = "", $dokusTransactionOrder = array(), $isSuccessOrder = true, $expiryStoreDate = "")
     {
-        $this->logger('Data' . " Jokul - Email Sender Preparing Data", 'DOKU_send_email');
+        $this->logger->doku_log('Data' , " Jokul - Email Sender Preparing Data", 'DOKU_send_email');
         try {
             $paymentChannelLabel = $order->getPayment()->getMethodInstance()->getTitle();
 
@@ -111,7 +111,7 @@ class Data extends AbstractHelper
 
             $this->dataObject->setData($emailParams);
 
-            $this->logger('Data' . " Jokul - Email Sender Email params: " . print_r($emailParams, true), 'DOKU_send_email');
+            $this->logger->doku_log('Data' . " Jokul - Email Sender Email params: " . print_r($emailParams, true), 'DOKU_send_email');
 
             $sender = [
                 'name' => $this->config->getSenderName(),
@@ -128,7 +128,7 @@ class Data extends AbstractHelper
                 $template = "failed_template";
             }
 
-            $this->logger('Data' . " Jokul - Email Sender Template used: " . $template, 'DOKU_send_email');
+            $this->logger->doku_log('Data', " Jokul - Email Sender Template used: " . $template, 'DOKU_send_email');
 
             $this->transportBuilder->setTemplateIdentifier($template)->setFrom($sender)
                 ->addTo($order->getCustomerEmail(), $order->getCustomerName())
@@ -144,8 +144,8 @@ class Data extends AbstractHelper
             if ($this->config->getBccEmailAddress() !== null) {
                 $bccEmailAddress = explode(",", str_replace(" ", "", $this->config->getBccEmailAddress()));
                 $this->transportBuilder->addBcc($bccEmailAddress[0]);
-                $this->logger('Data' . " Jokul - Email Sender Bcc Listing: ", 'DOKU_send_email');
-                $this->logger('Data' . print_r($bccEmailAddress, TRUE), 'DOKU_send_email');
+                $this->logger->doku_log('Data' . " Jokul - Email Sender Bcc Listing: ", 'DOKU_send_email');
+                $this->logger->doku_log('Data', print_r($bccEmailAddress, TRUE), 'DOKU_send_email');
             }
             $transport = $this->transportBuilder->getTransport();
             $transport->sendMessage();
@@ -168,7 +168,7 @@ class Data extends AbstractHelper
                 }
             }
         } catch (\Exception $e) {
-            $this->logger('Data' . " Jokul - Email Sender Failure reason: " . $e->getMessage(), 'DOKU_send_email');
+            $this->logger->doku_log('Data' , " Jokul - Email Sender Failure reason: ". $e->getMessage(), 'DOKU_send_email');
             return false;
         }
     }
@@ -383,7 +383,7 @@ class Data extends AbstractHelper
         $response = curl_exec($ch);
         $responseJson = json_decode($response, true);
 
-        $this->logger('Data' . "Jokul - Get How to Pay Response from Jokul: " . $url . " => " . $response, 'DOKU_send_email');
+        $this->logger->doku_log('Data',"Jokul - Get How to Pay Response from Jokul: " . $url , 'DOKU_send_email');
 
         return $responseJson['payment_instruction'];
     }
@@ -398,13 +398,13 @@ class Data extends AbstractHelper
         return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 
-    public function logger($var, $file)
-    {
-        $writer = new \Zend\Log\Writer\Stream(BP . "/var/log/$file.log");
-        $logger = new \Zend\Log\Logger();
-        $logger->addWriter($writer);
-        $logger->info($var);
-    }
+    // public function logger($var, $file)
+    // {
+    //     $writer = new \Zend\Log\Writer\Stream(BP . "/var/log/$file.log");
+    //     $logger = new \Zend\Log\Logger();
+    //     $logger->addWriter($writer);
+    //     $logger->info($var);
+    // }
         public function doRequestCcPaymentForm($params, $data, $signature)
     {
         $prefixdev      = SELF::PREFIX_ENV_DEVELOPMENT;

@@ -8,124 +8,12 @@
             </js_merchant_hosted>
         </doku_general_config>
         <doku_config>
-            <mandiri_va>
-                <title>Bank Mandiri VA</title>
-                <description>Bank Mandiri VA Configuration</description>
-            </mandiri_va>
-            <mandiri_syariah_va>
-                <title>Bank Syariah Indonesia VA</title>
-                <description>Bank Syariah Indonesia VA Configuration</description>
-            </mandiri_syariah_va>
-            <bri_va>
-                <title>Bank Rakyat Indonesia VA</title>
-                <description>Bank Rakyat Indonesia VA Configuration</description>
-            </bri_va>
-            <doku_va>
-                <title>Other Banks (VA by DOKU)</title>
-                <description>DOKU VA Configuration</description>
-            </doku_va>
-            <bca_va>
-                <title>BCA VA</title>
-                <description>BCA VA Configuration</description>
-            </bca_va>
-            <permata_va>
-                <title>Bank Permata VA</title>
-                <description>Bank Permata VA Configuration</description>
-            </permata_va>
-            <doku_cc>
-                <title>Jokul Credit Card</title>
-                <description>Jokul Credit Card</description>
-            </doku_cc>
-            <alfamart>
-                <title>Alfamart</title>
-                <description>Alfamart</description>
-            </alfamart>
             <doku_checkout_merchanthosted>
                 <title>Jokul Checkout</title>
                 <description>Jokul Checkout payment method</description>
             </doku_checkout_merchanthosted>
         </doku_config>
         <payment>
-            <doku_cc>
-                <title>Jokul Credit Card</title>
-                <description>Jokul Credit Card</description>
-                <allowspecific>0</allowspecific>
-                <group>offline</group>
-                <disc_amount>0</disc_amount>
-                <admin_fee>0</admin_fee>
-                <model>Jokul\Magento2\Model\Payment\CreditCardJokul</model>
-            </doku_cc>
-            <mandiri_va>
-                <title>Bank Mandiri VA</title>
-                <description>Bayar pesanan dengan transfer dari Bank Mandiri</description>
-                <order_status>pending</order_status>
-                <allowspecific>0</allowspecific>
-                <group>offline</group>
-                <disc_amount>0</disc_amount>
-                <admin_fee>0</admin_fee>
-                <model>Jokul\Magento2\Model\Payment\MandiriVa</model>
-            </mandiri_va>
-            <mandiri_syariah_va>
-                <title>Bank Syariah Indonesia VA</title>
-                <description>Bayar pesanan dengan transfer dari Bank Syariah Indonesia</description>
-                <order_status>pending</order_status>
-                <allowspecific>0</allowspecific>
-                <group>offline</group>
-                <disc_amount>0</disc_amount>
-                <admin_fee>0</admin_fee>
-                <model>Jokul\Magento2\Model\Payment\MandiriSyariahVa</model>
-            </mandiri_syariah_va>
-            <bri_va>
-                <title>Bank Rakyat Indonesia VA</title>
-                <description>Bayar pesanan dengan transfer dari Bank Rakyat Indonesia</description>
-                <order_status>pending</order_status>
-                <allowspecific>0</allowspecific>
-                <group>offline</group>
-                <disc_amount>0</disc_amount>
-                <admin_fee>0</admin_fee>
-                <model>Jokul\Magento2\Model\Payment\BriVa</model>
-            </bri_va>
-            <doku_va>
-                <title>Other Banks (VA by DOKU)</title>
-                <description>Bayar pesanan dengan transfer dari bank lain</description>
-                <order_status>pending</order_status>
-                <allowspecific>0</allowspecific>
-                <group>offline</group>
-                <disc_amount>0</disc_amount>
-                <admin_fee>0</admin_fee>
-                <model>Jokul\Magento2\Model\Payment\DokuVa</model>
-            </doku_va>
-            <bca_va>
-                <title>BCA VA</title>
-                <description>Bayar pesanan dengan transfer dari BCA</description>
-                <order_status>pending</order_status>
-                <allowspecific>0</allowspecific>
-                <group>offline</group>
-                <disc_amount>0</disc_amount>
-                <admin_fee>0</admin_fee>
-                <model>Jokul\Magento2\Model\Payment\BcaVa</model>
-            </bca_va>
-            <permata_va>
-                <title>Bank Permata VA</title>
-                <description>Bayar pesanan dengan transfer dari Bank Permata</description>
-                <order_status>pending</order_status>
-                <allowspecific>0</allowspecific>
-                <group>offline</group>
-                <disc_amount>0</disc_amount>
-                <admin_fee>0</admin_fee>
-                <model>Jokul\Magento2\Model\Payment\PermataVa</model>
-            </permata_va>
-            <alfamart>
-                <title>Alfamart</title>
-                <description>Bayar pesanan dengan pembayaran melalui Alfamart</description>
-                <order_status>pending</order_status>
-                <allowspecific>0</allowspecific>
-                <group>offline</group>
-                <disc_amount>0</disc_amount>
-                <admin_fee>0</admin_fee>
-                <footer_message>Place your footer Message here</footer_message>
-                <model>Jokul\Magento2\Model\Payment\Alfamart</model>
-            </alfamart>
             <doku_checkout_merchanthosted>
                 <title>Jokul Checkout</title>
                 <description>Bayar pesanan dengan pembayaran melalui Jokul Checkout</description>

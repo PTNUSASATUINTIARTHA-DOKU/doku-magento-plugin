@@ -136,11 +136,11 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
             $order = $objectManager->create('\Magento\Sales\Model\OrderRepository')->get($order->getId());
             $orderItems = $order->getAllItems();
 
-            $itemQty = array(); 
+            $itemQty = array();
             $discountTotal = 0;
-        
+
             $pattern = "/[^A-Za-z0-9? .,_-]/";
-        
+
             foreach ($orderItems as $item) {
                 $totalItem = number_format($item->getQtyOrdered(), 0, "", "");
                 $amountItem = number_format($item->getPrice(),0,"","");
@@ -149,21 +149,21 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                 $AmountPerItem = $totalAmountItem / $totalItem;
                 $product = $this->productRepository->get($item->getSku());
                 $itemQty[] = array(
-                    'price' => number_format($AmountPerItem,0,"",""), 
-                    'quantity' => number_format($item->getQtyOrdered(), 0, "", ""), 
-                    'name' => preg_replace($pattern, "", $item->getName()), 
-                    'sku' => $item->getSku(), 
+                    'price' => number_format($AmountPerItem,0,"",""),
+                    'quantity' => number_format($item->getQtyOrdered(), 0, "", ""),
+                    'name' => preg_replace($pattern, "", $item->getName()),
+                    'sku' => $item->getSku(),
                     'category' => 'uncategorized',
                     'url' => $product->getProductUrl()
                 );
             }
-            
+
             if ($order->getShippingAmount() > 0) {
                 $itemQty[] = array(
-                    'name' => 'Shipping', 
-                    'price' => number_format($order->getShippingAmount(),0,"",""), 
-                    'quantity' => '1', 
-                    'sku' => '01', 
+                    'name' => 'Shipping',
+                    'price' => number_format($order->getShippingAmount(),0,"",""),
+                    'quantity' => '1',
+                    'sku' => '01',
                     'category' => 'uncategorized',
                     'url' => 'http://www.doku.com/'
                 );
@@ -173,10 +173,10 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
             $taxTotal = $order->getTaxAmount();
             if ($taxTotal > 0) {
                 $itemQty[] = array(
-                    'name' => 'Tax', 
-                    'price' => number_format($taxTotal,0,"",""), 
-                    'quantity' => '1', 
-                    'sku' => '02', 
+                    'name' => 'Tax',
+                    'price' => number_format($taxTotal,0,"",""),
+                    'quantity' => '1',
+                    'sku' => '02',
                     'category' => 'uncategorized',
                     'url' => 'http://www.doku.com/'
                 );
@@ -239,7 +239,9 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "line_items" => $itemQty,
                         "amount" => number_format($grandTotal,0,"",""),
                         "callback_url" => $callbackUrl,
-                        "currency" => "IDR"
+                        "currency" => "IDR",
+                        "auto_redirect" => false,
+                        "disable_retry_payment" => false
                     ),
                     "payment" => array(
                         "payment_due_date" => $expiryTime
@@ -258,7 +260,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                     "additional_info" => array (
                         "integration" => array (
                             "name" => "magento-plugin",
-                            "version" => "1.4.3",
+                            "version" => "1.4.5",
                             "cms_version" => $productMetadata->getVersion()
                         ),
                         "method" => "Jokul Checkout",
@@ -285,13 +287,15 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "callback_url" => $callbackUrl,
                         "currency" => "IDR",
                         "auto_redirect" => true,
-                        "disable_retry_payment" => true
+                        "disable_retry_payment" => false
                     ): array(
                         "invoice_number" => $order->getIncrementId(),
                         "line_items" => $itemQty,
                         "amount" => number_format($grandTotal,0,"",""),
                         "callback_url" => $callbackUrl,
-                        "currency" => "IDR"
+                        "currency" => "IDR",
+                        "auto_redirect" => false,
+                        "disable_retry_payment" => true
                     ),
                     "payment" => array(
                         "payment_due_date" => $expiryTime
@@ -310,7 +314,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                     "additional_info" => array (
                         "integration" => array (
                             "name" => "magento-plugin",
-                            "version" => "1.4.3",
+                            "version" => "1.4.5",
                             "cms_version" => $productMetadata->getVersion()
                         ),
                         "method" => "Jokul Checkout",
@@ -330,7 +334,8 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
             $this->logger->info('===== Request controller Checkout GATEWAY ===== request param = ' . json_encode($params, JSON_PRETTY_PRINT));
             $this->logger->info('===== Request controller Checkout GATEWAY ===== send request');
 
-            $this->logger->info('NILAI PAYMENT CHANNEL ' . $configCode);
+            $this->logger->info('PAYMENT CHANNEL ' . $configCode);
+            $this->logger->info('AUTOREDIRECT ' . $autoRedirect);
 
             $orderStatus = 'FAILED';
             try {
@@ -378,10 +383,10 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                 'doku_grand_total' => number_format($grandTotal,0,"",""),
                 'admin_fee_type' => '',
                 'admin_fee_amount' => 0,
-                'admin_fee_trx_amount' => $totalAdminFeeDisc['total_admin_fee'],
+                'admin_fee_trx_amount' => 0,
                 'discount_type' => '',
                 'discount_amount' => 0,
-                'discount_trx_amount' => $totalAdminFeeDisc['total_discount']
+                'discount_trx_amount' => 0
             ]);
 
             $base_url = $this->storeManagerInterface
@@ -402,7 +407,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
         if ($result['message'][0] == 'SUCCESS') {
             $this->logger->info('===== Print Json '.json_encode($redirectData));
             echo json_encode(array(
-                'err' => false, 
+                'err' => false,
                 'response_message' => 'Generate Checkout Success',
                 'result' => $redirectData
             ));
@@ -419,12 +424,12 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                 $quote->setIsActive(1)->setReservedOrderId(null)->save();
                 $_checkoutSession->replaceQuote($quote);
                 echo json_encode(array(
-                    'err' => false, 
+                    'err' => false,
                     'response_msg' => 'Generate Checkout failed (' . $result['errorMessage'] . ')',
                     'result' => $redirectData
                 ));
             }
-            
+
         }
     }
 }

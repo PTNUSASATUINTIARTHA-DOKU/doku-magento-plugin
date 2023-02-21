@@ -2,7 +2,10 @@
 
 namespace Jokul\Magento2\Block\Checkout\Onepage;
 
-class Success extends \Magento\Sales\Block\Order\Totals
+use Magento\Customer\Model\Context;
+use Magento\Sales\Model\Order;
+
+class Success extends \Magento\Framework\View\Element\Template
 {
     protected $checkoutSession;
     protected $customerSession;
@@ -28,22 +31,24 @@ class Success extends \Magento\Sales\Block\Order\Totals
         \Magento\Framework\App\ResourceConnection $resourceConnection,
         array $data = []
     ) {
-        parent::__construct($context, $registry, $data);
+        parent::__construct($context, $data);
         $this->params = $this->getRequest()->getParams();
         $this->checkoutSession = $checkoutSession;
         $this->customerSession = $customerSession;
         $this->_orderFactory = $orderFactory;
         $this->resourceConnection = $resourceConnection;
-        $this->order = $this->_order;
+        $this->_order = $this->checkoutSession->getLastRealOrder();
         $this->_orderConfig = $orderConfig;
     }
 
     public function getOrder()
     {
         if ($this->_order === null) {
-            $this->_order = $this->_orderFactory->create()->loadByIncrementId(
-                $this->params['invoice']
-            );
+            if ($this->params != null) {
+                $this->_order = $this->_orderFactory->create()->loadByIncrementId(
+                    $this->params['invoice']
+                );
+            }
         }
         return $this->_order;
     }
@@ -81,12 +86,12 @@ class Success extends \Magento\Sales\Block\Order\Totals
 
     public function getPrintUrl()
     {
-        $this->order = $this->getOrder();
-        return $this->getUrl('sales/order/print', array('order_id' => $this->order->getId()));
+        return $this->getUrl('sales/order/print', array('order_id' => $this->checkoutSession->getLastOrderId()));
     }
 
     public function getDokuTransactionDetailParams()
     {
+        if ($this->params != null) { 
         $howToPayUrl = '';
         $checkoutUrl = '';
 
@@ -154,5 +159,6 @@ class Success extends \Magento\Sales\Block\Order\Totals
         ];
 
         return $params;
+        }
     }
 }

@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 
 <body>
+    
     <referenceContainer name="order.success.additional.info">
         <block class="Jokul\Magento2\Block\Checkout\Onepage\Success"
                name="doku.order.success"
@@ -8,10 +9,12 @@
                after="-">
         </block>
     </referenceContainer>
+
     <referenceBlock name="page.main.title">
-            <block class="Jokul\Magento2\Block\Checkout\Onepage\Success" name="checkout.success.print.button" template="button.phtml"/>
-            <action method="setPageTitle">
-                <argument translate="true" name="title" xsi:type="string">Thank you for your purchase!</argument>
-            </action>
-        </referenceBlock>
+        <block class="Jokul\Magento2\Block\Checkout\Onepage\Success" name="checkout.success.print.button" template="button.phtml"/>
+        <action method="setPageTitle">
+            <argument translate="true" name="title" xsi:type="string">Thank you for your purchase!</argument>
+        </action>
+    </referenceBlock>
+
 </body>
