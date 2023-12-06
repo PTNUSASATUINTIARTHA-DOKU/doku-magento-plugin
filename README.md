@@ -28,16 +28,6 @@ This `doku_log` is useful to help simplify the process of checking if an issue o
 
 ## Payment Channels Supported
 ​
-- Direct API
-1. Virtual Account:
-    - BCA VA
-    - Bank Mandiri VA
-    - Bank Syariah Indonesia VA
-    - DOKU VA
-
-2. Credit Card
-3. Alfamart O2O
-​
 - Checkout Page
 Easily embed our well-crafted yet customizable DOKU payment page for your website. With a single integration, you can start accepting payments on your web. With a single integration, Checkout Page allows you to accept payments from various DOKU payment channels. 
 
@@ -84,68 +74,6 @@ Easily embed our well-crafted yet customizable DOKU payment page for your websit
 8. Go Back to Payments Tab
 9. Now your customer should be able to see the payment channels and you start receiving payments
 ​
-### VA Configuration
-​
-This is the preview of the Virtual Account Configuration
-​
-![VA Configuration](https://i.ibb.co/WxZfMZd/Screen-Shot-2021-03-25-at-01-41-13.png)
-​
-To show the VA options to your customers, simply dropdown the channel that you wish to show.
-​
-![VA Configuration Details](https://i.ibb.co/PYJGf8w/Screen-Shot-2021-03-25-at-01-41-04.png)
-​
-You can also edit how the VA channels will be shown to your customers by inputing below:  
-​
-- **Title**: Input the title. This title will be visible in your store view
-- **Description**: Input the description. This description will be visible in your store view
-- **Discount Amount**: Fill in the amount of discount you provide. Input number only. For Percentage Type, the number is `0-100`
-- **Discount Type**: Select the type of discount. Options: Fixed amount, Percentage
-- **Admin Fee**: Fill in the amount of admin fee you provide. Input number only. For Percentage Type, the number is `0-100`
-- **Admin Fee Type**: Select the type of admin fee. Options: Fixed amount, Percentage
-
-### Credit Card Configuration
-​
-This is the preview of the Credit Card Configuration
-​
-![Credit Card Configuration](https://i.ibb.co/160B9JH/Screen-Shot-2021-05-04-at-10-57-23.png)
-​
-To show the CC options to your customers, simply dropdown the channel that you wish to show.
-​
-![Credit Card Configuration Details](https://i.ibb.co/kX9rbtL/Screen-Shot-2021-05-04-at-10-58-38.png)
-​
-You can also edit how the CC channels will be shown to your customers by inputing below:  
-​
-- **Title**: Input the title. This title will be visible in your store view
-- **Description**: Input the description. This description will be visible in your store view
-- **Discount Amount**: Fill in the amount of discount you provide. Input number only. For Percentage Type, the number is `0-100`
-- **Discount Type**: Select the type of discount. Options: Fixed amount, Percentage
-- **Admin Fee**: Fill in the amount of admin fee you provide. Input number only. For Percentage Type, the number is `0-100`
-- **Admin Fee Type**: Select the type of admin fee. Options: Fixed amount, Percentage
-- **CC Form - Background Color**: Setup the color form for the Background Credit Card form
-- **CC Form - Label Color**: Setup the color form for the Label Credit Card form
-- **CC Form - Button Background Color**: Setup the color form the Button Background color form
-- **CC Form - Button Font Color**: Setup the color form the Button Font Color form
-- **Languange**: Setup the languange for Credit Card form
-
-### Alfamart O2O Configuration
-​
-This is the preview of the Alfamart O2O Configuration
-​
-![Alfamart O2O Configuration](https://i.ibb.co/160B9JH/Screen-Shot-2021-05-04-at-10-57-23.png)
-​
-To show the Alfamart O2O options to your customers, simply dropdown the channel that you wish to show.
-​
-![Alfamart O2O Configuration Details](https://i.ibb.co/qnqjqzw/Screen-Shot-2021-05-04-at-11-05-10.png)
-​
-You can also edit how the Alfamart O2O channels will be shown to your customers by inputing below:  
-​
-- **Title**: Input the title. This title will be visible in your store view
-- **Description**: Input the description. This description will be visible in your store view
-- **Discount Amount**: Fill in the amount of discount you provide. Input number only. For Percentage Type, the number is `0-100`
-- **Discount Type**: Select the type of discount. Options: Fixed amount, Percentage
-- **Admin Fee**: Fill in the amount of admin fee you provide. Input number only. For Percentage Type, the number is `0-100`
-- **Admin Fee Type**: Select the type of admin fee. Options: Fixed amount, Percentage
-- **Footer Message**: Input the footer message. This title will be visible in payment receipt paper
 
 ### DOKU Checkout Configuration
 
