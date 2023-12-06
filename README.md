@@ -61,7 +61,7 @@ Easily embed our well-crafted yet customizable DOKU payment page for your websit
 1. Login to your Magento Admin Panel
 2. Click Store > Configuration
 3. Click Sales > Payment Methods
-4. You will find "Jokul"
+4. You will find "DOKU"
 5. Dropdown the arrow icon to see the details
 6. Here is the fileds that you required to set:
 ​
@@ -147,14 +147,13 @@ You can also edit how the Alfamart O2O channels will be shown to your customers 
 - **Admin Fee Type**: Select the type of admin fee. Options: Fixed amount, Percentage
 - **Footer Message**: Input the footer message. This title will be visible in payment receipt paper
 
-### Jokul Checkout Configuration
+### DOKU Checkout Configuration
 
-![Jokul Checkout Configuration](https://i.ibb.co/7XGSJqF/Screen-Shot-2022-04-06-at-11-07-30.png)
+![DOKU Checkout Configuration](https://i.ibb.co/7XGSJqF/Screen-Shot-2022-04-06-at-11-07-30.png)
 
-To show the Jokul Checkout options to your customers, simply toggle the channel that you wish to show. Jokul Checkout allows you to accept payments from various Jokul payment channels. You can enable or disable the payment channel that you want to show in your store view in Jokul Backoffice Configuration.
+To show the DOKU Checkout options to your customers, simply toggle the channel that you wish to show. DOKU Checkout allows you to accept payments from various DOKU payment channels. You can enable or disable the payment channel that you want to show in your store view in DOKU Backoffice Configuration.
 
-![Jokul Checkout Configuration Details](https://i.ibb.co/9vpJjZq/Screen-Shot-2022-04-06-at-11-15-06.png)
+![DOKU Checkout Configuration Details](https://i.ibb.co/9vpJjZq/Screen-Shot-2022-04-06-at-11-15-06.png)
 
-You can also click Manage to edit how the Jokul Checkout channels will be shown to your customers by clicking the Manage button. 
+You can also click Manage to edit how the DOKU Checkout channels will be shown to your customers by clicking the Manage button. 
 Below you can update the QRIS Credential that youre already get from our Support Team.
-
