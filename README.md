@@ -54,8 +54,6 @@ Easily embed our well-crafted yet customizable DOKU payment page for your websit
 4. You will find "DOKU"
 5. Dropdown the arrow icon to see the details
 6. Here is the fileds that you required to set:
-​
-    ![General Configuration](https://i.ibb.co/vV61CVZ/screencapture-sandboxenv-devmagento-admin123-admin-system-config-edit-section-payment-key-522ef14376.png)
     
     - **Production Client ID**: Client ID you retrieved from the Production environment DOKU Back Office
     - **Sandbox Client ID**: Client ID you retrieved from the Sandbox environment DOKU Back Office
