@@ -149,11 +149,7 @@ You can also edit how the Alfamart O2O channels will be shown to your customers 
 
 ### DOKU Checkout Configuration
 
-![DOKU Checkout Configuration](https://i.ibb.co/7XGSJqF/Screen-Shot-2022-04-06-at-11-07-30.png)
-
 To show the DOKU Checkout options to your customers, simply toggle the channel that you wish to show. DOKU Checkout allows you to accept payments from various DOKU payment channels. You can enable or disable the payment channel that you want to show in your store view in DOKU Backoffice Configuration.
-
-![DOKU Checkout Configuration Details](https://i.ibb.co/9vpJjZq/Screen-Shot-2022-04-06-at-11-15-06.png)
 
 You can also click Manage to edit how the DOKU Checkout channels will be shown to your customers by clicking the Manage button. 
 Below you can update the QRIS Credential that youre already get from our Support Team.
