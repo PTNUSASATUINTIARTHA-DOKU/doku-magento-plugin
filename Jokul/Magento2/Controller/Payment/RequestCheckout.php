@@ -267,6 +267,11 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "doku_wallet_notify_url" => $base_url."jokulbackend/service/notify",
                         "account" => array (
                             "id" => $subAccountId
+                        ),
+                        "origin" => array(
+                            "product" => "CHECKOUT",
+                            "source" => "magento",
+                            "system" => "plugin-magento"
                         )
                     ),
                     "shipping_address" => array(
