@@ -66,6 +66,7 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
             // Start - Build Data Process
             $parsedRaw = array();
             $rawbody = urldecode(file_get_contents('php://input'));
+            $notify = json_decode($rawbody);
             parse_str($rawbody, $parsedRaw);
 
             $this->logger->doku_log('Notify','Jokul - Notification Controller Notification Raw Request: ' . $rawbody);
@@ -176,6 +177,7 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
                     $transactionSave->save();
 
                     $order->setData('state', 'processing');
+                    $order->setCustomerNote($notify->channel->id);
                     $order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
                     if ($invoice && !$invoice->getEmailSent()) {
                         $invoiceSender = $objectManager->get('Magento\Sales\Model\Order\Email\Sender\InvoiceSender');
