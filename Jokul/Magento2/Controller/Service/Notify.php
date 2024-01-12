@@ -199,6 +199,7 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
             }
 
             $order->save();
+            $this->logger->doku_log('Order Customer Note', $order->getCustomerNote());
             $this->sendResponse(200);
 
             $this->logger->doku_log('Notify','Jokul - Notification Controller End');

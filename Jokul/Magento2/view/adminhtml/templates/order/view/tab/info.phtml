@@ -26,7 +26,7 @@
                 <span class="title"><?= $block->escapeHtml(__('Payment Information')) ?></span>
             </div>
             <div class="admin__page-section-item-content">
-            <div class="order-payment-method-title"><?php echo $block->getPaymentHtml() . " - " . str_replace('_', ' ', $_order->getCustomerNote()) ?></div>
+            <div class="order-payment-method-title"><?php echo $block->getJokulPaymentInfo() ?></div>
                 <div class="order-payment-currency"><?= $block->escapeHtml(__('The order was placed using %1.', $_order->getOrderCurrencyCode())) ?></div>
                 <div class="order-payment-additional">
                     <?= $block->getChildHtml('order_payment_additional') ?>

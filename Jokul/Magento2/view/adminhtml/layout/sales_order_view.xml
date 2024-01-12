@@ -6,10 +6,10 @@
         <referenceContainer name="order_totals">
             <block class="Jokul\Magento2\Block\Adminhtml\Sales\Totals" name="jokul_extra_cost"/>
         </referenceContainer>
-    </body>
-    <referenceBlock name="order_tab_info">
+        <referenceBlock name="order_tab_info">
         <action method="setTemplate">
-            <argument name="template" translate="true" xsi:type="string">order/view/tab/Info.phtml</argument>
+            <argument name="template" translate="true" xsi:type="string">order/view/tab/info.phtml</argument>
         </action>
     </referenceBlock>
+    </body>
 </page>
