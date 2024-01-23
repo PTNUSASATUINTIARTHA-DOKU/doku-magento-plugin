@@ -153,7 +153,7 @@ class RequestO2O extends \Magento\Framework\App\Action\Action
                     "additional_info" => array (
                         "integration" => array (
                             "name" => "magento-plugin",
-                            "version" => "1.4.5",
+                            "version" => "1.4.6",
                             "cms_version" => $productMetadata->getVersion()
                         ),
                         "method" => "Jokul Direct",
@@ -185,7 +185,7 @@ class RequestO2O extends \Magento\Framework\App\Action\Action
                     "additional_info" => array (
                         "integration" => array (
                             "name" => "magento-plugin",
-                            "version" => "1.4.5",
+                            "version" => "1.4.6",
                             "cms_version" => $productMetadata->getVersion()
                         ),
                         "method" => "Jokul Direct"
