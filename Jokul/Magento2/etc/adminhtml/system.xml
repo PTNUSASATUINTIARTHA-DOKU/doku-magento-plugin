@@ -3,7 +3,7 @@
     <system>
         <section id="payment">
             <group id="doku_general_config" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
-                <label>Jokul</label>
+                <label>Doku</label>
                 <field id="client_id_production" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Client ID (Production)</label>
                     <validate>required-entry no-whitespace</validate>
@@ -66,7 +66,7 @@
                     <validate>required-entry</validate>
                 </field>
                 <group id="doku_checkout_merchanthosted" translate="label" type="text" sortOrder="400" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Jokul Checkout</label>
+                    <label>Doku Checkout</label>
                     <field id="active" translate="label" type="select" sortOrder="401" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Enabled</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -80,22 +80,27 @@
                         <label>Description</label>
                         <config_path>payment/doku_checkout_merchanthosted/description</config_path>
                     </field>
-                    <field id="qrisCredential" translate="label" type="label" sortOrder="404" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <field id="authorize" translate="label" type="select" sortOrder="404" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Authorize Charge</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/doku_checkout_merchanthosted/authorize</config_path>
+                    </field>
+                    <field id="qrisCredential" translate="label" type="label" sortOrder="405" showInDefault="1" showInWebsite="0" showInStore="0">
                         <label>QRIS Credential</label>
                     </field>
-                    <field id="clientId" translate="label" type="text" sortOrder="405" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <field id="clientId" translate="label" type="text" sortOrder="406" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Client-ID</label>
                         <config_path>payment/doku_checkout_merchanthosted/qris_client_id</config_path>
                     </field>
-                    <field id="sharedkey" translate="label" type="text" sortOrder="406" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <field id="sharedkey" translate="label" type="text" sortOrder="407" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Shared Key</label>
                         <config_path>payment/doku_checkout_merchanthosted/sharedkey</config_path>
                     </field>
-                    <field id="mpan" translate="label" type="text" sortOrder="407" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <field id="mpan" translate="label" type="text" sortOrder="408" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Merchant PAN</label>
                         <config_path>payment/doku_checkout_merchanthosted/mpan</config_path>
                     </field>
-                    <field id="autoRedirect" translate="label" type="select" sortOrder="408" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <field id="autoRedirect" translate="label" type="select" sortOrder="409" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Auto Redirect</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>payment/doku_checkout_merchanthosted/autoRedirect</config_path>

@@ -15,12 +15,10 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Tab\Info
         $result = $this->getChildHtml('order_payment');
         $order = $this->getOrder();
 
-        if ($order->getStatus() != 'pending') {
-            
+        if ($order->getStatus() === 'processing') {
             $result .= ' - ' . str_replace('_', ' ', $order->getCustomerNote());
         }
 
         return $result;
     }
-    
 }

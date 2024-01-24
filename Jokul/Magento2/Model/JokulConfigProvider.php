@@ -16,6 +16,7 @@ class JokulConfigProvider implements ConfigProviderInterface
     const CC_THEME_BTN_BACKGROUND_COLOR = 'payment/doku_cc/ccFormButtonBackgroundColor';
     const CC_THEME_BTN_FONT_COLOR = 'payment/doku_cc/ccFormButtonFontColor';
     const AUTO_REDIRECT_ID_CONFIG_PATH = 'payment/doku_checkout_merchanthosted/autoRedirect';
+    const AUTHORIZE_CONFIG_PATH = 'payment/doku_checkout_merchanthosted/authorize';
 
     public function __construct(
         ScopeConfigInterface $scopeConfig,
@@ -50,6 +51,10 @@ class JokulConfigProvider implements ConfigProviderInterface
 
     public function getAllConfig(){
         return array('payment' => array_merge($this->_generalConfiguration->getConfig()['payment'], $this->getConfig()['payment']));
+    }
+
+    public function getAuthorizeStatus(){
+        return $this->_scopeConfig->getValue(SELF::AUTHORIZE_CONFIG_PATH, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
     }
 
     public function getCheckoutPaymentSharedkey($paymentMethod){

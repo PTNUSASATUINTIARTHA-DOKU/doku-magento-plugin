@@ -1,0 +1,149 @@
+<?php
+/**
+ * @var $block \Jokul\Magento2\Block\Adminhtml\Order\View\Tab\CaptureTab
+ */
+?>
+
+<div class="fieldset-wrapper order-information">
+    <div class="fieldset-wrapper-title">
+        <span class="title">
+            <?php /* @escapeNotVerified */echo __('Capture Payment') ?>
+        </span>
+    </div>
+    <table class="admin__table-secondary">
+        <tbody>
+            <?php echo $block->getChildHtml(); ?>
+
+            <tr>
+                <th>
+                    <?php /* @escapeNotVerified */echo __('Order ID :') ?>
+                </th>
+                <td>
+                    <?= $block->getOrderIncrementId(); ?>
+                </td>
+            </tr>
+
+            <tr>
+                <th>
+                    <?php /* @escapeNotVerified */echo __('Total Amount :') ?>
+                </th>
+                <td>Rp.
+                    <?= number_format($block->getOrderGrandTotal(), 0, ',', '.'); ?>
+                </td>
+            </tr>
+
+            <tr>
+                <form id="capture-form" method="GET">
+                    <th>
+                        <?php /* @escapeNotVerified */echo __('Capture Amount :') ?>
+                    </th>
+                    <td>
+                        <?php echo $block->getBlockHtml('formkey'); ?>
+                        <input type="text" name="capture_amount" id="capture_amount" disabled
+                            value="Rp. <?= number_format($block->getOrderGrandTotal(), 0, ',', '.'); ?>" />
+                        <input type="text" name="order_id" id="order_id" value="<?= $block->getOrderIncrementId(); ?>"
+                            hidden />
+                    </td>
+
+                </form>
+            </tr>
+            <tr>
+                <th>
+                    <button type="submit" id="capture_button">Capture Payment</button>
+
+                </th>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">
+    require(['jquery', 'Magento_Ui/js/modal/alert', 'mage/url'], function ($, alert, url) {
+        $(document).ready(function () {
+            $('#capture_amount').on('input', function () {
+                // Allow only numeric values and remove non-numeric characters
+                var sanitizedValue = $(this).val().replace(/[^0-9]/g, '');
+
+                // Add thousand separators
+                sanitizedValue = Number(sanitizedValue).toLocaleString('id-ID');
+
+                // Update the input field with the formatted value
+                $(this).val(sanitizedValue);
+            });
+
+            $('#capture_button').on('click', function (e) {
+                $('#capture-form').submit();            
+            });
+
+            $('#capture-form').on('submit', function (e) {
+                e.preventDefault(); // Prevent the default form submission
+
+                // Validate captureAmount as needed
+
+                // Send AJAX request to your controller
+                // var ajaxUrl = urlBuilder.build('jokulbackend/payment/requestcapture');
+
+                $.ajax({
+                    
+                    url: '<?php echo $this->getBaseUrl() . 'jokulbackend/payment/requestcapture'?>',
+                    // url: 'http://localhost:8888/magento/jokulbackend/payment/requestcapture',
+                    type: 'GET',
+                    dataType: 'json',
+                    data: { capture_amount: <?= $block->getOrderGrandTotal() ?>, increment_id: $('#order_id').val(), form_key: $('#capture-form [name="form_key"]').val() },
+                    success: function (response) {
+                        // Handle the response as needed
+                        console.log(response);
+
+                        if (response.err) {
+                            // Display error message in modal
+                            alert({
+                                title: 'Error',
+                                content: response.response_message,
+                                actions: {
+                                    always: function () {
+                                        // window.location.reload();
+                                    }
+                                }
+                            });
+                        } else {
+                            alert({
+                                title: 'Success',
+                                content: response.response_message,
+                                actions: {
+                                    always: function () {
+                                        // window.location.reload();
+                                    }
+                                }
+                            });
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle errors
+                        console.log(error);
+
+                        // Display error message from the response in modal
+                        var errorMessage = 'An error occurred. Please try again.';
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            if (response.error && response.error.message) {
+                                errorMessage = response.error.message;
+                            }
+                        } catch (e) {
+                            console.log('Error parsing JSON response:', e);
+                        }
+
+                        alert({
+                            title: 'Error',
+                            content: errorMessage,
+                            actions: {
+                                always: function () {
+                                    // window.location.reload();
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    });
+</script>

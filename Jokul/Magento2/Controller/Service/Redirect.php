@@ -231,7 +231,9 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
 
                     if (isset($result)) {
                         if (!isset($result['error'])) {
-                            if ($result['transaction']['status'] == 'SUCCESS') {
+                            if ($result['transaction']['type'] == 'SALE' && $result['channel']['id'] == 'CREDIT_CARD') {
+                                $this->updateOrderStatusCCSale($order, $invoiceNumber, $result, $dokuOrder);
+                            } else if ($result['transaction']['status'] == 'SUCCESS') {
                                 $this->deleteCart();
                                 $path = "checkout/onepage/success";
                                 $this->logger->doku_log('Redirect','Jokul - Redirect Controller Check Status Success!'.$countHit, $order->getIncrementId());
@@ -242,7 +244,11 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
                             } else if ($result['transaction']['status'] == 'PENDING') {
                                 if ($countHit == $maxCountHit){
                                     $this->deleteCart();
+                                    if ($result['transaction']['type'] == 'AUTHORIZE' && $result['channel']['id'] == 'CREDIT_CARD') {
+                                        $this->updateOrderStatusCCAuthorize($order, $invoiceNumber, $result, $dokuOrder);
+                                    }
                                     $path = "checkout/onepage/success";
+                                    
                                     $this->logger->doku_log('Redirect','Jokul - Redirect Controller Check Status Success!'.$countHit, $order->getIncrementId());
                                     break;
                                 }
@@ -356,5 +362,41 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
     public function validateForCsrf(RequestInterface $request): ?bool
     {
         return true;
+    }
+
+    public function updateOrderStatusCCAuthorize($order, $invoiceNumber, $result, $jokulTransaction) {
+        try {
+            $connection = $this->resourceConnection->getConnection();
+            $tableName = $this->resourceConnection->getTableName('jokul_transaction');
+            
+            $order->setData('state', 'holded');
+            $order->setStatus(\Magento\Sales\Model\Order::STATE_HOLDED);
+            
+            $sql = "Update " . $tableName . " SET `payment_type` = '" . $result['transaction']['type'] . "', `payment_channel` = '" . $result['channel']['id'] . "' where invoice_number = '" . $invoiceNumber . "'";
+            $this->logger->doku_log('Redirect', 'QUERY: ' . $sql);
+            $order->save();
+            $connection->query($sql);
+        } catch (Exception $e) {
+            $this->logger->doku_log('Redirect', 'Error occurred: ' . $e->getMessage());
+            $this->messageManager->addError(__('Server Error'));
+        }
+    }
+
+    public function updateOrderStatusCCSale($order, $invoiceNumber, $result, $jokulTransaction) {
+        try {
+            $connection = $this->resourceConnection->getConnection();
+            $tableName = $this->resourceConnection->getTableName('jokul_transaction');
+            
+            $order->setData('state', 'processing]');
+            $order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
+            
+            $sql = "Update " . $tableName . " SET `payment_type` = '" . $result['transaction']['type'] . "', `payment_channel` = '" . $result['channel']['id'] . "' where invoice_number = '" . $invoiceNumber . "'";
+            $this->logger->doku_log('Redirect', 'QUERY: ' . $sql);
+            $order->save();
+            $connection->query($sql);
+        } catch (Exception $e) {
+            $this->logger->doku_log('Redirect', 'Error occurred: ' . $e->getMessage());
+            $this->messageManager->addError(__('Server Error'));
+        }
     }
 }

@@ -7,9 +7,17 @@
             <block class="Jokul\Magento2\Block\Adminhtml\Sales\Totals" name="jokul_extra_cost"/>
         </referenceContainer>
         <referenceBlock name="order_tab_info">
-        <action method="setTemplate">
-            <argument name="template" translate="true" xsi:type="string">order/view/tab/info.phtml</argument>
-        </action>
-    </referenceBlock>
+            <action method="setTemplate">
+                <argument name="template" translate="true" xsi:type="string">order/view/tab/info.phtml</argument>
+            </action>
+        </referenceBlock>
+        <referenceBlock name="sales_order_tabs">
+            <action method="addTab">
+                <argument name="name" xsi:type="string">capture_tab</argument>
+                <argument name="block" xsi:type="string">
+                    Jokul\Magento2\Block\Adminhtml\Order\View\Tab\CaptureTab
+                </argument>
+            </action>
+        </referenceBlock>
     </body>
 </page>
