@@ -3,7 +3,7 @@
     <system>
         <section id="payment">
             <group id="doku_general_config" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
-                <label>Doku</label>
+                <label>Jokul</label>
                 <field id="client_id_production" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Client ID (Production)</label>
                     <validate>required-entry no-whitespace</validate>
@@ -66,7 +66,7 @@
                     <validate>required-entry</validate>
                 </field>
                 <group id="doku_checkout_merchanthosted" translate="label" type="text" sortOrder="400" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Doku Checkout</label>
+                    <label>Jokul Checkout</label>
                     <field id="active" translate="label" type="select" sortOrder="401" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Enabled</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

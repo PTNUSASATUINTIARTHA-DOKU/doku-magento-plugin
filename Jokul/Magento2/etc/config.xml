@@ -9,14 +9,14 @@
         </doku_general_config>
         <doku_config>
             <doku_checkout_merchanthosted>
-                <title>Doku Checkout</title>
-                <description>Doku Checkout payment method</description>
+                <title>Jokul Checkout</title>
+                <description>Jokul Checkout payment method</description>
             </doku_checkout_merchanthosted>
         </doku_config>
         <payment>
             <doku_checkout_merchanthosted>
-                <title>Doku Checkout</title>
-                <description>Bayar pesanan dengan pembayaran melalui Doku Checkout</description>
+                <title>Jokul Checkout</title>
+                <description>Bayar pesanan dengan pembayaran melalui Jokul Checkout</description>
                 <payment_code_prefix>88899</payment_code_prefix>
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
