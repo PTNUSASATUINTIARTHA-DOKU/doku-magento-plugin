@@ -93,16 +93,18 @@ class CaptureTab extends \Magento\Backend\Block\Template implements \Magento\Bac
      * {@inheritdoc}
      */
     public function canShowTab()
-    {
+    {        
         $connection = $this->resourceConnection->getConnection();
         $tableName = $this->resourceConnection->getTableName('jokul_transaction');
         $sql = "SELECT * FROM " . $tableName . " WHERE invoice_number = '" . $this->getOrder()->getIncrementId() . "'";
         $this->dokusTransactionOrder = $connection->fetchRow($sql);
 
-        if ($this->dokusTransactionOrder['payment_type'] != 'AUTHORIZE' && $this->dokusTransactionOrder['payment_channel'] != 'CREDIT_CARD') {
-            return false;
+        if ($this->dokusTransactionOrder['payment_type'] == 'AUTHORIZE' 
+            && $this->dokusTransactionOrder['payment_channel'] == 'CREDIT_CARD'
+            && $this->dokusTransactionOrder['order_status'] == 'PENDING') {
+            return true;
         }
-        return true;
+        return false;
     }
 
     /**

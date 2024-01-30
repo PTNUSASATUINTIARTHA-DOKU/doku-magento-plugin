@@ -159,6 +159,13 @@ class RequestCapture extends \Magento\Framework\App\Action\Action
                 }
 
                 if (isset($result['payment']['status']) && $result['payment']['status'] == 'SUCCESS') {
+
+                    $updateSql = "UPDATE " . $tableName . " SET order_status = 'SUCCESS' WHERE invoice_number = '" . $order->getIncrementId() . "'";
+                    $connection->query($updateSql);
+                    
+                    $order->setData('state', 'processing');
+                    $order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
+
                     echo json_encode(
                         array(
                             'err' => false,
@@ -166,8 +173,6 @@ class RequestCapture extends \Magento\Framework\App\Action\Action
                             'data' => $result
                         )
                     );
-                    $order->setData('state', 'processing');
-                    $order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
                     $this->logger->info('===== Request Capture ===== Status Success');
                 } else {
                     $errorMessage = isset($result['error']['message']) ? $result['error']['message'] : 'Unknown Error';

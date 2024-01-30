@@ -27,7 +27,8 @@
                 <th>
                     <?php /* @escapeNotVerified */echo __('Total Amount :') ?>
                 </th>
-                <td>Rp.
+                <td>
+                    Rp.
                     <?= number_format($block->getOrderGrandTotal(), 0, ',', '.'); ?>
                 </td>
             </tr>
@@ -39,18 +40,16 @@
                     </th>
                     <td>
                         <?php echo $block->getBlockHtml('formkey'); ?>
-                        <input type="text" name="capture_amount" id="capture_amount" disabled
-                            value="Rp. <?= number_format($block->getOrderGrandTotal(), 0, ',', '.'); ?>" />
+                        <input type="text" name="capture_amount" id="capture_amount"
+                            value="<?= number_format($block->getOrderGrandTotal(), 0, ',', '.'); ?>" />
                         <input type="text" name="order_id" id="order_id" value="<?= $block->getOrderIncrementId(); ?>"
                             hidden />
                     </td>
-
                 </form>
             </tr>
             <tr>
                 <th>
                     <button type="submit" id="capture_button">Capture Payment</button>
-
                 </th>
             </tr>
         </tbody>
@@ -69,27 +68,30 @@
 
                 // Update the input field with the formatted value
                 $(this).val(sanitizedValue);
+
+                // Check if capture amount exceeds total amount
+                var totalAmountText = '<?= number_format($block->getOrderGrandTotal(), 0, ',', '.'); ?>';
+                var totalAmount = parseInt(totalAmountText.replace(/[^0-9]/g, ''), 10);
+                var captureAmount = parseInt(sanitizedValue.replace(/[^0-9]/g, ''), 10);
+
+                // Disable button if capture amount exceeds total amount
+                $('#capture_button').prop('disabled', captureAmount > totalAmount);
             });
 
             $('#capture_button').on('click', function (e) {
-                $('#capture-form').submit();            
+                $('#capture-form').submit();
             });
 
             $('#capture-form').on('submit', function (e) {
                 e.preventDefault(); // Prevent the default form submission
 
-                // Validate captureAmount as needed
-
-                // Send AJAX request to your controller
-                // var ajaxUrl = urlBuilder.build('jokulbackend/payment/requestcapture');
+                var captureAmount = $('#capture_amount').val().replace(/[^0-9]/g, '');
 
                 $.ajax({
-                    
-                    url: '<?php echo $this->getBaseUrl() . 'jokulbackend/payment/requestcapture'?>',
-                    // url: 'http://localhost:8888/magento/jokulbackend/payment/requestcapture',
+                    url: '<?php echo $this->getBaseUrl() . 'jokulbackend/payment/requestcapture' ?>',
                     type: 'GET',
                     dataType: 'json',
-                    data: { capture_amount: <?= $block->getOrderGrandTotal() ?>, increment_id: $('#order_id').val(), form_key: $('#capture-form [name="form_key"]').val() },
+                    data: { capture_amount: captureAmount, increment_id: $('#order_id').val(), form_key: $('#capture-form [name="form_key"]').val() },
                     success: function (response) {
                         // Handle the response as needed
                         console.log(response);
@@ -101,9 +103,17 @@
                                 content: response.response_message,
                                 actions: {
                                     always: function () {
-                                        // window.location.reload();
+                                        // Functionality to execute when the OK button is clicked
                                     }
-                                }
+                                },
+                                buttons: [{
+                                    text: 'OK',
+                                    class: 'action primary accept',
+                                    click: function () {
+                                        this.closeModal(true);
+                                        window.location.reload();
+                                    }
+                                }]
                             });
                         } else {
                             alert({
@@ -111,11 +121,20 @@
                                 content: response.response_message,
                                 actions: {
                                     always: function () {
-                                        // window.location.reload();
+                                        // Functionality to execute when the OK button is clicked
                                     }
-                                }
+                                },
+                                buttons: [{
+                                    text: 'OK',
+                                    class: 'action primary accept',
+                                    click: function () {
+                                        this.closeModal(true);
+                                        window.location.reload();
+                                    }
+                                }]
                             });
                         }
+
                     },
                     error: function (xhr, status, error) {
                         // Handle errors
@@ -131,15 +150,23 @@
                         } catch (e) {
                             console.log('Error parsing JSON response:', e);
                         }
-
+                        
                         alert({
                             title: 'Error',
                             content: errorMessage,
                             actions: {
                                 always: function () {
-                                    // window.location.reload();
+                                    // Functionality to execute when the OK button is clicked
                                 }
-                            }
+                            },
+                            buttons: [{
+                                text: 'OK',
+                                class: 'action primary accept',
+                                click: function () {
+                                    this.closeModal(true);
+                                    window.location.reload();
+                                }
+                            }]
                         });
                     }
                 });
