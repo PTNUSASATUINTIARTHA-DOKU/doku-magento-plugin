@@ -3,7 +3,7 @@
     <system>
         <section id="payment">
             <group id="doku_general_config" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
-                <label>Jokul</label>
+                <label>DOKU</label>
                 <field id="client_id_production" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Client ID (Production)</label>
                     <validate>required-entry no-whitespace</validate>
@@ -46,12 +46,12 @@
                 <field id="notify_url" translate="label" type="text" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Notification URL</label>
                     <frontend_model>Jokul\Magento2\Block\System\Config\Form\Field\Attribute</frontend_model>
-                    <comment>Set this URL to Jokul Back Office</comment>
+                    <comment>Set this URL to DOKU Back Office</comment>
                 </field>
                 <field id="qris_url" translate="label" type="text" sortOrder="111" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>QRIS Notification URL</label>
                     <frontend_model>Jokul\Magento2\Block\System\Config\Form\Field\Attribute</frontend_model>
-                    <comment>Set this URL to QRIS Jokul Back Office</comment>
+                    <comment>Set this URL to QRIS DOKU Back Office</comment>
                 </field>
                 <field id="sub_account_active" translate="label" type="select" sortOrder="112" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable Sub Account</label>
@@ -59,14 +59,14 @@
                 </field>
                 <field id="sub_account_id" translate="label" type="text" sortOrder="113" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>On Behalf Of</label>
-                    <comment>Route to your Jokul Sub Account ID All Transactions will be linked to this account  </comment>
+                    <comment>Route to your DOKU Sub Account ID All Transactions will be linked to this account  </comment>
                     <depends>
                         <field id="sub_account_active">yes</field>
                     </depends>
                     <validate>required-entry</validate>
                 </field>
                 <group id="doku_checkout_merchanthosted" translate="label" type="text" sortOrder="400" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Jokul Checkout</label>
+                    <label>DOKU Checkout</label>
                     <field id="active" translate="label" type="select" sortOrder="401" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Enabled</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
