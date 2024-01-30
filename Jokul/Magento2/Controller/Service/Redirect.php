@@ -371,6 +371,7 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
             
             $order->setData('state', 'holded');
             $order->setStatus(\Magento\Sales\Model\Order::STATE_HOLDED);
+            $order->setCustomerNote("CREDIT_CARD");
             
             $sql = "Update " . $tableName . " SET `payment_type` = '" . $result['transaction']['type'] . "', `payment_channel` = '" . $result['channel']['id'] . "' where invoice_number = '" . $invoiceNumber . "'";
             $this->logger->doku_log('Redirect', 'QUERY: ' . $sql);
