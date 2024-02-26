@@ -178,6 +178,8 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
 
                     $order->setData('state', 'processing');
                     $order->setCustomerNote($notify->channel->id);
+                    $order->setTotalPaid($order->getGrandTotal());
+                    $order->setTotalDue(0);
                     $order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
                     if ($invoice && !$invoice->getEmailSent()) {
                         $invoiceSender = $objectManager->get('Magento\Sales\Model\Order\Email\Sender\InvoiceSender');

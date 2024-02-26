@@ -14,7 +14,7 @@ class Data extends AbstractHelper
     protected $dataObject;
     protected $config;
     protected $logger;
-    const PREFIX_ENV_DEVELOPMENT = 'https://api-sandbox.doku.com';
+    const PREFIX_ENV_DEVELOPMENT = 'https://api-uat.doku.com';
     const PREFIX_ENV_PRODUCTION = 'https://api.doku.com';
 
     public function __construct(
@@ -87,6 +87,11 @@ class Data extends AbstractHelper
 
             $requestParams = json_decode($dokusTransactionOrder['request_params'], true);
             $O2Ochannel = array(07);
+
+            if ($dokusTransactionOrder['payment_channel_id'] == '09') {
+                return $this->logger->doku_log('Data' , "Jokul - Order is paid with Credit Card", 'DOKU_send_email');
+            }
+
             if (in_array($dokusTransactionOrder['payment_channel_id'], $O2Ochannel)) {
                 $howToPayUrl = $requestParams['response']['online_to_offline_info']['how_to_pay_api'];
             } else {

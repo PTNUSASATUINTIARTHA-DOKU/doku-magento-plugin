@@ -18,8 +18,15 @@ use Jokul\Magento2\Model\GeneralConfiguration;
 use \Magento\Store\Model\StoreManagerInterface;
 use \Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use \Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Sales\Model\Service\InvoiceService;
+use Magento\Framework\App\CsrfAwareActionInterface;
+use Magento\Framework\App\Request\InvalidRequestException;
+use Magento\Framework\App\RequestInterface;
+use Magento\Sales\Api\OrderRepositoryInterface;
 
-class RequestCapture extends \Magento\Framework\App\Action\Action
+
+
+class RequestCapture extends \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
 {
     protected $_pageFactory;
     protected $session;
@@ -35,6 +42,9 @@ class RequestCapture extends \Magento\Framework\App\Action\Action
     protected $storeManagerInterface;
     protected $_timezoneInterface;
     protected $productRepository;
+    protected $invoiceService;
+    protected $orderRepository;
+
 
     public function __construct(
         Session $session,
@@ -51,7 +61,10 @@ class RequestCapture extends \Magento\Framework\App\Action\Action
         StoreManagerInterface $_storeManagerInterface,
         TimezoneInterface $timezoneInterface,
         ProductRepositoryInterface $productRepository,
-        \Magento\Sales\Model\OrderFactory $orderFactory
+        \Magento\Sales\Model\OrderFactory $orderFactory,
+        InvoiceService $_invoiceService,
+        OrderRepositoryInterface $orderRepository
+
 
     ) {
         $this->session = $session;
@@ -68,6 +81,8 @@ class RequestCapture extends \Magento\Framework\App\Action\Action
         $this->_timezoneInterface = $timezoneInterface;
         $this->productRepository = $productRepository;
         $this->orderFactory = $orderFactory;
+        $this->invoiceService = $_invoiceService;
+        $this->orderRepository = $orderRepository;
 
         return parent::__construct($context);
     }
@@ -79,12 +94,7 @@ class RequestCapture extends \Magento\Framework\App\Action\Action
         $this->logger->info('===== Request Capture ===== GET ORDER' . $this->getRequest()->getParam('increment_id', 0));
 
         if ($incrementId) {
-
-            // return $this->order->load($orderId);
-            // $order = $this->orderFactory->create();
-            // $this->orderResource->load($order, $incrementId, OrderInterface::INCREMENT_ID);
             return $this->orderFactory->create()->loadByIncrementId($incrementId);
-
         }
 
         return false;
@@ -165,6 +175,28 @@ class RequestCapture extends \Magento\Framework\App\Action\Action
                     
                     $order->setData('state', 'processing');
                     $order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
+                    $order->setTotalPaid($captureAmount);
+                    $order->setTotalDue(0);
+                    $this->orderRepository->save($order);
+
+                    if ($order->canInvoice() && !$order->hasInvoices()) {
+                        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+                        $invoice = $this->invoiceService->prepareInvoice($order);
+                        $invoice->setTotalPaid($captureAmount);
+                        $invoice->setGrandTotal($captureAmount);
+                        $invoice->register();
+                        $invoice->pay();
+                        $invoice->save();
+
+                        $transactionSave = $objectManager->create(
+                            'Magento\Framework\DB\Transaction'
+                        )->addObject(
+                            $invoice
+                        )->addObject(
+                            $order
+                        );
+                        $transactionSave->save();
+                    }
 
                     echo json_encode(
                         array(
@@ -185,9 +217,9 @@ class RequestCapture extends \Magento\Framework\App\Action\Action
                     );
                     $order->setData('state', 'new');
                     $order->setData('status', 'pending');
+                    $order->save();
                     $this->logger->info('===== Request Capture ===== Status Failed');
                 }
-                $order->save();
                 $this->logger->info('===== Request Capture ===== End');
             } else {
                 $this->logger->info('===== Request Capture ===== Transaction Not Found');
@@ -200,5 +232,23 @@ class RequestCapture extends \Magento\Framework\App\Action\Action
                 )
             );
         }
+    }
+    
+     /**
+     * @inheritDoc
+     */
+    public function createCsrfValidationException(
+        RequestInterface $request
+    ): ?InvalidRequestException {
+        return null;
+    }
+
+    /**
+     * @inheritDoc
+     * Bypass form key validator since params from DOKU does not contain form key --leogent
+     */
+    public function validateForCsrf(RequestInterface $request): ?bool
+    {
+        return true;
     }
 }
