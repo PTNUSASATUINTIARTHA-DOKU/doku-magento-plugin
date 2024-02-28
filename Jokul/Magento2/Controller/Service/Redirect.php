@@ -390,8 +390,10 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
             
             $order->setData('state', 'processing]');
             $order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
+            $order->setTotalPaid($order->getGrandTotal());
+            $order->setTotalDue(0);
             
-            $sql = "Update " . $tableName . " SET `payment_type` = '" . $result['transaction']['type'] . "', `payment_channel` = '" . $result['channel']['id'] . "' where invoice_number = '" . $invoiceNumber . "'";
+            $sql = "Update " . $tableName . " SET `order_status` = 'SUCCESS', `payment_type` = '" . $result['transaction']['type'] . "', `payment_channel` = '" . $result['channel']['id'] . "' where invoice_number = '" . $invoiceNumber . "'";
             $this->logger->doku_log('Redirect', 'QUERY: ' . $sql);
             $order->save();
             $connection->query($sql);
