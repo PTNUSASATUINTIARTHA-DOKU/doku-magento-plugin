@@ -215,8 +215,6 @@ class RequestCapture extends \Magento\Framework\App\Action\Action implements Csr
                             'data' => $result
                         )
                     );
-                    $order->setData('state', 'new');
-                    $order->setData('status', 'pending');
                     $order->save();
                     $this->logger->info('===== Request Capture ===== Status Failed');
                 }
