@@ -100,6 +100,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
         $order = $this->getOrder();
 
         if ($order->getEntityId()) {
+            $authorizeStatus = $this->config->getAuthorizeStatus();
             $order->setState(Order::STATE_NEW);
             $this->session->getLastRealOrder()->setState(Order::STATE_NEW);
             $order->save();
@@ -260,10 +261,10 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                     "additional_info" => array (
                         "integration" => array (
                             "name" => "magento-plugin",
-                            "version" => "1.4.6",
+                            "version" => "1.5.0",
                             "cms_version" => $productMetadata->getVersion()
                         ),
-                        "method" => "Jokul Checkout",
+                        "method" => "Doku Checkout",
                         "doku_wallet_notify_url" => $base_url."jokulbackend/service/notify",
                         "account" => array (
                             "id" => $subAccountId
@@ -319,10 +320,10 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                     "additional_info" => array (
                         "integration" => array (
                             "name" => "magento-plugin",
-                            "version" => "1.4.6",
+                            "version" => "1.5.0",
                             "cms_version" => $productMetadata->getVersion()
                         ),
-                        "method" => "Jokul Checkout",
+                        "method" => "Doku Checkout",
                         "doku_wallet_notify_url" => $base_url."jokulbackend/service/notify"
                     ),
                     "shipping_address" => array(
@@ -334,6 +335,10 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "country_code" => $shippingAddress->getCountryId()
                     )
                 );
+            }
+
+            if ($authorizeStatus) {
+                $params["payment"]["type"] = "AUTHORIZE";
             }
 
             $this->logger->info('===== Request controller Checkout GATEWAY ===== request param = ' . json_encode($params, JSON_PRETTY_PRINT));

@@ -2,6 +2,12 @@
 
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <preference for="Jokul\Magento2\Api\TransactionRepositoryInterface" type="Jokul\Magento2\Model\TransactionRepository" />
+    <preference for="Jokul\Magento2\Api\AuthorizeInterface" type="Jokul\Magento2\Model\Authorize"/>
     <preference for="Jokul\Magento2\Model\Calculation\Calculator\CalculatorInterface" type="Jokul\Magento2\Model\Calculation\CalculationService" />
     <preference for="Magento\Sales\Block\Adminhtml\Order\View\Tab\Info" type="Jokul\Magento2\Block\Adminhtml\Order\View\Tab\Info" />
+    <type name="Jokul\Magento2\Block\Adminhtml\Order\View\Tab\CaptureTab">
+        <arguments>
+            <argument name="resourceConnection" xsi:type="object">Magento\Framework\App\ResourceConnection</argument>
+        </arguments>
+    </type>
 </config>

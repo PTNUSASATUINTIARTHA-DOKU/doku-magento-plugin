@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="jokul_transaction" resource="default" engine="innodb">
+        <column xsi:type="varchar" name="authorize_id" length="100" nullable="true" comment="Authorize ID for Authorize Payment"/>
+        <column xsi:type="varchar" name="payment_channel" length="100" nullable="true" comment="Payment Channel choosed to pay"/>
+    </table>
+</schema>
