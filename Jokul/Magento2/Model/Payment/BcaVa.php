@@ -2,7 +2,7 @@
 
 namespace Jokul\Magento2\Model\Payment;
 
-class BcaVa extends \Magento\Payment\Model\Method\AbstractMethod
+class Bcava extends \Magento\Payment\Model\Method\AbstractMethod
 {
-    protected $_code = 'bca_va';
+    protected $_code = 'doku_bcava';
 }

@@ -1,8 +1,9 @@
 <?php
-
 namespace Jokul\Magento2\Model\Payment;
 
-class MandiriVa extends \Magento\Payment\Model\Method\AbstractMethod
+use Magento\Payment\Model\Method\AbstractMethod;
+
+class Mandiriva extends AbstractMethod
 {
-    protected $_code = 'mandiri_va';
+    protected $_code = 'doku_mandiriva';
 }

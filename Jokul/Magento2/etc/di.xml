@@ -1,13 +1,223 @@
 <?xml version="1.0"?>
-
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Existing preferences -->
     <preference for="Jokul\Magento2\Api\TransactionRepositoryInterface" type="Jokul\Magento2\Model\TransactionRepository" />
-    <preference for="Jokul\Magento2\Api\AuthorizeInterface" type="Jokul\Magento2\Model\Authorize"/>
     <preference for="Jokul\Magento2\Model\Calculation\Calculator\CalculatorInterface" type="Jokul\Magento2\Model\Calculation\CalculationService" />
-    <preference for="Magento\Sales\Block\Adminhtml\Order\View\Tab\Info" type="Jokul\Magento2\Block\Adminhtml\Order\View\Tab\Info" />
-    <type name="Jokul\Magento2\Block\Adminhtml\Order\View\Tab\CaptureTab">
+
+    <!-- Register custom payment methods -->
+    <type name="Magento\Payment\Model\Config">
         <arguments>
-            <argument name="resourceConnection" xsi:type="object">Magento\Framework\App\ResourceConnection</argument>
+            <argument name="methods" xsi:type="array">
+                <item name="doku_dokuva" xsi:type="string">Jokul\Magento2\Model\Payment\Dokuva</item>
+                <item name="doku_bcava" xsi:type="string">Jokul\Magento2\Model\Payment\Bcava</item>
+                <item name="doku_mandiriva" xsi:type="string">Jokul\Magento2\Model\Payment\Mandiriva</item>
+                <item name="doku_briva" xsi:type="string">Jokul\Magento2\Model\Payment\Briva</item>
+                <item name="doku_bniva" xsi:type="string">Jokul\Magento2\Model\Payment\Bniva</item>
+                <item name="doku_permatava" xsi:type="string">Jokul\Magento2\Model\Payment\Permatava</item>
+                <item name="doku_cimbva" xsi:type="string">Jokul\Magento2\Model\Payment\Cimbva</item>
+                <item name="doku_danamonva" xsi:type="string">Jokul\Magento2\Model\Payment\Danamonva</item>
+                <item name="doku_bsiva" xsi:type="string">Jokul\Magento2\Model\Payment\Bsiva</item>
+                <item name="doku_maybankva" xsi:type="string">Jokul\Magento2\Model\Payment\Maybankva</item>
+                <item name="doku_credit_card" xsi:type="string">Jokul\Magento2\Model\Payment\Creditcard</item>
+                <item name="doku_ovo" xsi:type="string">Jokul\Magento2\Model\Payment\Ovo</item>
+                <item name="doku_shopeepay" xsi:type="string">Jokul\Magento2\Model\Payment\Shopeepay</item>
+                <item name="doku_dana" xsi:type="string">Jokul\Magento2\Model\Payment\Dana</item>
+                <item name="doku_dokuwallet" xsi:type="string">Jokul\Magento2\Model\Payment\Dokuwallet</item>
+                <item name="doku_linkaja" xsi:type="string">Jokul\Magento2\Model\Payment\Linkaja</item>
+                <item name="doku_indomaret" xsi:type="string">Jokul\Magento2\Model\Payment\Indomaret</item>
+                <item name="doku_alfa" xsi:type="string">Jokul\Magento2\Model\Payment\Alfa</item>
+                <item name="doku_jenius" xsi:type="string">Jokul\Magento2\Model\Payment\Jenius</item>
+                <item name="doku_kredivo" xsi:type="string">Jokul\Magento2\Model\Payment\Kredivo</item>
+                <item name="doku_akulaku" xsi:type="string">Jokul\Magento2\Model\Payment\Akulaku</item>
+                <item name="doku_indodana" xsi:type="string">Jokul\Magento2\Model\Payment\Indodana</item>
+                <item name="doku_briceria" xsi:type="string">Jokul\Magento2\Model\Payment\Briceria</item>
+                <item name="doku_octoclicks" xsi:type="string">Jokul\Magento2\Model\Payment\Octoclicks</item>
+                <item name="doku_epaybri" xsi:type="string">Jokul\Magento2\Model\Payment\Epaybri</item>
+                <item name="doku_danamonOB" xsi:type="string">Jokul\Magento2\Model\Payment\DanamonOB</item>
+                <item name="doku_permatanet" xsi:type="string">Jokul\Magento2\Model\Payment\Permatanet</item>
+                <item name="doku_directdebitbri" xsi:type="string">Jokul\Magento2\Model\Payment\Directbri</item>
+                <item name="doku_directdebitcimb" xsi:type="string">Jokul\Magento2\Model\Payment\Directcimb</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Dokuva">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_dokuva</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Bcava">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_bcava</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Mandiriva">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_mandiriva</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Briva">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_briva</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Bniva">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_bniva</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Permatava">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_permatava</argument>
+        </arguments>
+    </type>
+    
+    <type name="Jokul\Magento2\Model\Payment\Cimbva">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_cimbva</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Danamonva">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_danamonva</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Bsiva">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_bsiva</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Maybankva">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_maybankva</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Creditcard">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_credit_card</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Ovo">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_ovo</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Shopeepay">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_shopeepay</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Dana">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_dana</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Dokuwallet">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_dokuwallet</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Linkaja">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_linkaja</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Indomaret">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_indomaret</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Alfa">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_alfa</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Jenius">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_jenius</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Kredivo">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_kredivo</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Akulaku">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_akulaku</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Indodana">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_indodana</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Briceria">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_briceria</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Octoclicks">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_octoclicks</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Epaybri">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_epaybri</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\DanamonOB">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_danamonOB</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Permatanet">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_permatanet</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Directbri">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_directdebitbri</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Model\Payment\Directcimb">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_directdebitcimb</argument>
+        </arguments>
+    </type>
+
+    <type name="Jokul\Magento2\Block\Info">
+        <arguments>
+            <argument name="config" xsi:type="object">Jokul\Magento2\Gateway\Config\Config</argument>
         </arguments>
     </type>
 </config>

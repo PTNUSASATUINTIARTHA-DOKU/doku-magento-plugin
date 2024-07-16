@@ -168,18 +168,6 @@ class InstallSchema implements InstallSchemaInterface
 				20,
 				['nullable' => true],
 				'Payment Type'
-			)->addColumn(
-				'authorize_id',
-				Table::TYPE_TEXT,
-				100,
-				['nullable' => true],
-				'Authorize ID for Authorize Payment'
-			)->addColumn(
-				'payment_channel',
-				Table::TYPE_TEXT,
-				100,
-				['nullable' => true],
-				'Payment Channel choosed to pay'
 			)->setComment('Doku Transaction Table');
 
 		$installer->getConnection()->createTable($table);

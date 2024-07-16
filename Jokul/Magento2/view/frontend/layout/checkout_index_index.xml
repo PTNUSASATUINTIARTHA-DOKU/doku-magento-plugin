@@ -32,74 +32,37 @@
                                                     <item name="children" xsi:type="array">
                                                         <item name="renders" xsi:type="array">
                                                             <item name="children" xsi:type="array">
-                                                                <item name="merchanthosted-mandiri-va" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">Jokul_Magento2/js/view/payment/core-va-merchanthosted</item>
-                                                                    <item name="methods" xsi:type="array">
-                                                                        <item name="mandiri_va" xsi:type="array">
-                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
-                                                                        </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="merchanthosted-mandiri_syariah-va" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">Jokul_Magento2/js/view/payment/core-va-merchanthosted</item>
-                                                                    <item name="methods" xsi:type="array">
-                                                                        <item name="mandiri_syariah_va" xsi:type="array">
-                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
-                                                                        </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="merchanthosted-bri-va" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">Jokul_Magento2/js/view/payment/core-va-merchanthosted</item>
-                                                                    <item name="methods" xsi:type="array">
-                                                                        <item name="bri_va" xsi:type="array">
-                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
-                                                                        </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="merchanthosted-doku-va" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">Jokul_Magento2/js/view/payment/core-va-merchanthosted</item>
-                                                                    <item name="methods" xsi:type="array">
-                                                                        <item name="doku_va" xsi:type="array">
-                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
-                                                                        </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="merchanthosted-bca-va" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">Jokul_Magento2/js/view/payment/core-va-merchanthosted</item>
-                                                                    <item name="methods" xsi:type="array">
-                                                                        <item name="bca_va" xsi:type="array">
-                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
-                                                                        </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="merchanthosted-permata-va" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">Jokul_Magento2/js/view/payment/core-va-merchanthosted</item>
-                                                                    <item name="methods" xsi:type="array">
-                                                                        <item name="permata_va" xsi:type="array">
-                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
-                                                                        </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="merchanthosted-doku-cc" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">Jokul_Magento2/js/view/payment/core-va-merchanthosted</item>
-                                                                    <item name="methods" xsi:type="array">
-                                                                        <item name="doku_cc" xsi:type="array">
-                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
-                                                                        </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="merchanthosted-alfamart" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">Jokul_Magento2/js/view/payment/core-va-merchanthosted</item>
-                                                                    <item name="methods" xsi:type="array">
-                                                                        <item name="alfamart" xsi:type="array">
-                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
-                                                                        </item>
-                                                                    </item>
-                                                                </item>
                                                                 <item name="merchanthosted-doku-checkout" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">Jokul_Magento2/js/view/payment/core-va-merchanthosted</item>
+                                                                    <item name="component" xsi:type="string">Jokul_Magento2/js/view/payment/payment-method</item>
                                                                     <item name="methods" xsi:type="array">
-                                                                        <item name="doku_checkout_merchanthosted" xsi:type="array">
+                                                                        <item name="doku_bcava" xsi:type="array">
+                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
+                                                                        </item>
+                                                                        <item name="doku_mandiriva" xsi:type="array">
+                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
+                                                                        </item>
+                                                                        <item name="doku_briva" xsi:type="array">
+                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
+                                                                        </item>
+                                                                        <item name="doku_bsiva" xsi:type="array">
+                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
+                                                                        </item>
+                                                                        <item name="doku_bniva" xsi:type="array">
+                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
+                                                                        </item>
+                                                                        <item name="doku_cimbva" xsi:type="array">
+                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
+                                                                        </item>
+                                                                        <item name="doku_danamonva" xsi:type="array">
+                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
+                                                                        </item>
+                                                                        <item name="doku_dokuva" xsi:type="array">
+                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
+                                                                        </item>
+                                                                        <item name="doku_maybankva" xsi:type="array">
+                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
+                                                                        </item>
+                                                                        <item name="doku_permatava" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
                                                                     </item>

@@ -2,14 +2,21 @@
 <?php $dokuOrderParams = $block->getDokuTransactionDetailParams(); ?>
 
 <head>
-    <script type="text/javascript" src="https://jokul.doku.com/jokul-checkout-js/v1/jokul-checkout-1.0.0.js"></script>
-    <script type='text/javascript'>
-        <?php if (!empty($this->params['transaction_type']) && $this->params['transaction_type'] != 'checkoutsuccess' && $this->params['transaction_type'] != 'cc') : ?>
-            openPopup();
-        <?php endif; ?>
+<script type="text/javascript" src="https://jokul.doku.com/jokul-checkout-js/v1/jokul-checkout-1.0.0.js"></script>
+    <!-- <script type='text/javascript'>
+        
         function openPopup() {
             loadJokulCheckout('<?php echo $dokuOrderParams['checkoutUrl'] ?>')
         }
+    </script> -->
+    <a href='<?php echo $dokuOrderParams['checkoutUrl'] ?>' id="autoClickLink"></a>
+    
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", function() {
+            <?php if (!empty($this->params['transaction_type']) && $this->params['transaction_type'] != 'checkoutsuccess' && $this->params['transaction_type'] != 'cc') : ?>
+                document.getElementById("autoClickLink").click();
+            <?php endif; ?>
+        });
     </script>
 </head>
 

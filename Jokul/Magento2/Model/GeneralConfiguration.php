@@ -23,15 +23,35 @@ class GeneralConfiguration implements ConfigProviderInterface
     const SUB_ACCOUNT_ID_CONFIG_PATH = 'payment/doku_general_config/sub_account_id';
 
     const REL_PAYMENT_CHANNEL = [
-        'mandiri_va' => "01",
-        'mandiri_syariah_va' => "02",
-        'doku_va' => "03",
-        'bca_va' => "04",
-        'permata_va' => "05",
-        'doku_cc' => "06",
-        'alfamart' => "07",
-        'bri_va' => "08",
-        'doku_checkout_merchanthosted' => "09"
+        'doku_credit_card' => "01",
+        'doku_dokuva' => "02",
+        'doku_bcava' => "03",
+        'doku_mandiriva' => "04",
+        'doku_briva' => "05",
+        'doku_bniva' => "06",
+        'doku_permatava' => "07",
+        'doku_cimbva' => "08",
+        'doku_danamonva' => "09",
+        'doku_bsiva' => "10",
+        'doku_maybankva' => "11",
+        'doku_ovo' => "12",
+        'doku_shopeepay' => "13",
+        'doku_dana' => "14",
+        'doku_dokuwallet' => "15",
+        'doku_linkaja' => "16",
+        'doku_indomaret' => "17",
+        'doku_alfa' => "18",
+        'doku_jenius' => "19",
+        'doku_kredivo' => "20",
+        'doku_akulaku' => "21",
+        'doku_indodana' => "22",
+        'doku_briceria' => "23",
+        'doku_octoclicks' => "24",
+        'doku_epaybri' => "25",
+        'doku_danamonOB' => "26",
+        'doku_permatanet' => "27",
+        'doku_directdebitbri' => "28",
+        'doku_directdebitcimb' => "29",
     ];
 
     public function __construct(
@@ -112,7 +132,11 @@ class GeneralConfiguration implements ConfigProviderInterface
     {
         return $this->scopeConfig->getValue(SELF::BCC_EMAIL_CONFIG_PATH, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
     }
-
+    
+    public function getPaymentCode($paymentMethod)
+    {
+        return $this->scopeConfig->getValue('payment/' . $paymentMethod . '/payment_code', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+    }
     public function getPaymentAdminFeeAmount($paymentMethod)
     {
         return $this->scopeConfig->getValue('payment/' . $paymentMethod . '/admin_fee', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);

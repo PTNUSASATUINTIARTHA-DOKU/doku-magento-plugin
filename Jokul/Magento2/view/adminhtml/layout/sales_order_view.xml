@@ -3,26 +3,8 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
 
     <body>
-        <referenceBlock name="order_totals">
-            <action method="setTemplate">
-                <argument name="template" translate="true" xsi:type="string">Jokul_Magento2::order/totals.phtml</argument>
-            </action>
-        </referenceBlock>
         <referenceContainer name="order_totals">
             <block class="Jokul\Magento2\Block\Adminhtml\Sales\Totals" name="jokul_extra_cost"/>
         </referenceContainer>
-        <referenceBlock name="order_tab_info">
-            <action method="setTemplate">
-                <argument name="template" translate="true" xsi:type="string">order/view/tab/info.phtml</argument>
-            </action>
-        </referenceBlock>
-        <referenceBlock name="sales_order_tabs">
-            <action method="addTab">
-                <argument name="name" xsi:type="string">capture_tab</argument>
-                <argument name="block" xsi:type="string">
-                    Jokul\Magento2\Block\Adminhtml\Order\View\Tab\CaptureTab
-                </argument>
-            </action>
-        </referenceBlock>
     </body>
 </page>

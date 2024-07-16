@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-
 <payment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Magento/Payment/etc/payment.xsd">
     <groups>
         <group id="offline">
@@ -7,8 +6,93 @@
         </group>
     </groups>
     <methods>
-        <method name="doku_checkout_merchanthosted">
+        <method name="doku_credit_card">
             <allow_multiple_address>1</allow_multiple_address>
         </method>
+        <method name="doku_dokuva">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_bcava">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_mandiriva">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_briva">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_bniva">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_permatava">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_cimbva">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_danamonva">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_bsiva">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_maybankva">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+
+        <method name="doku_ovo">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_shopeepay">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_dana">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_dokuwallet">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_linkaja">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_indomaret">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_alfa">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_jenius">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method> 
+        <method name="doku_kredivo">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_akulaku">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_indodana">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method> 
+        <method name="doku_briceria">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method> 
+        <method name="doku_octoclicks">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_epaybri">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method> 
+        <method name="doku_danamonOB">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="doku_permatanet">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method> 
+        <method name="doku_directdebitbri">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method> 
+        <method name="doku_directdebitcimb">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method> 
     </methods>
 </payment>

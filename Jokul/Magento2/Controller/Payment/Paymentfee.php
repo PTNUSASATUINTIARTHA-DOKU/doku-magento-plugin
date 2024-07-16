@@ -59,7 +59,7 @@ class Paymentfee extends \Magento\Framework\App\Action\Action
      */
     public function execute()
     {
-        $response = ['errors' => false, 'message' => 'Doku Payment Admin Fee and Discount Calculation is done'];
+        $response = ['errors' => false, 'message' => 'Jokul Payment Admin Fee and Discount Calculation is done'];
         try {
             $this->quoteRepository->get($this->_checkoutSession->getQuoteId());
             $quote = $this->_checkoutSession->getQuote();

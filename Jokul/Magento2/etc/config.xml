@@ -7,25 +7,279 @@
                 <development_url>https://staging.doku.com/doku-js/assets/js/doku.uncompress-1.4-SNAPSHOOT.js</development_url>
             </js_merchant_hosted>
         </doku_general_config>
-        <doku_config>
-            <doku_checkout_merchanthosted>
-                <title>DOKU Checkout</title>
-                <description>DOKU Checkout payment method</description>
-            </doku_checkout_merchanthosted>
-        </doku_config>
         <payment>
-            <doku_checkout_merchanthosted>
-                <title>DOKU Checkout</title>
-                <description>Bayar pesanan dengan pembayaran melalui DOKU Checkout</description>
-                <payment_code_prefix>88899</payment_code_prefix>
-                <order_status>pending</order_status>
-                <allowspecific>0</allowspecific>
+            <!-- Start Virtual Account -->
+            <doku_dokuva>
+                <active>0</active>
+                <title>DOKU VA</title>
+                <description>Bayar pesanan dengan pembayaran melalui DOKU VA lebih mudah</description>
+                <payment_code>VIRTUAL_ACCOUNT_DOKU</payment_code>
                 <group>offline</group>
-                <qris_client_id>0</qris_client_id>
-                <sharedkey>0</sharedkey>
-                <mpan>0</mpan>
-                <model>Jokul\Magento2\Model\Payment\CheckOutJokul</model>
-            </doku_checkout_merchanthosted>
+                <model>Jokul\Magento2\Model\Payment\Dokuva</model>
+            </doku_dokuva>
+            <doku_bcava>
+                <active>0</active>
+                <title>VA BCA</title>
+                <description>Bayar pesanan dengan pembayaran melalui VA BCA lebih mudah</description>
+                <payment_code>VIRTUAL_ACCOUNT_BCA</payment_code>
+                <group>offline</group>
+                <model>Jokul\Magento2\Model\Payment\Bcava</model>
+            </doku_bcava>
+            <doku_mandiriva>
+                <active>0</active>
+                <title>VA MANDIRI</title>
+                <description>Bayar pesanan dengan pembayaran melalui VA MANDIRI lebih mudah</description>
+                <payment_code>VIRTUAL_ACCOUNT_BANK_MANDIRI</payment_code>
+                <group>offline</group>
+                <model>Jokul\Magento2\Model\Payment\Mandiriva</model>
+            </doku_mandiriva>
+            <doku_briva>
+                <active>0</active>
+                <title>VA BRI</title>
+                <description>Bayar pesanan dengan pembayaran melalui VA BRI lebih mudah</description>
+                <payment_code>VIRTUAL_ACCOUNT_BRI</payment_code>
+                <group>offline</group>
+                <model>Jokul\Magento2\Model\Payment\Briva</model>
+            </doku_briva>
+            <doku_bniva>
+                <active>0</active>
+                <title>VA BNI</title>
+                <description>Bayar pesanan dengan pembayaran melalui VA BNI lebih mudah</description>
+                <payment_code>VIRTUAL_ACCOUNT_BNI</payment_code>
+                <group>offline</group>
+                <model>Jokul\Magento2\Model\Payment\Bniva</model>
+            </doku_bniva>
+            <doku_permatava>
+                <active>0</active>
+                <title>VA Permata</title>
+                <description>Bayar pesanan dengan pembayaran melalui VA Permata lebih mudah</description>
+                <payment_code>VIRTUAL_ACCOUNT_BANK_PERMATA</payment_code>
+                <group>offline</group>
+                <model>Jokul\Magento2\Model\Payment\Permatava</model>
+            </doku_permatava>
+            <doku_cimbva>
+                <active>0</active>
+                <title>VA CIMB Niaga</title>
+                <description>Bayar pesanan dengan pembayaran melalui VA CIMB Niaga lebih mudah</description>
+                <payment_code>VIRTUAL_ACCOUNT_BANK_CIMB</payment_code>
+                <group>offline</group>
+                <model>Jokul\Magento2\Model\Payment\Cimbva</model>
+            </doku_cimbva>
+            <doku_danamonva>
+                <active>0</active>
+                <title>VA Danamon</title>
+                <description>Bayar pesanan dengan pembayaran melalui VA Danamon lebih mudah</description>
+                <payment_code>VIRTUAL_ACCOUNT_BANK_DANAMON</payment_code>
+                <group>offline</group>
+                <model>Jokul\Magento2\Model\Payment\Danamonva</model>
+            </doku_danamonva>
+            <doku_bsiva>
+                <active>0</active>
+                <title>VA BSI</title>
+                <description>Bayar pesanan dengan pembayaran melalui VA BSI lebih mudah</description>
+                <payment_code>VIRTUAL_ACCOUNT_BSI</payment_code>
+                <group>offline</group>
+                <model>Jokul\Magento2\Model\Payment\Bsiva</model>
+            </doku_bsiva>
+            <doku_maybankva>
+                <active>0</active>
+                <title>VA Maybank</title>
+                <description>Bayar pesanan dengan pembayaran melalui VA Maybank lebih mudah</description>
+                <payment_code>VIRTUAL_ACCOUNT_MAYBANK</payment_code>
+                <group>offline</group>
+                <model>Jokul\Magento2\Model\Payment\Maybankva</model>
+            </doku_maybankva>
+            
+            <!-- End Virtual Account  -->
+
+            <!-- Start Credit Card -->
+            <doku_credit_card>
+                <active>0</active>
+                <title>Credit Card</title>
+                <description>Bayar pesanan dengan pembayaran melalui Credit Card lebih mudah</description>
+                <payment_code>CREDIT_CARD</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\Creditcard</model>
+            </doku_credit_card>
+            <!-- End Credit Card  -->
+
+            <!-- Start Ewallets -->
+            <doku_ovo>
+                <active>0</active>
+                <title>OVO</title>
+                <description>Bayar pesanan dengan pembayaran melalui OVO lebih mudah</description>
+                <payment_code>EMONEY_OVO</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\Ovo</model>
+            </doku_ovo>
+            <doku_shopeepay>
+                <active>0</active>
+                <title>ShopeePay</title>
+                <description>Bayar pesanan dengan pembayaran melalui ShopeePay lebih mudah</description>
+                <payment_code>EMONEY_SHOPEE_PAY</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\Shopeepay</model>
+            </doku_shopeepay>
+            <doku_dana>
+                <active>0</active>
+                <title>Dana</title>
+                <description>Bayar pesanan dengan pembayaran melalui DANA lebih mudah</description>
+                <payment_code>EMONEY_DANA</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\Dana</model>
+            </doku_dana>
+            <doku_dokuwallet>
+                <active>0</active>
+                <title>DOKU Wallet</title>
+                <description>Bayar pesanan dengan pembayaran melalui DOKU Wallet lebih mudah</description>
+                <payment_code>EMONEY_DOKU</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\Dokuwallet</model>
+            </doku_dokuwallet>
+            <doku_linkaja>
+                <active>0</active>
+                <title>LinkAja</title>
+                <description>Bayar pesanan dengan pembayaran melalui LinkAja lebih mudah</description>
+                <payment_code>EMONEY_LINKAJA</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\Linkaja</model>
+            </doku_linkaja>
+            <!-- End Ewallets -->
+
+            <!-- Start Minimarket -->
+            <doku_indomaret>
+                <active>0</active>
+                <title>Indomaret</title>
+                <description>Bayar pesanan dengan pembayaran melalui Indomaret lebih mudah</description>
+                <payment_code>ONLINE_TO_OFFLINE_INDOMARET</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\Indomaret</model>
+            </doku_indomaret>
+            <doku_alfa>
+                <active>0</active>
+                <title>Alfa</title>
+                <description>Bayar pesanan dengan pembayaran melalui Alfa lebih mudah</description>
+                <payment_code>ONLINE_TO_OFFLINE_ALFA</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\Alfa</model>
+            </doku_alfa>
+            <!-- End Minimarket  -->
+
+            <!-- Start Digital Banking  -->
+            <doku_jenius>
+                <active>0</active>
+                <title>Jenius Pay</title>
+                <description>Bayar pesanan dengan pembayaran melalui JeniusPay lebih mudah</description>
+                <payment_code>JENIUS_PAY</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\Jenius</model>
+            </doku_jenius>
+            <!-- End Digital Banking  -->
+
+            <!-- Start Paylater -->
+             <doku_kredivo>
+                <active>0</active>
+                <title>Kredivo</title>
+                <description>Bayar pesanan dengan pembayaran melalui Kredivo lebih mudah</description>
+                <payment_code>PEER_TO_PEER_KREDIVO</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\Kredivo</model>
+            </doku_kredivo>
+            <doku_akulaku>
+                <active>0</active>
+                <title>Akulaku</title>
+                <description>Bayar pesanan dengan pembayaran melalui Akulaku lebih mudah</description>
+                <payment_code>PEER_TO_PEER_AKULAKU</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\Akulaku</model>
+            </doku_akulaku>
+            <doku_indodana>
+                <active>0</active>
+                <title>Indodana</title>
+                <description>Bayar pesanan dengan pembayaran melalui Indodana lebih mudah</description>
+                <payment_code>PEER_TO_PEER_INDODANA</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\Indodana</model>
+            </doku_indodana>
+            <doku_briceria>
+                <active>0</active>
+                <title>BRI Ceria</title>
+                <description>Bayar pesanan dengan pembayaran melalui BRI Ceria lebih mudah</description>
+                <payment_code>PEER_TO_PEER_BRI_CERIA</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\Briceria</model>
+            </doku_briceria>
+            <!-- End Paylater  -->
+
+            <!-- Start Internet Banking  -->
+            <doku_octoclicks>
+                <active>0</active>
+                <title>OCTO Clicks</title>
+                <description>Bayar pesanan dengan pembayaran melalui OCTO Clicks lebih mudah</description>
+                <payment_code>OCTO_CLICKS</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\Octoclicks</model>
+            </doku_octoclicks>
+            <doku_epaybri>
+                <active>0</active>
+                <title>ePay BRI</title>
+                <description>Bayar pesanan dengan pembayaran melalui ePay BRI lebih mudah</description>
+                <payment_code>EPAY_BRI</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\Epaybri</model>
+            </doku_epaybri>
+            <doku_danamonOB>
+                <active>0</active>
+                <title>Danamon Online Banking</title>
+                <description>Bayar pesanan dengan pembayaran melalui Danamon Online Banking lebih mudah</description>
+                <payment_code>DANAMON_ONLINE_BANKING</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\DanamonOB</model>
+            </doku_danamonOB>
+            <doku_permatanet>
+                <active>0</active>
+                <title>PermataNet</title>
+                <description>Bayar pesanan dengan pembayaran melalui PermataNet lebih mudah</description>
+                <payment_code>PERMATA_NET</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\Permatanet</model>
+            </doku_permatanet>
+            <doku_directdebitbri>
+                <active>0</active>
+                <title>Direct Debit BRI</title>
+                <description>Bayar pesanan dengan pembayaran melalui Direct Debit BRI lebih mudah</description>
+                <payment_code>DIRECT_DEBIT_BRI</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\Directbri</model>
+            </doku_directdebitbri>
+            <doku_directdebitcimb>
+                <active>0</active>
+                <title>Direct Debit CIMB</title>
+                <description>Bayar pesanan kamu dengan pembayaran melalui Direct Debit CIMB lebih mudah</description>
+                <payment_code>DIRECT_DEBIT_CIMB</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\Directcimb</model>
+            </doku_directdebitcimb>
+            <!-- End Internet Banking  -->
         </payment>
     </default>
 </config>
