@@ -46,12 +46,12 @@
                 <field id="notify_url" translate="label" type="text" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Notification URL</label>
                     <frontend_model>Jokul\Magento2\Block\System\Config\Form\Field\Attribute</frontend_model>
-                    <comment>Set this URL to Jokul Back Office</comment>
+                    <comment>Set this URL to DOKU Back Office</comment>
                 </field>
                 <field id="qris_url" translate="label" type="text" sortOrder="111" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>QRIS Notification URL</label>
                     <frontend_model>Jokul\Magento2\Block\System\Config\Form\Field\Attribute</frontend_model>
-                    <comment>Set this URL to QRIS Jokul Back Office</comment>
+                    <comment>Set this URL to QRIS DOKU Back Office</comment>
                 </field>
                 <field id="sub_account_active" translate="label" type="select" sortOrder="112" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable Sub Account</label>
@@ -59,7 +59,7 @@
                 </field>
                 <field id="sub_account_id" translate="label" type="text" sortOrder="113" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>On Behalf Of</label>
-                    <comment>Route to your Jokul Sub Account ID All Transactions will be linked to this account  </comment>
+                    <comment>Route to your DOKU Sub Account ID All Transactions will be linked to this account  </comment>
                     <depends>
                         <field id="sub_account_active">yes</field>
                     </depends>
