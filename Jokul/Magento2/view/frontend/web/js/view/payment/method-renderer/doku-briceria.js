@@ -29,18 +29,60 @@ define(
                         console.log("RESPONSE DI JS " + dataResponse +": response "+response)
 
                         if (dataResponse.err == false) {
-                            jQuery.each(dataResponse.result, function (i, val) {
-                                if (i != 'url') {
-                                    $("#doku-checkout-jokul").append('<input type="hidden" name="' + i + '" value="' + val + '">');
+                            if (dataResponse.response_msg) {
+                                if(dataResponse.response_msg.includes("failed")) {
+                                    alert({
+                                        title: 'Payment Failed!',
+                                        content: dataResponse.response_msg + '<br>Please retry payment',
+                                        actions: {
+                                            always: function () {
+                                            }
+                                        }
+                                    });
                                 } else {
-                                    $("#doku-checkout-jokul").attr("action", val);
+                                    jQuery.each(dataResponse.result, function (i, val) {
+                                        if (i != 'url') {
+                                            $("#doku-checkout-jokul").append('<input type="hidden" name="' + i + '" value="' + val + '">');
+                                        } else {
+                                            $("#doku-checkout-jokul").attr("action", val);
+                                        }
+                                    });
+                                    jQuery(function(){ jQuery('#submitDataCheckout').trigger('click'); });
                                 }
-                            });
-                            jQuery(function(){ jQuery('#submitDataCheckout').trigger('click'); });
+                            } else if (dataResponse.response_message) {
+                                if(dataResponse.response_message.includes("failed")) {
+                                    alert({
+                                        title: 'Payment Failed!',
+                                        content: dataResponse.response_message + '<br>Please retry payment',
+                                        actions: {
+                                            always: function () {
+                                            }
+                                        }
+                                    });
+                                } else {
+                                    jQuery.each(dataResponse.result, function (i, val) {
+                                        if (i != 'url') {
+                                            $("#doku-checkout-jokul").append('<input type="hidden" name="' + i + '" value="' + val + '">');
+                                        } else {
+                                            $("#doku-checkout-jokul").attr("action", val);
+                                        }
+                                    });
+                                    jQuery(function(){ jQuery('#submitDataCheckout').trigger('click'); });
+                                }
+                            } else {
+                                jQuery.each(dataResponse.result, function (i, val) {
+                                    if (i != 'url') {
+                                        $("#doku-checkout-jokul").append('<input type="hidden" name="' + i + '" value="' + val + '">');
+                                    } else {
+                                        $("#doku-checkout-jokul").attr("action", val);
+                                    }
+                                });
+                                jQuery(function(){ jQuery('#submitDataCheckout').trigger('click'); });
+                            }
                         } else {
                             alert({
                                 title: 'Payment error!',
-                                content: 'Error code : ' + dataResponse.response_msg + '<br>Please retry payment',
+                                content:'<br>Please retry payment',
                                 actions: {
                                     always: function () {
                                     }
