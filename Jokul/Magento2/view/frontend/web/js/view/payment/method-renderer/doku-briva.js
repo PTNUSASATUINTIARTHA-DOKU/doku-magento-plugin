@@ -60,14 +60,7 @@ define(
                                         }
                                     });
                                 } else {
-                                    jQuery.each(dataResponse.result, function (i, val) {
-                                        if (i != 'url') {
-                                            $("#doku-checkout-jokul").append('<input type="hidden" name="' + i + '" value="' + val + '">');
-                                        } else {
-                                            $("#doku-checkout-jokul").attr("action", val);
-                                        }
-                                    });
-                                    jQuery(function(){ jQuery('#submitDataCheckout').trigger('click'); });
+                                    window.location.replace(dataResponse.url_checkout);
                                 }
                             } else {
                                 jQuery.each(dataResponse.result, function (i, val) {

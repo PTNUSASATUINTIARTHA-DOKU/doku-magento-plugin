@@ -242,7 +242,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "amount" => number_format($grandTotal,0,"",""),
                         "callback_url" => $callbackUrl,
                         "currency" => "IDR",
-                        "auto_redirect" => false,
+                        "auto_redirect" => true,
                         "disable_retry_payment" => false
                     ),
                     "payment" => array(
@@ -299,7 +299,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "amount" => number_format($grandTotal,0,"",""),
                         "callback_url" => $callbackUrl,
                         "currency" => "IDR",
-                        "auto_redirect" => false,
+                        "auto_redirect" => true,
                         "disable_retry_payment" => true
                     ),
                     "payment" => array(
@@ -372,8 +372,11 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
             $jsonResult = json_encode(array_merge($params), JSON_PRETTY_PRINT);
 
             $vaNumber = '';
+            $urlCheckout = '';
+            
             if (isset($result['response']['order']['invoice_number'])) {
                 $vaNumber = $result['response']['order']['invoice_number'];
+                $urlCheckout = $result['response']['payment']['url'];
             }
 
             $tableName = $this->resourceConnection->getTableName('jokul_transaction');
@@ -417,6 +420,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
             echo json_encode(array(
                 'err' => false,
                 'response_message' => 'Generate Checkout Success',
+                'url_checkout' => $urlCheckout,
                 'result' => $redirectData
             ));
             $this->logger->info('===== Request controller Checkout Redirecting to Success Page' . $order->getIncrementId());
