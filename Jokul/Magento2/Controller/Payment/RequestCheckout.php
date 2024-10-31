@@ -160,7 +160,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                     'sku' => $item->getSku(),
                     'category' => 'marketplace',
                     'url' => $product->getProductUrl(),
-                    'image_url' => 'http://www.doku.com/',
+                    'image_url' => $product->getProductUrl(),
                     'type' => 'produk'
                 );
             }
@@ -177,8 +177,8 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                     'quantity' => '1',
                     'sku' => '01',
                     'category' => 'marketplace',
-                    'url' => 'http://www.doku.com/',
-                    'image_url' => 'http://www.doku.com/',
+                    'url' => $product->getProductUrl(),
+                    'image_url' => $product->getProductUrl(),
                     'type' => 'produk'
                 );
             }
@@ -193,8 +193,8 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                     'quantity' => '1',
                     'sku' => '02',
                     'category' => 'marketplace',
-                    'url' => 'http://www.doku.com/',
-                    'image_url' => 'http://www.doku.com/',
+                    'url' => $product->getProductUrl(),
+                    'image_url' => $product->getProductUrl(),
                     'type' => 'produk'
                 );
             }
@@ -251,7 +251,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "currency" => "IDR",
                         "auto_redirect" => true,
                         "disable_retry_payment" => true,
-                        "callback_url_cancel" => 'https://www.doku.com'
+                        "callback_url_cancel" => 'https://www.doku.com/'
                     ): array(
                         "invoice_number" => $order->getIncrementId(),
                         "line_items" => $itemQty,
@@ -260,7 +260,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "currency" => "IDR",
                         "auto_redirect" => false,
                         "disable_retry_payment" => false,
-                        "callback_url_cancel" => 'https://www.doku.com'
+                        "callback_url_cancel" => 'https://www.doku.com/'
                     ),
                     "payment" => array(
                         "payment_due_date" => $expiryTime,
@@ -321,7 +321,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "currency" => "IDR",
                         "auto_redirect" => true,
                         "disable_retry_payment" => false,
-                        "callback_url_cancel" => 'https://www.doku.com'
+                        "callback_url_cancel" => 'https://www.doku.com/'
                     ): array(
                         "invoice_number" => $order->getIncrementId(),
                         "line_items" => $itemQty,
@@ -330,7 +330,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "currency" => "IDR",
                         "auto_redirect" => false,
                         "disable_retry_payment" => true,
-                        "callback_url_cancel" => 'https://www.doku.com'
+                        "callback_url_cancel" => 'https://www.doku.com/'
                     ),
                     "payment" => array(
                         "payment_due_date" => $expiryTime,
@@ -412,8 +412,11 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
             $jsonResult = json_encode(array_merge($params), JSON_PRETTY_PRINT);
 
             $vaNumber = '';
+            $urlCheckout = '';
+
             if (isset($result['response']['order']['invoice_number'])) {
                 $vaNumber = $result['response']['order']['invoice_number'];
+                $urlCheckout = $result['response']['payment']['url'];
             }
 
             $tableName = $this->resourceConnection->getTableName('jokul_transaction');
@@ -457,6 +460,7 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
             echo json_encode(array(
                 'err' => false,
                 'response_message' => 'Generate Checkout Success',
+                'url_checkout' => $urlCheckout,
                 'result' => $redirectData
             ));
             $this->logger->info('===== Request controller Checkout Redirecting to Success Page' . $order->getIncrementId());
