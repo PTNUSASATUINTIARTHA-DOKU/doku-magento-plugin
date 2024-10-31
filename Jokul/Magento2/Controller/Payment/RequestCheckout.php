@@ -128,6 +128,8 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
             $expiryTime = isset($config['payment']['core']['expiry']) && (int) $config['payment']['core']['expiry'] != 0 ?  $config['payment']['core']['expiry'] : 60;
 
             $customerName = trim($billingData->getFirstname() . " " . $billingData->getLastname());
+            $firstName = $billingData->getFirstname();
+            $lastName = $billingData -> getLastname();
 
             $requestTarget = "/checkout/v1/payment";
 
@@ -151,23 +153,33 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                 $AmountPerItem = $totalAmountItem / $totalItem;
                 $product = $this->productRepository->get($item->getSku());
                 $itemQty[] = array(
+                    'id' => $product->getId(),
                     'price' => number_format($AmountPerItem,0,"",""),
                     'quantity' => number_format($item->getQtyOrdered(), 0, "", ""),
                     'name' => preg_replace($pattern, "", $item->getName()),
                     'sku' => $item->getSku(),
-                    'category' => 'uncategorized',
-                    'url' => $product->getProductUrl()
+                    'category' => 'marketplace',
+                    'url' => $product->getProductUrl(),
+                    'image_url' => $product->getProductUrl(),
+                    'type' => 'produk'
                 );
             }
 
             if ($order->getShippingAmount() > 0) {
+                // For handling magento shipping discount
+                // $shippingDiscount = ($order->getShippingDiscountAmount() == NULL) ? 0 : (int) number_format($order->getShippingDiscountAmount(),0,"","");
+                // $shippingAmount = (int) number_format($order->getShippingAmount(),0,"","");
+                // $shippingAfterDiscount = $shippingAmount - $shippingDiscount;
                 $itemQty[] = array(
+                    'id' => $product->getId(),
                     'name' => 'Shipping',
                     'price' => number_format($order->getShippingAmount(),0,"",""),
                     'quantity' => '1',
                     'sku' => '01',
-                    'category' => 'uncategorized',
-                    'url' => 'http://www.doku.com/'
+                    'category' => 'marketplace',
+                    'url' => $product->getProductUrl(),
+                    'image_url' => $product->getProductUrl(),
+                    'type' => 'produk'
                 );
             }
 
@@ -175,12 +187,15 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
             $taxTotal = $order->getTaxAmount();
             if ($taxTotal > 0) {
                 $itemQty[] = array(
+                    'id' => $product->getId(),
                     'name' => 'Tax',
                     'price' => number_format($taxTotal,0,"",""),
                     'quantity' => '1',
                     'sku' => '02',
-                    'category' => 'uncategorized',
-                    'url' => 'http://www.doku.com/'
+                    'category' => 'marketplace',
+                    'url' => $product->getProductUrl(),
+                    'image_url' => $product->getProductUrl(),
+                    'type' => 'produk'
                 );
             }
 
@@ -235,15 +250,17 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "callback_url" => $callbackUrl,
                         "currency" => "IDR",
                         "auto_redirect" => true,
-                        "disable_retry_payment" => true
+                        "disable_retry_payment" => true,
+                        "callback_url_cancel" => 'https://www.doku.com/'
                     ): array(
                         "invoice_number" => $order->getIncrementId(),
                         "line_items" => $itemQty,
                         "amount" => number_format($grandTotal,0,"",""),
                         "callback_url" => $callbackUrl,
                         "currency" => "IDR",
-                        "auto_redirect" => true,
-                        "disable_retry_payment" => false
+                        "auto_redirect" => false,
+                        "disable_retry_payment" => false,
+                        "callback_url_cancel" => 'https://www.doku.com/'
                     ),
                     "payment" => array(
                         "payment_due_date" => $expiryTime,
@@ -253,7 +270,8 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                     ),
                     "customer" => array(
                         "id" => $customerId,
-                        "name" => trim($customerName),
+                        "name" => $firstName,
+                        "last_name" => $lastName,
                         "email" => $billingData->getEmail(),
                         "phone" => $phone,
                         "country" => $billingData->getData('country_id'),
@@ -275,12 +293,22 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         )
                     ),
                     "shipping_address" => array(
-                        "first_name" => $shippingAddress->getFirstName(),
+                        "first_name" => $firstName,
+                        "last_name" => $lastName,
                         "address" => preg_replace($patternAddress, "", $streetAddress),
                         "city" => $shippingAddress->getCity(),
                         "postal_code" => $shippingAddress->getPostcode(),
                         "phone" => $shippingAddress->getTelephone(),
-                        "country_code" => $shippingAddress->getCountryId()
+                        "country_code" => "IDN"
+                    ),
+                    "billing_address" => array(
+                        "first_name" => $firstName,
+                        "last_name" => $lastName,
+                        "address" => preg_replace($patternAddress, "", $streetAddress),
+                        "city" => $shippingAddress->getCity(),
+                        "postal_code" => $shippingAddress->getPostcode(),
+                        "phone" => $shippingAddress->getTelephone(),
+                        "country_code" => "IDN"
                     )
                 );
             } else {
@@ -292,15 +320,17 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "callback_url" => $callbackUrl,
                         "currency" => "IDR",
                         "auto_redirect" => true,
-                        "disable_retry_payment" => false
+                        "disable_retry_payment" => false,
+                        "callback_url_cancel" => 'https://www.doku.com/'
                     ): array(
                         "invoice_number" => $order->getIncrementId(),
                         "line_items" => $itemQty,
                         "amount" => number_format($grandTotal,0,"",""),
                         "callback_url" => $callbackUrl,
                         "currency" => "IDR",
-                        "auto_redirect" => true,
-                        "disable_retry_payment" => true
+                        "auto_redirect" => false,
+                        "disable_retry_payment" => true,
+                        "callback_url_cancel" => 'https://www.doku.com/'
                     ),
                     "payment" => array(
                         "payment_due_date" => $expiryTime,
@@ -310,7 +340,8 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                     ),
                     "customer" => array(
                         "id" => $customerId,
-                        "name" => trim($customerName),
+                        "name" => $firstName,
+                        "last_name" => $lastName,
                         "email" => $billingData->getEmail(),
                         "phone" => $phone,
                         "country" => $billingData->getData('country_id'),
@@ -329,12 +360,22 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "doku_wallet_notify_url" => $base_url."jokulbackend/service/notify"
                     ),
                     "shipping_address" => array(
-                        "first_name" => $shippingAddress->getFirstName(),
+                        "first_name" => $firstName,
+                        "last_name" => $lastName,
                         "address" => preg_replace($patternAddress, "", $streetAddress),
                         "city" => $shippingAddress->getCity(),
                         "postal_code" => $shippingAddress->getPostcode(),
                         "phone" => $shippingAddress->getTelephone(),
-                        "country_code" => $shippingAddress->getCountryId()
+                        "country_code" => "IDN"
+                    ),
+                    "billing_address" => array(
+                        "first_name" => $firstName,
+                        "last_name" => $lastName,
+                        "address" => preg_replace($patternAddress, "", $streetAddress),
+                        "city" => $shippingAddress->getCity(),
+                        "postal_code" => $shippingAddress->getPostcode(),
+                        "phone" => $shippingAddress->getTelephone(),
+                        "country_code" => "IDN"
                     )
                 );
             }
@@ -368,12 +409,11 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
             $params['shared_key'] = $sharedKey;
             $params['response'] = $result;
             $params['transactiontype'] = 'checkoutpending';
-
             $jsonResult = json_encode(array_merge($params), JSON_PRETTY_PRINT);
 
             $vaNumber = '';
             $urlCheckout = '';
-            
+
             if (isset($result['response']['order']['invoice_number'])) {
                 $vaNumber = $result['response']['order']['invoice_number'];
                 $urlCheckout = $result['response']['payment']['url'];
