@@ -167,13 +167,13 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
 
             if ($order->getShippingAmount() > 0) {
                 // For handling magento shipping discount
-                // $shippingDiscount = ($order->getShippingDiscountAmount() == NULL) ? 0 : (int) number_format($order->getShippingDiscountAmount(),0,"","");
-                // $shippingAmount = (int) number_format($order->getShippingAmount(),0,"","");
-                // $shippingAfterDiscount = $shippingAmount - $shippingDiscount;
+                $shippingDiscount = ($order->getShippingDiscountAmount() == NULL) ? 0 : (int) number_format($order->getShippingDiscountAmount(),0,"","");
+                $shippingAmount = (int) number_format($order->getShippingAmount(),0,"","");
+                $shippingAfterDiscount = $shippingAmount - $shippingDiscount;
                 $itemQty[] = array(
                     'id' => $product->getId(),
                     'name' => 'Shipping',
-                    'price' => number_format($order->getShippingAmount(),0,"",""),
+                    'price' => $shippingAfterDiscount,
                     'quantity' => '1',
                     'sku' => '01',
                     'category' => 'marketplace',
