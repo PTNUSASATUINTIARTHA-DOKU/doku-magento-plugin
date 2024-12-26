@@ -100,6 +100,17 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
         $order = $this->getOrder();
 
         if ($order->getEntityId()) {
+            $abandoned_checkout = $this->config->getAbandonedCheckout() == "yes" ? true : false;
+            $expiry_abandoned_cart = $this->config->getDurationAbandonedCheckout();
+            $expiry = 0;
+            if($abandoned_checkout == true) {
+                if($expiry_abandoned_cart === "custom") {
+                    $custom_expiry = $this->config->getCustomDurationAbandonedCheckout();
+                    $expiry = ((int) $custom_expiry) * 24 * 60;
+                } else {
+                    $expiry = (int) $expiry_abandoned_cart;
+                }
+            }
             $order->setState(Order::STATE_NEW);
             $this->session->getLastRealOrder()->setState(Order::STATE_NEW);
             $order->save();
@@ -309,8 +320,12 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "postal_code" => $shippingAddress->getPostcode(),
                         "phone" => $shippingAddress->getTelephone(),
                         "country_code" => "IDN"
-                    )
+                    ),
+                    "recover_abandoned_cart" => $abandoned_checkout,
                 );
+                if($abandoned_checkout == true) {
+                    $params["expired_recovered_cart"] = $expiry;
+                }
             } else {
                 $params = array(
                     "order" => $autoRedirect === '1' ? array(
@@ -376,8 +391,12 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "postal_code" => $shippingAddress->getPostcode(),
                         "phone" => $shippingAddress->getTelephone(),
                         "country_code" => "IDN"
-                    )
+                    ),
+                    "recover_abandoned_cart" => $abandoned_checkout,
                 );
+                if($abandoned_checkout === true) {
+                    $params["expired_recovered_cart"] = $expiry;
+                }
             }
 
             $this->logger->info('===== Request controller Checkout GATEWAY ===== request param = ' . json_encode($params, JSON_PRETTY_PRINT));
