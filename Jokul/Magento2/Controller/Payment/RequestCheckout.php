@@ -262,7 +262,8 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "currency" => "IDR",
                         "auto_redirect" => true,
                         "disable_retry_payment" => true,
-                        "callback_url_cancel" => 'https://www.doku.com/'
+                        "callback_url_cancel" => 'https://www.doku.com/',
+                        "recover_abandoned_cart" => $abandoned_checkout,
                     ): array(
                         "invoice_number" => $order->getIncrementId(),
                         "line_items" => $itemQty,
@@ -271,7 +272,8 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "currency" => "IDR",
                         "auto_redirect" => false,
                         "disable_retry_payment" => false,
-                        "callback_url_cancel" => 'https://www.doku.com/'
+                        "callback_url_cancel" => 'https://www.doku.com/',
+                        "recover_abandoned_cart" => $abandoned_checkout,
                     ),
                     "payment" => array(
                         "payment_due_date" => $expiryTime,
@@ -321,10 +323,9 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "phone" => $shippingAddress->getTelephone(),
                         "country_code" => "IDN"
                     ),
-                    "recover_abandoned_cart" => $abandoned_checkout,
                 );
                 if($abandoned_checkout == true) {
-                    $params["expired_recovered_cart"] = $expiry;
+                    $params["order"]["expired_recovered_cart"] = $expiry;
                 }
             } else {
                 $params = array(
@@ -336,7 +337,8 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "currency" => "IDR",
                         "auto_redirect" => true,
                         "disable_retry_payment" => false,
-                        "callback_url_cancel" => 'https://www.doku.com/'
+                        "callback_url_cancel" => 'https://www.doku.com/',
+                        "recover_abandoned_cart" => $abandoned_checkout,
                     ): array(
                         "invoice_number" => $order->getIncrementId(),
                         "line_items" => $itemQty,
@@ -345,7 +347,8 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "currency" => "IDR",
                         "auto_redirect" => false,
                         "disable_retry_payment" => true,
-                        "callback_url_cancel" => 'https://www.doku.com/'
+                        "callback_url_cancel" => 'https://www.doku.com/',
+                        "recover_abandoned_cart" => $abandoned_checkout,
                     ),
                     "payment" => array(
                         "payment_due_date" => $expiryTime,
@@ -392,10 +395,9 @@ class RequestCheckout extends \Magento\Framework\App\Action\Action
                         "phone" => $shippingAddress->getTelephone(),
                         "country_code" => "IDN"
                     ),
-                    "recover_abandoned_cart" => $abandoned_checkout,
                 );
                 if($abandoned_checkout === true) {
-                    $params["expired_recovered_cart"] = $expiry;
+                    $params["order"]["expired_recovered_cart"] = $expiry;
                 }
             }
 
