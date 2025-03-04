@@ -119,4 +119,16 @@ class JokulConfigProvider implements ConfigProviderInterface
 
         return $configData;
     }
+
+    public function getAbandonedCheckout() {
+        return $this->_generalConfiguration->getAbandonedCheckout();
+    }
+
+    public function getDurationAbandonedCheckout() {
+        return $this->_generalConfiguration->getDurationAbandonedCheckout();
+    }
+
+    public function getCustomDurationAbandonedCheckout() {
+        return $this->_generalConfiguration->getCustomDurationAbandonedCheckout();
+    }
 }

@@ -22,6 +22,12 @@ class GeneralConfiguration implements ConfigProviderInterface
     const SUB_ACCOUNT_STATUS_CONFIG_PATH = 'payment/doku_general_config/sub_account_active';
     const SUB_ACCOUNT_ID_CONFIG_PATH = 'payment/doku_general_config/sub_account_id';
 
+    const ABANDONED_CHECKOUT_CONFIG_PATH = "payment/doku_general_config/abandoned_checkout";
+
+    const DURATION_ABANDONED_CHECKOUT_CONFIG_PATH = "payment/doku_general_config/duration_abandoned_checkout";
+
+    const CUSTOM_DURATION_ABANDONED_CHECKOUT_CONFIG_PATH = "payment/doku_general_config/custom_duration_abandoned_checkout";
+
     const REL_PAYMENT_CHANNEL = [
         'doku_credit_card' => "01",
         'doku_dokuva' => "02",
@@ -193,5 +199,20 @@ class GeneralConfiguration implements ConfigProviderInterface
         }
 
         return $label;
+    }
+
+    public function getAbandonedCheckout()
+    {
+        return $this->scopeConfig->getValue(SELF::ABANDONED_CHECKOUT_CONFIG_PATH, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getDurationAbandonedCheckout()
+    {
+        return $this->scopeConfig->getValue(SELF::DURATION_ABANDONED_CHECKOUT_CONFIG_PATH, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getCustomDurationAbandonedCheckout()
+    {
+        return $this->scopeConfig->getValue(SELF::CUSTOM_DURATION_ABANDONED_CHECKOUT_CONFIG_PATH, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
     }
 }

@@ -66,6 +66,30 @@
                     <validate>required-entry</validate>
                 </field>
 
+                <field id="abandoned_checkout" translate="label" type="select" sortOrder="114" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Abandoned Checkout</label>
+                    <source_model>Jokul\Magento2\Model\Config\Source\AbandonedCheckout</source_model>
+                    <comment>*Enable this option to allow the payment link to be accessible again for a specified period.</comment>
+                </field>
+
+                <field id="duration_abandoned_checkout" translate="label" type="select" sortOrder="115" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Duration</label>
+                    <depends>
+                        <field id="abandoned_checkout">yes</field>
+                    </depends>
+                    <source_model>Jokul\Magento2\Model\Config\Source\DurationAbandonedCheckout</source_model>
+                </field>
+
+                <field id="custom_duration_abandoned_checkout" translate="label" type="text" sortOrder="116" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Custom Expiry</label>
+                    <depends>
+                        <field id="abandoned_checkout">yes</field>
+                        <field id="duration_abandoned_checkout">custom</field>
+                    </depends>
+                    <validate>required-entry no-whitespace validate-numeric</validate>
+                    <comment>*Set with numeric in range 1-31. It means day(s)</comment>
+                </field>
+
                 <group id="other_configurations" translate="label" sortOrder="500" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Payment Configurations</label>
                     <group id="credit_cards" translate="label" sortOrder="501" showInDefault="1" showInWebsite="1" showInStore="1">
