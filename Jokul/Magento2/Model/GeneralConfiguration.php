@@ -61,12 +61,11 @@ class GeneralConfiguration implements ConfigProviderInterface
     ];
 
     public function __construct(
-        ScopeConfigInterface $scopeConfig,
+        private readonly ScopeConfigInterface $scopeConfig,
         \Psr\Log\LoggerInterface $logger,
         TimezoneInterface $timezoneInterface
     ) {
         $this->log = $logger;
-        $this->scopeConfig = $scopeConfig;
         $this->timezoneInterface = $timezoneInterface;
     }
 
