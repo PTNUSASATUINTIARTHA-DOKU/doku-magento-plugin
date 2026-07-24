@@ -128,6 +128,10 @@ define(
                 type: 'doku_credit_card',
                 component: 'Jokul_Magento2/js/view/payment/method-renderer/doku-cc'
             },
+            {
+                type: 'doku_qris',
+                component: 'Jokul_Magento2/js/view/payment/method-renderer/doku-qris'
+            },
         );
 
         return Component.extend({});

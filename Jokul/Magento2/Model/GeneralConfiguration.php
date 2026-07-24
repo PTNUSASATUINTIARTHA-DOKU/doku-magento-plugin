@@ -58,6 +58,7 @@ class GeneralConfiguration implements ConfigProviderInterface
         'doku_permatanet' => "27",
         'doku_directdebitbri' => "28",
         'doku_directdebitcimb' => "29",
+        'doku_qris' => "30"
     ];
 
     public function __construct(
