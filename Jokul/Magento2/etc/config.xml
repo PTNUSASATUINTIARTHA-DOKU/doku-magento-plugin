@@ -280,6 +280,15 @@
                 <model>Jokul\Magento2\Model\Payment\Directcimb</model>
             </doku_directdebitcimb>
             <!-- End Internet Banking  -->
+          	<doku_qris>
+                <active>0</active>
+                <title>QRIS</title>
+                <description>Bayar pesanan kamu dengan pembayaran melalui QRIS lebih mudah</description>
+                <payment_code>QRIS</payment_code>
+                <group>offline</group>
+                <allowspecific>0</allowspecific>
+                <model>Jokul\Magento2\Model\Payment\Qris</model>
+            </doku_qris>
         </payment>
     </default>
 </config>

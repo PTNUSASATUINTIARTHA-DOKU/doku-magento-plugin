@@ -161,6 +161,12 @@
                          <include path="Jokul_Magento2::direct_debit/directdebitbri.xml"/>
                          <include path="Jokul_Magento2::direct_debit/directdebitcimb.xml"/>
                     </group>
+                  	<group id="qris" translate="label" sortOrder="509" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>QRIS</label>
+                        <frontend_model>\Magento\Config\Block\System\Config\Form\Fieldset</frontend_model>
+                        <attribute type="expanded">0</attribute>
+                         <include path="Jokul_Magento2::qris/qris.xml"/>
+                    </group>
                 </group>
             </group>
         </section>

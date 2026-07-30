@@ -37,6 +37,7 @@
                 <item name="doku_permatanet" xsi:type="string">Jokul\Magento2\Model\Payment\Permatanet</item>
                 <item name="doku_directdebitbri" xsi:type="string">Jokul\Magento2\Model\Payment\Directbri</item>
                 <item name="doku_directdebitcimb" xsi:type="string">Jokul\Magento2\Model\Payment\Directcimb</item>
+              	<item name="doku_qris" xsi:type="string">Jokul\Magento2\Model\Payment\Qris</item>
             </argument>
         </arguments>
     </type>
@@ -212,6 +213,12 @@
     <type name="Jokul\Magento2\Model\Payment\Directcimb">
         <arguments>
             <argument name="code" xsi:type="string">doku_directdebitcimb</argument>
+        </arguments>
+    </type>
+  	
+  	<type name="Jokul\Magento2\Model\Payment\Qris">
+        <arguments>
+            <argument name="code" xsi:type="string">doku_qris</argument>
         </arguments>
     </type>
 
