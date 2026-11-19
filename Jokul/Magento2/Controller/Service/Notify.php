@@ -84,7 +84,7 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
             if (!is_string($invoiceNumber) || !preg_match('/^[A-Za-z0-9_-]{1,50}$/', $invoiceNumber) ||
                 !is_numeric($orderAmount)) {
                 $this->sendResponse(400);
-                return;
+                die;
             }
 
             $this->logger->doku_log('Notify','Jokul - Notification Controller Invoice Number: ' . $invoiceNumber);
@@ -138,13 +138,13 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
             if (number_format((float) $orderAmount, 2, '.', '') !==
                 number_format((float) $dokuOrder['doku_grand_total'], 2, '.', '')) {
                 $this->sendResponse(404);
-                return;
+                die;
             }
 
             if ($postData['transaction']['status'] == $dokuOrder['order_status']) {
                 $this->logger->doku_log('Notify','Jokul - Notification Controller Transaction already updated (Idempotent)');
                 $this->sendResponse(200);
-                return;
+                die;
             }
 
             $paymentMethod = $order->getPayment()->getMethod();
