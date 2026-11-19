@@ -70,7 +70,8 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
         $connection = $this->resourceConnection->getConnection();
         $tableName = $this->resourceConnection->getTableName('jokul_transaction');
 
-        if (!isset($post['invoice_number'])) {
+        if (!isset($post['invoice_number']) || !is_string($post['invoice_number']) ||
+            !preg_match('/^[A-Za-z0-9_-]{1,50}$/', $post['invoice_number'])) {
             $this->logger->doku_log('Redirect','Jokul - Redirect Controller Invoice Number empty');
 
             $path = "checkout/onepage/failure";
@@ -78,9 +79,12 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
             return $resultRedirect->setPath($path);
         }
 
-        $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $post['invoice_number'] . "'";
+        $select = $connection->select()
+            ->from($tableName)
+            ->where('invoice_number = ?', $post['invoice_number'])
+            ->limit(1);
 
-        $dokuOrder = $connection->fetchRow($sql);
+        $dokuOrder = $connection->fetchRow($select);
         $paymentChannel = $dokuOrder['payment_channel_id'];
 
         if (!isset($dokuOrder['invoice_number'])) {
@@ -123,6 +127,7 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
 
         $order = $this->order->loadByIncrementId($post['invoice_number']);
 
+        $signatureValid = false;
         if ($order->getEntityId()) {
 
             $isSuccessOrder = false;
@@ -140,7 +145,9 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
 
             $redirectSignature = $this->helper->generateRedirectSignature($redirectSignatureParams);
 
-            if (strtolower($redirectSignature)  == strtolower($post['redirect_signature'])) {
+            if (isset($post['redirect_signature']) &&
+                hash_equals(strtolower($redirectSignature), strtolower((string) $post['redirect_signature']))) {
+                $signatureValid = true;
                 $this->logger->doku_log('Redirect','Jokul - Redirect Controller Redirect Signature match!',$order->getIncrementId());
 
                 if (strtolower($post['status']) == strtolower('success')) {
@@ -165,7 +172,6 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
                 $this->logger->doku_log('Redirect','Jokul - Redirect Controller Send Email Notification - End',$order->getIncrementId());
             } else {
                 $path = "";
-                $order->cancel()->save();
                 $this->messageManager->addError(__('Sorry, something went wrong!'));
                 $this->logger->doku_log('Redirect','Jokul - Redirect Controller Redirect Signature not match!',$order->getIncrementId());
             }
@@ -175,8 +181,22 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
             $this->logger->doku_log('Redirect','Jokul - Redirect Controller Order not found');
         }
 
-        $sql = "Update " . $tableName . " SET " . $additionalParams . " `updated_at` = 'now()', `expired_at_gmt` = '" . $expiryGmtDate . "', `expired_at_storetimezone` = '" . $expiryStoreDate . "', `redirect_params` = '" . $postJson . "' where invoice_number = '" . $post['invoice_number'] . "'";
-        $connection->query($sql);
+        if ($signatureValid) {
+            $updateData = [
+                'updated_at' => new \Zend_Db_Expr('NOW()'),
+                'expired_at_gmt' => $expiryGmtDate,
+                'expired_at_storetimezone' => $expiryStoreDate,
+                'redirect_params' => $postJson
+            ];
+            if ($additionalParams !== "") {
+                $updateData['va_number'] = $vaNumber;
+            }
+            $connection->update(
+                $tableName,
+                $updateData,
+                ['invoice_number = ?' => $post['invoice_number']]
+            );
+        }
 
         $this->logger->doku_log('Redirect','Redirect Controller  End');
 
@@ -197,8 +217,11 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
             while (true) {
                 usleep(3000000);
                 $this->logger->doku_log('Redirect','start check status!' .$countHit,$order->getIncrementId());
-                $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $invoiceNumber . "'";
-                $dokuOrder = $connection->fetchRow($sql);
+                $select = $connection->select()
+                    ->from($tableName)
+                    ->where('invoice_number = ?', $invoiceNumber)
+                    ->limit(1);
+                $dokuOrder = $connection->fetchRow($select);
                 $orderStatus = $dokuOrder['order_status'];
 
                 if ($orderStatus == "SUCCESS") {

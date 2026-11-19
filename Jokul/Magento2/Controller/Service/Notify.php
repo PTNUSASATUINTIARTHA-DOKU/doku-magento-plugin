@@ -79,8 +79,13 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
             $tableName = $this->resourceConnection->getTableName('jokul_transaction');
             // End - Build Data Process End
 
-            $invoiceNumber = $postData['order']['invoice_number'];
-            $orderAmount = $postData['order']['amount'];
+            $invoiceNumber = $postData['order']['invoice_number'] ?? null;
+            $orderAmount = $postData['order']['amount'] ?? null;
+            if (!is_string($invoiceNumber) || !preg_match('/^[A-Za-z0-9_-]{1,50}$/', $invoiceNumber) ||
+                !is_numeric($orderAmount)) {
+                $this->sendResponse(400);
+                return;
+            }
 
             $this->logger->doku_log('Notify','Jokul - Notification Controller Invoice Number: ' . $invoiceNumber);
             $order = $this->order->loadByIncrementId($invoiceNumber);
@@ -90,9 +95,11 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
                 die;
             }
 
-            $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $invoiceNumber . "'" . " AND doku_grand_total = '" . $orderAmount . "'";
-
-            $dokuOrder = $connection->fetchRow($sql);
+            $select = $connection->select()
+                ->from($tableName)
+                ->where('invoice_number = ?', $invoiceNumber)
+                ->limit(1);
+            $dokuOrder = $connection->fetchRow($select);
 
             if (!isset($dokuOrder['invoice_number'])) {
                 $this->logger->doku_log('Notify','Jokul - Notification Controller Invoice Number not found in jokul_transaction table');
@@ -102,12 +109,6 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
 
             $this->logger->doku_log('Notify','Jokul - Notification Controller Order found');
             $this->logger->doku_log('Notify','Jokul - Notification Controller Updating order based on notification received');
-
-            if($postData['transaction']['status'] == $dokuOrder['order_status']){
-                $this->logger->doku_log('Notify','Jokul - Notification Controller Transaction already updated to SUCCESS (Idempotent)');
-                $this->sendResponse(200);
-                die;
-            }
 
             $requestParams = json_decode($dokuOrder['request_params'], true);
             $sharedKey = $requestParams['shared_key'];
@@ -133,6 +134,18 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
             }
 
             $this->logger->doku_log('Notify','Jokul - Notification Controller Signature match!');
+
+            if (number_format((float) $orderAmount, 2, '.', '') !==
+                number_format((float) $dokuOrder['doku_grand_total'], 2, '.', '')) {
+                $this->sendResponse(404);
+                return;
+            }
+
+            if ($postData['transaction']['status'] == $dokuOrder['order_status']) {
+                $this->logger->doku_log('Notify','Jokul - Notification Controller Transaction already updated (Idempotent)');
+                $this->sendResponse(200);
+                return;
+            }
 
             $paymentMethod = $order->getPayment()->getMethod();
             if ($order->canInvoice() && !$order->hasInvoices()) {
@@ -162,8 +175,15 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
                 $transaction->save();
 
                 if(strtolower($postData['transaction']['status']) == strtolower('SUCCESS')){
-                    $sql = "Update " . $tableName . " SET `updated_at` = 'now()', `order_status` = 'SUCCESS' , `notify_params` = '" . $postjson . "' where invoice_number = '" . $invoiceNumber . "'";
-                    $connection->query($sql);
+                    $connection->update(
+                        $tableName,
+                        [
+                            'updated_at' => new \Zend_Db_Expr('NOW()'),
+                            'order_status' => 'SUCCESS',
+                            'notify_params' => $postjson
+                        ],
+                        ['invoice_number = ?' => $invoiceNumber]
+                    );
                     $invoice->pay();
                     $invoice->save();
                     $transactionSave = $objectManager->create(
@@ -186,8 +206,15 @@ class Notify extends \Magento\Framework\App\Action\Action implements CsrfAwareAc
                     }
                     $this->logger->doku_log('Notify','Jokul - Notification Controller Update transaction to SUCCESS');
                 } else if (strtolower($postData['transaction']['status']) == strtolower('FAILED')){
-                    $sql = "Update " . $tableName . " SET `updated_at` = 'now()', `order_status` = 'FAILED' , `notify_params` = '" . $postjson . "' where invoice_number = '" . $invoiceNumber . "'";
-                    $connection->query($sql);
+                    $connection->update(
+                        $tableName,
+                        [
+                            'updated_at' => new \Zend_Db_Expr('NOW()'),
+                            'order_status' => 'FAILED',
+                            'notify_params' => $postjson
+                        ],
+                        ['invoice_number = ?' => $invoiceNumber]
+                    );
                     $order->setData('state', 'canceled');
                     $order->setStatus(\Magento\Sales\Model\Order::STATE_CANCELED);
                     $this->logger->doku_log('Notify','Jokul - Notification Controller Update transaction to FAILED');

@@ -64,8 +64,16 @@ class Success extends \Magento\Framework\View\Element\Template
             $connection = $this->resourceConnection->getConnection();
             $tableName = $this->resourceConnection->getTableName('jokul_transaction');
 
-            $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $this->params['invoice'] . "'";
-            $this->dokusTransactionOrder = $connection->fetchRow($sql);
+            $invoice = $this->params['invoice'] ?? null;
+            if (!is_string($invoice) || !preg_match('/^[A-Za-z0-9_-]{1,50}$/', $invoice)) {
+                $this->dokusTransactionOrder = [];
+                return $this->dokusTransactionOrder;
+            }
+            $select = $connection->select()
+                ->from($tableName)
+                ->where('invoice_number = ?', $invoice)
+                ->limit(1);
+            $this->dokusTransactionOrder = $connection->fetchRow($select);
         }
 
         return $this->dokusTransactionOrder;
@@ -77,8 +85,15 @@ class Success extends \Magento\Framework\View\Element\Template
             $connection = $this->resourceConnection->getConnection();
             $tableName = $this->resourceConnection->getTableName('jokul_transaction');
 
-            $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $invoice . "'";
-            $this->dokusTransactionOrder = $connection->fetchRow($sql);
+            if (!is_string($invoice) || !preg_match('/^[A-Za-z0-9_-]{1,50}$/', $invoice)) {
+                $this->dokusTransactionOrder = [];
+                return $this->dokusTransactionOrder;
+            }
+            $select = $connection->select()
+                ->from($tableName)
+                ->where('invoice_number = ?', $invoice)
+                ->limit(1);
+            $this->dokusTransactionOrder = $connection->fetchRow($select);
         }
 
         return $this->dokusTransactionOrder;
