@@ -58,26 +58,23 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
     public function execute()
     {
         $path = "";
-        $this->logger->doku_log('Redirect','Jokul - Redirect Controller Start');
         $post = $this->getRequest()->getParams();
-
-        $postJson = json_encode($post, JSON_PRETTY_PRINT);
-
-        $this->logger->doku_log('Redirect','Jokul - Redirect Controller Looking for the order on the Magento Side');
-
-        $this->logger->doku_log('Redirect','Redirect Controller  Finding order...');
-        $transactionType = isset($post['TRANSACTIONTYPE']) ? $post['TRANSACTIONTYPE'] : "";
-        $connection = $this->resourceConnection->getConnection();
-        $tableName = $this->resourceConnection->getTableName('jokul_transaction');
 
         if (!isset($post['invoice_number']) || !is_string($post['invoice_number']) ||
             !preg_match('/^[A-Za-z0-9_-]{1,50}$/', $post['invoice_number'])) {
-            $this->logger->doku_log('Redirect','Jokul - Redirect Controller Invoice Number empty');
-
-            $path = "checkout/onepage/failure";
+            $this->messageManager->addError(__('Order not found!'));
             $resultRedirect = $this->resultRedirectFactory->create();
             return $resultRedirect->setPath($path);
         }
+
+        $this->logger->doku_log('Redirect','Jokul - Redirect Controller Start');
+        $this->logger->doku_log('Redirect','Jokul - Redirect Controller Invoice Number accepted');
+        $postJson = json_encode($post, JSON_PRETTY_PRINT);
+        $transactionType = isset($post['TRANSACTIONTYPE']) ? $post['TRANSACTIONTYPE'] : "";
+        $this->logger->doku_log('Redirect','Jokul - Redirect Controller Looking for the order on the Magento Side');
+        $this->logger->doku_log('Redirect','Redirect Controller  Finding order...');
+        $connection = $this->resourceConnection->getConnection();
+        $tableName = $this->resourceConnection->getTableName('jokul_transaction');
 
         $select = $connection->select()
             ->from($tableName)
@@ -85,9 +82,8 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
             ->limit(1);
 
         $dokuOrder = $connection->fetchRow($select);
-        $paymentChannel = $dokuOrder['payment_channel_id'];
 
-        if (!isset($dokuOrder['invoice_number'])) {
+        if (!is_array($dokuOrder) || !isset($dokuOrder['invoice_number'])) {
             $this->logger->doku_log('Redirect','Jokul - Redirect Controller Invoice Number not found in jokul_transaction table');
 
             $path = "";
@@ -97,6 +93,7 @@ class Redirect extends \Magento\Framework\App\Action\Action implements CsrfAware
             return $resultRedirect->setPath($path);
         }
 
+        $paymentChannel = $dokuOrder['payment_channel_id'];
         $requestParams = json_decode($dokuOrder['request_params'], true);
         $sharedKey = $requestParams['shared_key'];
         $requestAmount = $requestParams['order']['amount'];
