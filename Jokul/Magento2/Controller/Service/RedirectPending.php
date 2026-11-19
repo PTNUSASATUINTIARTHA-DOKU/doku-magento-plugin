@@ -61,7 +61,8 @@ class RedirectPending extends \Magento\Framework\App\Action\Action implements Cs
         $connection = $this->resourceConnection->getConnection();
         $tableName = $this->resourceConnection->getTableName('jokul_transaction');
 
-        if (!isset($post['invoice_number'])) {
+        if (!isset($post['invoice_number']) || !is_string($post['invoice_number']) ||
+            !preg_match('/^[A-Za-z0-9_-]{1,50}$/', $post['invoice_number'])) {
             $this->logger->doku_log('RedirectPending','Jokul - RedirectPending Controller Invoice Number empty');
 
             $path = "checkout/onepage/failure";
@@ -69,9 +70,12 @@ class RedirectPending extends \Magento\Framework\App\Action\Action implements Cs
             return $resultRedirect->setPath($path);
         }
 
-        $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $post['invoice_number'] . "'";
+        $select = $connection->select()
+            ->from($tableName)
+            ->where('invoice_number = ?', $post['invoice_number'])
+            ->limit(1);
 
-        $dokuOrder = $connection->fetchRow($sql);
+        $dokuOrder = $connection->fetchRow($select);
         $paymentChannel = $dokuOrder['payment_channel_id'];
 
         if (!isset($dokuOrder['invoice_number'])) {
@@ -124,7 +128,6 @@ class RedirectPending extends \Magento\Framework\App\Action\Action implements Cs
                 }
             } else {
                 $path = "";
-                $order->cancel()->save();
                 $this->messageManager->addError(__('Sorry, something went wrong!'));
                 $this->logger->doku_log('RedirectPending','Jokul - RedirectPending Controller RedirectPending Signature not match!',$order->getIncrementId());
             }

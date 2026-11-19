@@ -73,7 +73,8 @@ class RedirectCc extends \Magento\Framework\App\Action\Action implements CsrfAwa
         $connection = $this->resourceConnection->getConnection();
         $tableName = $this->resourceConnection->getTableName('jokul_transaction');
 
-        if (!isset($post['invoice_number'])) {
+        if (!isset($post['invoice_number']) || !is_string($post['invoice_number']) ||
+            !preg_match('/^[A-Za-z0-9_-]{1,50}$/', $post['invoice_number'])) {
             $this->logger->doku_log('RedirectCC','Jokul - Redirect Controller Invoice Number empty');
 
             $path = "checkout/onepage/failure";
@@ -81,9 +82,12 @@ class RedirectCc extends \Magento\Framework\App\Action\Action implements CsrfAwa
             return $resultRedirect->setPath($path);
         }
 
-        $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $post['invoice_number'] . "'";
+        $select = $connection->select()
+            ->from($tableName)
+            ->where('invoice_number = ?', $post['invoice_number'])
+            ->limit(1);
 
-        $dokuOrder = $connection->fetchRow($sql);
+        $dokuOrder = $connection->fetchRow($select);
         $paymentChannel = $dokuOrder['payment_channel_id'];
 
         if (!isset($dokuOrder['invoice_number'])) {
@@ -102,6 +106,7 @@ class RedirectCc extends \Magento\Framework\App\Action\Action implements CsrfAwa
 
         $order = $this->order->loadByIncrementId($post['invoice_number']);
 
+        $signatureValid = false;
         if ($order->getEntityId()) {
 
             $isSuccessOrder = false;
@@ -119,7 +124,9 @@ class RedirectCc extends \Magento\Framework\App\Action\Action implements CsrfAwa
 
             $redirectSignature = $this->helper->generateRedirectSignature($redirectSignatureParams);
 
-            if (strtolower($redirectSignature)  == strtolower($post['redirect_signature'])) {
+            if (isset($post['redirect_signature']) &&
+                hash_equals(strtolower($redirectSignature), strtolower((string) $post['redirect_signature']))) {
+                $signatureValid = true;
                 $this->logger->doku_log('RedirectCC','Jokul - Redirect Controller Redirect Signature match!',$order->getIncrementId());
 
                 $this->logger->doku_log('RedirectCC','Jokul - Redirect Controller Check Order Status',$order->getIncrementId());
@@ -147,8 +154,11 @@ class RedirectCc extends \Magento\Framework\App\Action\Action implements CsrfAwa
                         );
 
                         $this->logger->doku_log('RedirectCC','start check status!' .$countHit,$order->getIncrementId());
-                        $sql = "SELECT * FROM " . $tableName . " where invoice_number = '" . $post['invoice_number'] . "'";
-                        $dokuOrder = $connection->fetchRow($sql);
+                        $select = $connection->select()
+                            ->from($tableName)
+                            ->where('invoice_number = ?', $post['invoice_number'])
+                            ->limit(1);
+                        $dokuOrder = $connection->fetchRow($select);
                         $orderStatus = $dokuOrder['order_status'];
 
                         if ($orderStatus == "SUCCESS") {
@@ -199,7 +209,6 @@ class RedirectCc extends \Magento\Framework\App\Action\Action implements CsrfAwa
                 $this->logger->doku_log('RedirectCC','Jokul - Redirect Controller Send Email Notification - End',$order->getIncrementId());
             } else {
                 $path = "";
-                $order->cancel()->save();
                 $this->messageManager->addError(__('Sorry, something went wrong!'));
                 $this->logger->doku_log('RedirectCC','Jokul - Redirect Controller Redirect Signature not match!',$order->getIncrementId());
             }
@@ -209,8 +218,17 @@ class RedirectCc extends \Magento\Framework\App\Action\Action implements CsrfAwa
             $this->logger->doku_log('RedirectCC','Jokul - Redirect Controller Order not found');
         }
 
-        $sql = "Update " . $tableName . " SET `va_number` = '', `updated_at` = 'now()', `redirect_params` = '" . $postJson . "' where invoice_number = '" . $post['invoice_number'] . "'";
-        $connection->query($sql);
+        if ($signatureValid) {
+            $connection->update(
+                $tableName,
+                [
+                    'va_number' => '',
+                    'updated_at' => new \Zend_Db_Expr('NOW()'),
+                    'redirect_params' => $postJson
+                ],
+                ['invoice_number = ?' => $post['invoice_number']]
+            );
+        }
 
         $this->logger->doku_log('RedirectCC','Redirect Controller  End');
 
